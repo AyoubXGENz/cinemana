@@ -22,15 +22,6 @@ window.addEventListener('popstate', function(e) {
   showPage(page, false);
 });
 
-// On first load, set initial state based on hash or default to home
-(function initHistory() {
-  const hash = window.location.hash.replace('#', '');
-  const validPages = ['home', 'about', 'activities', 'reservation', 'membership'];
-  const startPage = validPages.includes(hash) ? hash : 'home';
-  history.replaceState({ page: startPage }, '', '#' + startPage);
-  if (startPage !== 'home') showPage(startPage, false);
-})();
-
 function toggleMenu() {
   document.getElementById('navLinks').classList.toggle('open');
 }
@@ -196,5 +187,13 @@ function resetReservation() {
   updatePanel();
 }
 
-// Init seat map on load
-window.addEventListener('DOMContentLoaded', buildSeatMap);
+// ===== INIT =====
+window.addEventListener('DOMContentLoaded', function() {
+  buildSeatMap();
+  // Set initial history state based on URL hash, or default to home
+  const hash = window.location.hash.replace('#', '');
+  const validPages = ['home', 'about', 'activities', 'reservation', 'membership'];
+  const startPage = validPages.includes(hash) ? hash : 'home';
+  history.replaceState({ page: startPage }, '', '#' + startPage);
+  if (startPage !== 'home') showPage(startPage, false);
+});
