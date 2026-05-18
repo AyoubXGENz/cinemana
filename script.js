@@ -40,10 +40,7 @@ function filterAct(btn, type) {
 }
 
 // ===== MEMBERSHIP MODAL =====
-function openMemberForm(tier, price) {
-  document.getElementById('modalTier').textContent = tier + ' — ' + price + ' MAD/an';
-  const planSel = document.getElementById('f-plan');
-  planSel.value = tier;
+function openMemberForm() {
   document.getElementById('memberModal').classList.add('open');
   document.getElementById('memberForm').style.display = 'block';
   document.getElementById('memberSuccess').classList.remove('show');
@@ -61,17 +58,14 @@ function submitMembership() {
   const name = document.getElementById('f-name').value.trim();
   const email = document.getElementById('f-email').value.trim();
   const phone = document.getElementById('f-phone').value.trim();
-  const city = document.getElementById('f-city').value;
-  if (!name || !email || !phone || !city) {
+  if (!name || !email || !phone) {
     alert('يرجى ملء جميع الحقول الإلزامية · Veuillez remplir tous les champs obligatoires');
     return;
   }
   // Generate member ID
-  const plan = document.getElementById('f-plan').value;
-  const prefix = plan === 'Cinéphile' ? 'CIN' : plan === 'Cinéaste' ? 'CST' : 'MCN';
   const num = Math.floor(1000 + Math.random() * 9000);
   const year = new Date().getFullYear().toString().slice(2);
-  const memberId = prefix + '-' + year + num;
+  const memberId = 'MBR-' + year + num;
   document.getElementById('generatedId').textContent = memberId;
   document.getElementById('memberForm').style.display = 'none';
   document.getElementById('memberSuccess').classList.add('show');
