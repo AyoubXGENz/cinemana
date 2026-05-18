@@ -505,11 +505,3 @@
     .seat { width: 22px; height: 20px; }
     .res-summary { grid-template-columns: 1fr; }
   }
-  /* ===== PAGE TRANSITIONS ===== */
-  @keyframes pageEnter {
-    from { opacity: 0; transform: translateY(14px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .page.page-enter {
-    animation: pageEnter 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
-  }
