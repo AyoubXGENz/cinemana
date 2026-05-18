@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinémanā</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#" href="index.html">
+    Ciné<span>manā</span>
+    <span class="ar">سينيمانا</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" href="index.html" id="nav-home" class="active">Accueil · الرئيسية</a></li>
+    <li><a href="#" href="about.html" id="nav-about">À propos · من نحن</a></li>
+    <li><a href="#" href="activities.html" id="nav-activities">Activités · أنشطة</a></li>
+    <li><a href="#" href="reservation.html" id="nav-reservation">Réservation · حجز</a></li>
+    <li><a href="#" href="membership.html" id="nav-membership" class="nav-cta">Devenir Membre · عضوية</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+
+
+  <section class="hero">
+    <div class="hero-film-strip">
+    <div class="hero-line"></div>
+    <h1>Cinémanā <em>Foundation</em></h1>
+    <p class="hero-ar">مؤسسة سينيمانا للفن السينمائي</p>
+    <p class="hero-tagline">Là où le cinéma transcende les frontières — où chaque image raconte une histoire et chaque histoire forge une identité.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('about')">Découvrir la Fondation</button>
+      <button class="btn-outline" onclick="showPage('membership')">Devenir Membre · انضم إلينا</button>
+    </div>
+    <div class="hero-scroll">Scroll</div>
+  </section>
+
+  <div class="mission-strip">
+    <div class="mission-item">
+      <div class="mission-num">12+</div>
+      <div class="mission-label">سنوات من الشغف · Années de passion</div>
+    </div>
+    <div class="mission-item">
+      <div class="mission-num">280+</div>
+      <div class="mission-label">نشاط منظَّم · Activités organisées</div>
+    </div>
+    <div class="mission-item">
+      <div class="mission-num">1500+</div>
+      <div class="mission-label">عضو نشيط · Membres actifs</div>
+    </div>
+    <div class="mission-item">
+      <div class="mission-num">40+</div>
+      <div class="mission-label">شريك دولي · Partenaires internationaux</div>
+    </div>
+  </div>
+
+  <section class="section" style="max-width:900px; margin:0 auto;">
+    <div class="section-label">Notre Mission · مهمتنا</div>
+    <h2 class="section-title">L'art du cinéma,<br><em>au service de la culture</em></h2>
+    <div class="section-title-ar">الفن السينمائي في خدمة الثقافة والإبداع</div>
+    <div class="divider"></div>
+    <p style="font-size:0.95rem; line-height:2; color:rgba(245,240,232,0.65); max-width:650px;">
+      Cinémanā est une fondation culturelle dédiée à la promotion et au développement de l'art cinématographique au Maroc. Nous croyons que le cinéma est un vecteur puissant de dialogue, d'éducation et de transformation sociale.
+    </p>
+    <p style="font-family:var(--font-ar); font-size:1rem; line-height:2; color:rgba(245,240,232,0.65); max-width:650px; margin-top:1.5rem; direction:rtl; text-align:right;">
+      سينيمانا مؤسسة ثقافية مكرسة لتعزيز وتطوير الفن السينمائي في المغرب. نؤمن بأن السينما وسيلة قوية للحوار والتعليم والتحول الاجتماعي.
+    </p>
+    <div style="display:flex; gap:1.5rem; margin-top:3rem; flex-wrap:wrap;">
+      <button class="btn-primary" onclick="showPage('about')">En savoir plus →</button>
+      <button class="btn-outline" onclick="showPage('activities')">Nos activités →</button>
+    </div>
+  </section>
+
+  <!-- preview activities -->
+  <section style="padding:0 0 6rem; background: var(--dark2); border-top:1px solid rgba(201,168,76,0.1);">
+    <div style="padding:4rem 3rem 2rem;">
+      <div class="section-label">Activités récentes · أحدث الأنشطة</div>
+      <h2 class="section-title" style="font-size:1.8rem;">Ce que nous avons fait <em>récemment</em></h2>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1.5px; background:rgba(201,168,76,0.08);">
+      <div class="activity-card" onclick="showPage('activities')">
+        <div class="activity-img" style="background:#1A1505;">🎬</div>
+        <div style="padding:1.5rem;">
+          <div class="activity-tag">Atelier · ورشة</div>
+          <div class="activity-title">Masterclass — Réalisation</div>
+          <div class="activity-title-ar">ماستركلاس في الإخراج السينمائي</div>
+          <div class="activity-date">Mars 2025 · Casablanca</div>
+        </div>
+      </div>
+      <div class="activity-card" onclick="showPage('activities')">
+        <div class="activity-img" style="background:#050F1A;">🎞️</div>
+        <div style="padding:1.5rem;">
+          <div class="activity-tag">Festival · مهرجان</div>
+          <div class="activity-title">Festival du Film Amazigh</div>
+          <div class="activity-title-ar">مهرجان الفيلم الأمازيغي</div>
+          <div class="activity-date">Février 2025 · Agadir</div>
+        </div>
+      </div>
+      <div class="activity-card" onclick="showPage('activities')">
+        <div class="activity-img" style="background:#0F0A1A;">🎭</div>
+        <div style="padding:1.5rem;">
+          <div class="activity-tag">Projection · عرض</div>
+          <div class="activity-title">Nuit du Cinéma Marocain</div>
+          <div class="activity-title-ar">ليلة السينما المغربية</div>
+          <div class="activity-date">Janvier 2025 · Rabat</div>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center; padding:2.5rem;">
+      <button class="btn-outline" onclick="showPage('activities')">Voir toutes les activités · عرض كل الأنشطة</button>
+    </div>
+  </section>
+</div>
+
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo-f">Cinémanā</div>
+      <p>Une fondation culturelle dédiée à l'art cinématographique au Maroc.</p>
+      <p class="ar" style="font-family:var(--font-ar); direction:rtl; text-align:right; margin-top:0.5rem; font-size:0.82rem; color:var(--gray);">مؤسسة ثقافية مكرسة لتعزيز الفن السينمائي في المغرب.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="#" href="index.html">Accueil · الرئيسية</a></li>
+        <li><a href="#" href="about.html">À Propos · من نحن</a></li>
+        <li><a href="#" href="activities.html">Activités · أنشطة</a></li>
+        <li><a href="#" href="reservation.html">Réservation · حجز</a></li>
+        <li><a href="#" href="membership.html">Devenir Membre</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">contact@cinemanaa.ma</a></li>
+        <li><a href="#">+212 5XX XXX XXX</a></li>
+        <li><a href="#">Casablanca, Maroc</a></li>
+        <li><a href="#">Facebook · Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Fondation Cinémanā — جميع الحقوق محفوظة</p>
+    <p>Fait avec passion pour le cinéma marocain</p>
+  </div>
+</footer>
+
+
+<script src="script.js"></script>
+</body></html>

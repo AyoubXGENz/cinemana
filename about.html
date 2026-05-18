@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinémanā</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#" href="index.html">
+    Ciné<span>manā</span>
+    <span class="ar">سينيمانا</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" href="index.html" id="nav-home" class="active">Accueil · الرئيسية</a></li>
+    <li><a href="#" href="about.html" id="nav-about">À propos · من نحن</a></li>
+    <li><a href="#" href="activities.html" id="nav-activities">Activités · أنشطة</a></li>
+    <li><a href="#" href="reservation.html" id="nav-reservation">Réservation · حجز</a></li>
+    <li><a href="#" href="membership.html" id="nav-membership" class="nav-cta">Devenir Membre · عضوية</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+
+
+  <div class="about-hero">
+    <div class="section-label" style="text-align:center">À Propos · من نحن
+    <h1 class="section-title" style="text-align:center; font-size:clamp(2rem,5vw,3.5rem);">Cinémanā — <em>Une vision</em></h1>
+    <div class="section-title-ar" style="text-align:center;">رؤية، شغف، وفن</div>
+  </div>
+
+  <div class="about-body">
+    <div class="about-text">
+      <div class="section-label">Notre histoire · قصتنا</div>
+      <div class="divider"></div>
+      <p>
+        Fondée sur la conviction que le cinéma est bien plus qu'un divertissement, Cinémanā s'est donné pour mission de faire du septième art un pilier de la vie culturelle marocaine. Depuis plus d'une décennie, nous accompagnons cinéastes, étudiants, et amateurs dans leur voyage à travers l'image.
+      </p>
+      <p>
+        Notre nom — Cinémanā — unit le mot universel « Cinéma » au suffixe marocain de possession « نا » (nous, notre), affirmant ainsi que ce cinéma est le nôtre, celui de notre peuple et de notre culture.
+      </p>
+      <p class="ar">
+        تأسست مؤسسة سينيمانا على قناعة راسخة بأن السينما أكثر من مجرد ترفيه. اسمنا يجمع بين كلمة "سينما" العالمية وضمير "نا" المغربي، لأن هذه السينما هي سينمانا جميعاً.
+      </p>
+    </div>
+    <div class="about-values">
+      <div class="section-label">Nos valeurs · قيمنا</div>
+      <div class="divider"></div>
+      <div class="value-item">
+        <div class="value-title">Authenticité · الأصالة</div>
+        <div class="value-title-ar">تجذّر في الثقافة المغربية</div>
+        <p class="value-desc">Ancrer notre démarche dans le patrimoine culturel marocain tout en s'ouvrant sur le monde.</p>
+      </div>
+      <div class="value-item">
+        <div class="value-title">Accessibilité · الإتاحة</div>
+        <div class="value-title-ar">السينما للجميع</div>
+        <p class="value-desc">Rendre le cinéma accessible à tous, indépendamment des origines sociales ou géographiques.</p>
+      </div>
+      <div class="value-item">
+        <div class="value-title">Innovation · الابتكار</div>
+        <div class="value-title-ar">الإبداع بلا حدود</div>
+        <p class="value-desc">Encourager les nouvelles formes d'expression cinématographique et les regards audacieux.</p>
+      </div>
+      <div class="value-item">
+        <div class="value-title">Communauté · المجتمع</div>
+        <div class="value-title-ar">بناء مجتمع سينمائي حقيقي</div>
+        <p class="value-desc">Tisser des liens durables entre cinéphiles, créateurs et institutions culturelles.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="team-section">
+    <div class="section-label" style="text-align:center">Notre équipe · فريقنا</div>
+    <h2 class="section-title" style="text-align:center;">Les <em>visages</em> de Cinémanā</h2>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar">YB</div>
+        <div class="team-name">Yassine Benali</div>
+        <div class="team-role">المدير التنفيذي · Directeur Général</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">SA</div>
+        <div class="team-name">Sara Alami</div>
+        <div class="team-role">مدير الأنشطة · Responsable Activités</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">KM</div>
+        <div class="team-name">Karim Mouline</div>
+        <div class="team-role">مدير التواصل · Communication</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar">HL</div>
+        <div class="team-name">Houda Lahlou</div>
+        <div class="team-role">المستشارة القانونية · Conseillère Juridique</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo-f">Cinémanā</div>
+      <p>Une fondation culturelle dédiée à l'art cinématographique au Maroc.</p>
+      <p class="ar" style="font-family:var(--font-ar); direction:rtl; text-align:right; margin-top:0.5rem; font-size:0.82rem; color:var(--gray);">مؤسسة ثقافية مكرسة لتعزيز الفن السينمائي في المغرب.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="#" href="index.html">Accueil · الرئيسية</a></li>
+        <li><a href="#" href="about.html">À Propos · من نحن</a></li>
+        <li><a href="#" href="activities.html">Activités · أنشطة</a></li>
+        <li><a href="#" href="reservation.html">Réservation · حجز</a></li>
+        <li><a href="#" href="membership.html">Devenir Membre</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">contact@cinemanaa.ma</a></li>
+        <li><a href="#">+212 5XX XXX XXX</a></li>
+        <li><a href="#">Casablanca, Maroc</a></li>
+        <li><a href="#">Facebook · Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Fondation Cinémanā — جميع الحقوق محفوظة</p>
+    <p>Fait avec passion pour le cinéma marocain</p>
+  </div>
+</footer>
+
+
+<script src="script.js"></script>
+</body></html>

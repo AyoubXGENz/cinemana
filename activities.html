@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cinémanā</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cairo:wght@300;400;600;700&family=Libre+Baskerville:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#" href="index.html">
+    Ciné<span>manā</span>
+    <span class="ar">سينيمانا</span>
+  </a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="#" href="index.html" id="nav-home" class="active">Accueil · الرئيسية</a></li>
+    <li><a href="#" href="about.html" id="nav-about">À propos · من نحن</a></li>
+    <li><a href="#" href="activities.html" id="nav-activities">Activités · أنشطة</a></li>
+    <li><a href="#" href="reservation.html" id="nav-reservation">Réservation · حجز</a></li>
+    <li><a href="#" href="membership.html" id="nav-membership" class="nav-cta">Devenir Membre · عضوية</a></li>
+  </ul>
+  <div class="hamburger" onclick="toggleMenu()">
+    <span></span><span></span><span></span>
+  </div>
+</nav>
+
+
+
+  <section style="padding:4rem 3rem 2rem;">
+    <div class="section-label">Activités · الأنشطة
+    <h1 class="section-title">Nos <em>événements</em> & activités</h1>
+    <div class="section-title-ar">فعالياتنا وأنشطتنا السينمائية</div>
+  </section>
+
+  <div class="act-filter">
+    <button class="filter-btn active" onclick="filterAct(this,'all')">Tout · الكل</button>
+    <button class="filter-btn" onclick="filterAct(this,'festival')">Festivals · مهرجانات</button>
+    <button class="filter-btn" onclick="filterAct(this,'atelier')">Ateliers · ورشات</button>
+    <button class="filter-btn" onclick="filterAct(this,'projection')">Projections · عروض</button>
+    <button class="filter-btn" onclick="filterAct(this,'conference')">Conférences · ندوات</button>
+  </div>
+
+  <div class="activities-grid" id="activitiesGrid" style="margin:1.5rem 1.5px 0;">
+    <div class="activity-card" data-type="festival">
+      <div class="activity-img" style="background:#050F1A; font-size:5rem;">🎞️</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Festival</div>
+        <div class="activity-title">Festival du Film Amazigh</div>
+        <div class="activity-title-ar">مهرجان الفيلم الأمازيغي</div>
+        <div class="activity-date">Février 2025 · Agadir</div>
+      </div>
+    </div>
+    <div class="activity-card" data-type="atelier">
+      <div class="activity-img" style="background:#1A1505; font-size:5rem;">🎬</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Atelier</div>
+        <div class="activity-title">Masterclass Réalisation</div>
+        <div class="activity-title-ar">ماستركلاس في الإخراج</div>
+        <div class="activity-date">Mars 2025 · Casablanca</div>
+      </div>
+    </div>
+    <div class="activity-card" data-type="projection">
+      <div class="activity-img" style="background:#0F0A1A; font-size:5rem;">🎭</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Projection</div>
+        <div class="activity-title">Nuit du Cinéma Marocain</div>
+        <div class="activity-title-ar">ليلة السينما المغربية</div>
+        <div class="activity-date">Janvier 2025 · Rabat</div>
+      </div>
+    </div>
+    <div class="activity-card" data-type="conference">
+      <div class="activity-img" style="background:#0A1A0A; font-size:5rem;">🎙️</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Conférence</div>
+        <div class="activity-title">Cinéma & Identité Culturelle</div>
+        <div class="activity-title-ar">السينما والهوية الثقافية</div>
+        <div class="activity-date">Décembre 2024 · Fès</div>
+      </div>
+    </div>
+    <div class="activity-card" data-type="atelier">
+      <div class="activity-img" style="background:#1A0A05; font-size:5rem;">📷</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Atelier</div>
+        <div class="activity-title">Photographie de Plateau</div>
+        <div class="activity-title-ar">تصوير الكواليس السينمائية</div>
+        <div class="activity-date">Novembre 2024 · Marrakech</div>
+      </div>
+    </div>
+    <div class="activity-card" data-type="festival">
+      <div class="activity-img" style="background:#1A0A1A; font-size:5rem;">🏆</div>
+      <div class="activity-overlay">
+        <div class="activity-tag">Festival</div>
+        <div class="activity-title">Prix du Jeune Cinéaste</div>
+        <div class="activity-title-ar">جائزة المخرج الشاب</div>
+        <div class="activity-date">Octobre 2024 · Tanger</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Videos section -->
+  <div class="videos-section">
+    <div class="section-label">Vidéos · فيديوهات</div>
+    <h2 class="section-title" style="font-size:1.8rem;">Revivez nos <em>meilleurs moments</em></h2>
+    <div class="section-title-ar" style="font-size:0.9rem;">شاهد أبرز لحظاتنا</div>
+    <div class="videos-grid">
+      <div class="video-card">
+        <div class="video-thumb" style="background:#1A1505;">
+          <div class="play-btn">▶</div>
+        </div>
+        <div class="video-info">
+          <div class="video-title">Masterclass — Réalisation 2025</div>
+          <div class="video-title-ar">ماستركلاس الإخراج ٢٠٢٥</div>
+          <div class="video-dur">42:18 · Casablanca</div>
+        </div>
+      </div>
+      <div class="video-card">
+        <div class="video-thumb" style="background:#050F1A;">
+          <div class="play-btn">▶</div>
+        </div>
+        <div class="video-info">
+          <div class="video-title">Festival Amazigh — Highlights</div>
+          <div class="video-title-ar">أبرز لحظات المهرجان الأمازيغي</div>
+          <div class="video-dur">18:05 · Agadir</div>
+        </div>
+      </div>
+      <div class="video-card">
+        <div class="video-thumb" style="background:#0F0A1A;">
+          <div class="play-btn">▶</div>
+        </div>
+        <div class="video-info">
+          <div class="video-title">Nuit du Cinéma Marocain</div>
+          <div class="video-title-ar">ليلة السينما المغربية</div>
+          <div class="video-dur">1:04:30 · Rabat</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo-f">Cinémanā</div>
+      <p>Une fondation culturelle dédiée à l'art cinématographique au Maroc.</p>
+      <p class="ar" style="font-family:var(--font-ar); direction:rtl; text-align:right; margin-top:0.5rem; font-size:0.82rem; color:var(--gray);">مؤسسة ثقافية مكرسة لتعزيز الفن السينمائي في المغرب.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigation</h4>
+      <ul>
+        <li><a href="#" href="index.html">Accueil · الرئيسية</a></li>
+        <li><a href="#" href="about.html">À Propos · من نحن</a></li>
+        <li><a href="#" href="activities.html">Activités · أنشطة</a></li>
+        <li><a href="#" href="reservation.html">Réservation · حجز</a></li>
+        <li><a href="#" href="membership.html">Devenir Membre</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Contact</h4>
+      <ul>
+        <li><a href="#">contact@cinemanaa.ma</a></li>
+        <li><a href="#">+212 5XX XXX XXX</a></li>
+        <li><a href="#">Casablanca, Maroc</a></li>
+        <li><a href="#">Facebook · Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Fondation Cinémanā — جميع الحقوق محفوظة</p>
+    <p>Fait avec passion pour le cinéma marocain</p>
+  </div>
+</footer>
+
+
+<script src="script.js"></script>
+</body></html>
