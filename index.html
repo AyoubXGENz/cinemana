@@ -21,7 +21,7 @@
     <li><a href="javascript:void(0)" onclick="showPage('about')" id="nav-about">À propos · من نحن</a></li>
     <li><a href="javascript:void(0)" onclick="showPage('activities')" id="nav-activities">Activités · أنشطة</a></li>
     <li><a href="javascript:void(0)" onclick="showPage('reservation')" id="nav-reservation">Réservation · حجز</a></li>
-    <li><a href="javascript:void(0)" onclick="showPage('membership')" id="nav-membership" class="nav-cta">Devenir Membre · عضوية</a></li>
+    <li><a href="javascript:void(0)" onclick="showPage('membership')" id="nav-membership" class="nav-cta">Devenir Membership · عضوية</a></li>
   </ul>
   <div class="hamburger" onclick="toggleMenu()">
     <span></span><span></span><span></span>
@@ -38,7 +38,7 @@
     <p class="hero-tagline">Là où le cinéma transcende les frontières — où chaque image raconte une histoire et chaque histoire forge une identité.</p>
     <div class="hero-btns">
       <button class="btn-primary" onclick="showPage('about')">Découvrir la Fondation</button>
-      <button class="btn-outline" onclick="showPage('membership')">Devenir Membre · انضم إلينا</button>
+      <button class="btn-outline" onclick="showPage('membership')">Devenir Membership · انضم إلينا</button>
     </div>
     <div class="hero-scroll">Scroll</div>
   </section>
@@ -312,7 +312,7 @@
 <!-- ===== MEMBERSHIP PAGE ===== -->
 <div class="page" id="page-membership">
   <div class="membership-hero">
-    <div class="section-label" style="text-align:center">Devenir Membre · انضم إلينا</div>
+    <div class="section-label" style="text-align:center">Devenir Membership · انضم إلينا</div>
     <h1 class="section-title" style="text-align:center;">Rejoignez <em>Cinémanā</em></h1>
     <div class="section-title-ar" style="text-align:center; margin-bottom:1rem;">كن جزءاً من مجتمع سينيمانا</div>
     <p style="text-align:center; max-width:500px; margin:0 auto; font-family:var(--font-ar); font-size:0.9rem; color:var(--gray); direction:rtl; line-height:1.9;">
@@ -352,51 +352,13 @@
     </div>
   </div>
 
-  <!-- Plans -->
-  <div style="padding:1rem 3rem 2rem;">
-    <div class="section-label" style="text-align:center">Nos formules · الباقات</div>
-    <h2 class="section-title" style="text-align:center; font-size:1.8rem;">Choisissez votre <em>formule</em></h2>
-  </div>
-  <div class="membership-grid">
-    <div class="mem-card">
-      <div class="mem-tier">Cinéphile</div>
-      <div class="mem-tier-ar">عضو سينيفيل</div>
-      <div class="mem-price">200 <span>MAD/an</span></div>
-      <ul class="mem-perks">
-        <li>دخول مجاني لعرضين شهرياً</li>
-        <li>النشرة الإخبارية الحصرية</li>
-        <li>بطاقة عضوية رقمية</li>
-        <li>خصم ٢٠٪ على الورشات</li>
-      </ul>
-      <button class="mem-btn mem-btn-outline" onclick="openMemberForm('Cinéphile', 200)">S'inscrire · التسجيل</button>
-    </div>
-    <div class="mem-card featured">
-      <div class="mem-badge">⭐ Le plus populaire · الأكثر طلباً</div>
-      <div class="mem-tier" style="margin-top:1rem;">Cinéaste</div>
-      <div class="mem-tier-ar">عضو سينيست</div>
-      <div class="mem-price">500 <span>MAD/an</span></div>
-      <ul class="mem-perks">
-        <li>جميع مزايا سينيفيل</li>
-        <li>دخول مجاني لجميع العروض</li>
-        <li>أولوية حجز المقاعد VIP</li>
-        <li>مشاركة في المسابقات</li>
-        <li>دعوة لحفلات الافتتاح</li>
-      </ul>
-      <button class="mem-btn mem-btn-filled" onclick="openMemberForm('Cinéaste', 500)">S'inscrire · التسجيل</button>
-    </div>
-    <div class="mem-card">
-      <div class="mem-tier">Mécène</div>
-      <div class="mem-tier-ar">عضو ميسان (راعي)</div>
-      <div class="mem-price">1200 <span>MAD/an</span></div>
-      <ul class="mem-perks">
-        <li>جميع مزايا سينيست</li>
-        <li>اسمك في نشرات المؤسسة</li>
-        <li>لقاء سنوي مع مخرجين</li>
-        <li>دعوة لمجلس الاستشاريين</li>
-        <li>هدية سنوية حصرية</li>
-      </ul>
-      <button class="mem-btn mem-btn-outline" onclick="openMemberForm('Mécène', 1200)">S'inscrire · التسجيل</button>
-    </div>
+
+  <!-- CTA -->
+  <div style="text-align:center; padding:3rem 3rem 5rem;">
+    <button class="btn-primary" style="font-size:1rem; padding:16px 48px;" onclick="openMemberForm()">
+      Rejoindre · انضم مجاناً
+    </button>
+    <p style="font-family:var(--font-ar); font-size:0.82rem; color:var(--gray); margin-top:1rem; direction:rtl;">العضوية مجانية تماماً — فقط أدخل معلوماتك وانضم إلى عائلة سينيمانا</p>
   </div>
 </div>
 
@@ -423,49 +385,6 @@
         <div class="form-row">
           <label class="form-label">رقم الهاتف · Téléphone *</label>
           <input type="tel" class="form-input" id="f-phone" placeholder="+212 6xx xxx xxx">
-        </div>
-        <div class="form-row">
-          <label class="form-label">المدينة · Ville *</label>
-          <select class="form-select" id="f-city">
-            <option value="">اختر مدينتك · Choisir votre ville</option>
-            <option>Casablanca · الدار البيضاء</option>
-            <option>Rabat · الرباط</option>
-            <option>Marrakech · مراكش</option>
-            <option>Fès · فاس</option>
-            <option>Tanger · طنجة</option>
-            <option>Agadir · أكادير</option>
-            <option>Autre · أخرى</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label class="form-label">الباقة المختارة · Formule choisie</label>
-          <select class="form-select" id="f-plan">
-            <option value="Cinéphile">Cinéphile — 200 MAD/an</option>
-            <option value="Cinéaste">Cinéaste — 500 MAD/an</option>
-            <option value="Mécène">Mécène — 1200 MAD/an</option>
-          </select>
-        </div>
-        <div class="form-row">
-          <label class="form-label">كيف سمعت عنّا؟ · Comment nous avez-vous connus ?</label>
-          <select class="form-select" id="f-source">
-            <option value="">اختر · Choisir</option>
-            <option>وسائل التواصل الاجتماعي · Réseaux sociaux</option>
-            <option>صديق أو معارف · Ami / Connaissances</option>
-            <option>نشرة إخبارية · Newsletter</option>
-            <option>حدث · Événement</option>
-            <option>أخرى · Autre</option>
-          </select>
-        </div>
-        <button class="form-submit" onclick="submitMembership()">Confirmer l'inscription · تأكيد التسجيل</button>
-      </div>
-      <div class="member-success" id="memberSuccess">
-        <div style="font-size:3rem; margin-bottom:1rem;">🎬</div>
-        <h3 style="font-family:var(--font-fr); font-size:1.5rem; color:var(--gold);">Bienvenue chez Cinémanā !</h3>
-        <p style="font-family:var(--font-ar); color:var(--gray); margin:0.5rem 0 1.5rem; direction:rtl;">أهلاً وسهلاً في عائلة سينيمانا! رقم عضويتك هو:</p>
-        <div class="member-id-box">
-          <div class="member-id-label">Numéro de membre · رقم العضوية</div>
-          <div class="member-id-num" id="generatedId">—</div>
-          <div class="member-id-note">احتفظ بهذا الرقم — سيُعرَّف بك في جميع أنشطة المؤسسة<br>Conservez ce numéro — il vous identifiera lors de toutes nos activités</div>
         </div>
         <p style="font-family:var(--font-ar); font-size:0.82rem; color:var(--gray); direction:rtl;">سيصلك تأكيد بالبريد الإلكتروني قريباً.</p>
         <button class="btn-primary" onclick="closeModal()" style="margin-top:1.5rem;">ممتاز، شكراً! · Parfait, merci !</button>
