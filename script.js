@@ -13,7 +13,7 @@ const PAGES = [
 const SUPABASE_URL = "https://tekmnebcmhsjnyjeofai.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_aDEon2SP9AJNDxkdyl4gzA_ploHAUVV";
 // Optional: set this to your live site URL after adding it in Supabase Auth redirect URLs.
-const SUPABASE_EMAIL_REDIRECT_TO = "https://ayoubxgenz.github.io/cinemana/#home";
+const SUPABASE_EMAIL_REDIRECT_TO = "https://ayoubxgenz.github.io/cinemana/";
 
 const TRANSLATIONS = {
   fr: {
@@ -211,6 +211,7 @@ const TRANSLATIONS = {
         passwordMatch: "Les deux mots de passe ne correspondent pas.",
         configMissing: "Configuration Supabase manquante. Remplacez YOUR_SUPABASE_URL et YOUR_SUPABASE_ANON_KEY dans script.js.",
         supabaseMissing: "Le client Supabase n’est pas chargé. Vérifiez votre connexion ou le lien CDN.",
+        accountExists: "Ce compte existe peut-être déjà. Essayez un autre e-mail ou vérifiez Authentication > Users dans Supabase.",
         generic: "Impossible de créer le compte pour le moment. Veuillez réessayer."
       }
     }
@@ -410,6 +411,7 @@ const TRANSLATIONS = {
         passwordMatch: "The two passwords do not match.",
         configMissing: "Supabase configuration is missing. Replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY in script.js.",
         supabaseMissing: "The Supabase client is not loaded. Check your connection or CDN link.",
+        accountExists: "This account may already exist. Try another e-mail or check Authentication > Users in Supabase.",
         generic: "Unable to create the account right now. Please try again."
       }
     }
@@ -609,6 +611,7 @@ const TRANSLATIONS = {
         passwordMatch: "كلمتا المرور غير متطابقتين.",
         configMissing: "إعدادات Supabase غير موجودة. عوض YOUR_SUPABASE_URL و YOUR_SUPABASE_ANON_KEY داخل script.js.",
         supabaseMissing: "لم يتم تحميل عميل Supabase. تحقق من الاتصال أو رابط CDN.",
+        accountExists: "قد يكون هذا الحساب موجودا مسبقا. جرب بريدا آخر أو تحقق من Authentication > Users في Supabase.",
         generic: "تعذر إنشاء الحساب الآن. يرجى المحاولة مرة أخرى."
       }
     }
@@ -959,7 +962,7 @@ async function submitMember(event) {
       signUpOptions.emailRedirectTo = SUPABASE_EMAIL_REDIRECT_TO;
     }
 
-    const { error } = await supabaseClient.auth.signUp({
+    const { data: signUpData, error } = await supabaseClient.auth.signUp({
       email: data.email,
       password: data.password,
       options: signUpOptions
@@ -967,6 +970,13 @@ async function submitMember(event) {
 
     if (error) {
       setFormMessage(message, error.message || copy.validation.generic, "error");
+      return;
+    }
+
+    const identities = signUpData && signUpData.user ? signUpData.user.identities : null;
+    const accountProbablyExists = Array.isArray(identities) && identities.length === 0;
+    if (!signUpData || !signUpData.user || accountProbablyExists) {
+      setFormMessage(message, copy.validation.accountExists, "error");
       return;
     }
 
