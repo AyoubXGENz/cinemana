@@ -6,20 +6,13 @@ function showPage(name, pushState = true) {
   const navEl = document.getElementById('nav-' + name);
   if (navEl) navEl.classList.add('active');
   window.scrollTo(0,0);
-  const nl = document.getElementById('navLinks');
-  nl.classList.remove('open');
+  document.getElementById('navLinks').classList.remove('open');
   if (name === 'reservation') buildSeatMap();
-
-  // Push state to browser history
-  if (pushState) {
-    history.pushState({ page: name }, '', '#' + name);
-  }
+  if (pushState) history.pushState({ page: name }, '', '#' + name);
 }
 
-// Handle browser back/forward buttons
 window.addEventListener('popstate', function(e) {
-  const page = e.state ? e.state.page : 'home';
-  showPage(page, false);
+  showPage(e.state ? e.state.page : 'home', false);
 });
 
 function toggleMenu() {
@@ -62,7 +55,6 @@ function submitMembership() {
     alert('يرجى ملء جميع الحقول الإلزامية · Veuillez remplir tous les champs obligatoires');
     return;
   }
-  // Generate member ID
   const num = Math.floor(1000 + Math.random() * 9000);
   const year = new Date().getFullYear().toString().slice(2);
   const memberId = 'MBR-' + year + num;
@@ -181,13 +173,12 @@ function resetReservation() {
   updatePanel();
 }
 
-// ===== INIT =====
+// Init
 window.addEventListener('DOMContentLoaded', function() {
   buildSeatMap();
-  // Set initial history state based on URL hash, or default to home
   const hash = window.location.hash.replace('#', '');
-  const validPages = ['home', 'about', 'activities', 'reservation', 'membership'];
-  const startPage = validPages.includes(hash) ? hash : 'home';
-  history.replaceState({ page: startPage }, '', '#' + startPage);
-  if (startPage !== 'home') showPage(startPage, false);
+  const valid = ['home','about','activities','reservation','membership'];
+  const start = valid.includes(hash) ? hash : 'home';
+  history.replaceState({ page: start }, '', '#' + start);
+  if (start !== 'home') showPage(start, false);
 });
