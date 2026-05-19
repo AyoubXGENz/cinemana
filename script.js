@@ -24,6 +24,7 @@ const EMAILJS_PUBLIC_KEY = "vvAV3OkM-NMHVEaKC";
 const EMAILJS_SERVICE_ID = "service_axwqg28";
 const EMAILJS_TEMPLATE_ID = "template_r0njw8m";
 const EMAIL_CODE_EXPIRY_MINUTES = 10;
+const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAU5tid1K9dM2gR-XKHCjH7_PwZ2ESPo-IVvk-5UGrFFInSBIMzBcsff6COQ5RSSPI/exec";
 
 const TRANSLATIONS = {
   fr: {
@@ -218,7 +219,7 @@ const TRANSLATIONS = {
       loadingCreate: "Vérification du code et création du compte...",
       codeSent: (email) => `Un code à 6 chiffres a été envoyé à ${email}. Vérifiez votre boîte mail et le dossier spam.`,
       verificationHelp: "Entrez le code à 6 chiffres reçu par e-mail.",
-      success: (name) => `Merci ${name}. Votre e-mail est confirmé et votre compte CINEMANA est créé.`,
+      success: (name, referenceCode) => `Merci ${name}. Votre compte CINEMANA est créé. Votre code de référence est ${referenceCode}. Un e-mail avec votre QR code va vous arriver.`,
       validation: {
         required: "Veuillez remplir tous les champs du formulaire.",
         email: "Veuillez entrer une adresse e-mail valide.",
@@ -229,6 +230,8 @@ const TRANSLATIONS = {
         firebaseSdkMissing: "Le SDK Firebase n’est pas chargé. Vérifiez votre connexion ou les liens CDN.",
         emailServiceMissing: "Configuration EmailJS manquante. Remplacez EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID et EMAILJS_TEMPLATE_ID dans script.js.",
         emailSdkMissing: "Le SDK EmailJS n’est pas chargé. Vérifiez votre connexion ou le lien CDN.",
+        sheetsMissing: "Configuration Google Sheets manquante. Remplacez GOOGLE_SHEETS_WEB_APP_URL dans script.js après avoir déployé Apps Script.",
+        sheetsSyncFailed: "Le compte est créé, mais l’envoi vers Google Sheets a échoué. Vérifiez le Web App URL de Apps Script.",
         codeRequired: "Veuillez entrer le code reçu par e-mail.",
         codeExpired: "Le code a expiré. Demandez un nouveau code.",
         codeMismatch: "Le code saisi est incorrect.",
@@ -432,7 +435,7 @@ const TRANSLATIONS = {
       loadingCreate: "Verifying the code and creating the account...",
       codeSent: (email) => `A 6-digit code was sent to ${email}. Check your inbox and spam folder.`,
       verificationHelp: "Enter the 6-digit code received by e-mail.",
-      success: (name) => `Thank you ${name}. Your e-mail is confirmed and your CINEMANA account has been created.`,
+      success: (name, referenceCode) => `Thank you ${name}. Your CINEMANA account has been created. Your reference code is ${referenceCode}. An e-mail with your QR code will arrive shortly.`,
       validation: {
         required: "Please fill in every field in the form.",
         email: "Please enter a valid e-mail address.",
@@ -443,6 +446,8 @@ const TRANSLATIONS = {
         firebaseSdkMissing: "The Firebase SDK is not loaded. Check your connection or CDN links.",
         emailServiceMissing: "EmailJS configuration is missing. Replace EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID and EMAILJS_TEMPLATE_ID in script.js.",
         emailSdkMissing: "The EmailJS SDK is not loaded. Check your connection or CDN link.",
+        sheetsMissing: "Google Sheets configuration is missing. Replace GOOGLE_SHEETS_WEB_APP_URL in script.js after deploying Apps Script.",
+        sheetsSyncFailed: "The account was created, but sending to Google Sheets failed. Check the Apps Script Web App URL.",
         codeRequired: "Please enter the code received by e-mail.",
         codeExpired: "The code has expired. Request a new code.",
         codeMismatch: "The code you entered is incorrect.",
@@ -646,7 +651,7 @@ const TRANSLATIONS = {
       loadingCreate: "جاري تأكيد الرمز وإنشاء الحساب...",
       codeSent: (email) => `تم إرسال رمز من 6 أرقام إلى ${email}. تحقق من بريدك ومن مجلد الرسائل غير المرغوب فيها.`,
       verificationHelp: "أدخل الرمز المكون من 6 أرقام الذي وصلك عبر البريد الإلكتروني.",
-      success: (name) => `شكرا ${name}. تم تأكيد بريدك الإلكتروني وإنشاء حساب سينيمانا.`,
+      success: (name, referenceCode) => `شكرا ${name}. تم إنشاء حساب سينيمانا. كود الريفيرونس ديالك هو ${referenceCode}. سيصلك إيميل فيه QR code قريبا.`,
       validation: {
         required: "يرجى ملء جميع حقول الاستمارة.",
         email: "يرجى إدخال بريد إلكتروني صحيح.",
@@ -657,6 +662,8 @@ const TRANSLATIONS = {
         firebaseSdkMissing: "لم يتم تحميل SDK الخاص ب Firebase. تحقق من الاتصال أو روابط CDN.",
         emailServiceMissing: "إعدادات EmailJS غير موجودة. عوض EMAILJS_PUBLIC_KEY و EMAILJS_SERVICE_ID و EMAILJS_TEMPLATE_ID داخل script.js.",
         emailSdkMissing: "لم يتم تحميل SDK الخاص ب EmailJS. تحقق من الاتصال أو رابط CDN.",
+        sheetsMissing: "إعدادات Google Sheets غير موجودة. عوض GOOGLE_SHEETS_WEB_APP_URL داخل script.js بعد نشر Apps Script.",
+        sheetsSyncFailed: "تم إنشاء الحساب، لكن الإرسال إلى Google Sheets فشل. تحقق من رابط Web App ديال Apps Script.",
         codeRequired: "يرجى إدخال الرمز الذي وصلك عبر البريد الإلكتروني.",
         codeExpired: "انتهت صلاحية الرمز. اطلب رمزا جديدا.",
         codeMismatch: "الرمز الذي أدخلته غير صحيح.",
@@ -760,6 +767,14 @@ function isEmailJsConfigured() {
   );
 }
 
+function isGoogleSheetsConfigured() {
+  return Boolean(
+    GOOGLE_SHEETS_WEB_APP_URL &&
+    GOOGLE_SHEETS_WEB_APP_URL !== "YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL" &&
+    /^https:\/\/script\.google\.com\/macros\/s\//.test(GOOGLE_SHEETS_WEB_APP_URL)
+  );
+}
+
 function getFirebaseServices() {
   if (!isFirebaseConfigured()) return null;
   if (!window.firebase || !window.firebase.initializeApp) return null;
@@ -836,6 +851,21 @@ function generateVerificationCode() {
     return String(100000 + (bytes[0] % 900000));
   }
   return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function generateReferenceCode() {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = new Uint8Array(6);
+  if (window.crypto && window.crypto.getRandomValues) {
+    window.crypto.getRandomValues(bytes);
+  } else {
+    bytes.forEach((_, index) => {
+      bytes[index] = Math.floor(Math.random() * 256);
+    });
+  }
+
+  const suffix = Array.from(bytes, (value) => alphabet[value % alphabet.length]).join("");
+  return `CIN-${new Date().getFullYear()}-${suffix}`;
 }
 
 function getVerificationCode() {
@@ -928,7 +958,7 @@ async function sendMemberVerificationCode(data, code) {
   }
 }
 
-async function createFirebaseMemberAccount(data) {
+async function createFirebaseMemberAccount(data, referenceCode) {
   const services = getFirebaseServices();
   if (!services) throw new Error("firebase-not-ready");
 
@@ -940,18 +970,45 @@ async function createFirebaseMemberAccount(data) {
 
   await services.db.collection("cinemana_members").doc(user.uid).set({
     user_id: user.uid,
+    reference_code: referenceCode,
     full_name: data.full_name,
     birthday: data.birthday,
     city: data.city,
     phone: data.phone,
     email: data.email,
     email_verified_by_code: true,
+    google_sheet_sync_requested: true,
     status: "pending",
     created_at: window.firebase.firestore.FieldValue.serverTimestamp(),
     updated_at: window.firebase.firestore.FieldValue.serverTimestamp()
   });
 
   return user;
+}
+
+async function sendMemberToGoogleSheets(data, user, referenceCode) {
+  const payload = {
+    reference_code: referenceCode,
+    user_id: user.uid,
+    full_name: data.full_name,
+    birthday: data.birthday,
+    city: data.city,
+    phone: data.phone,
+    email: data.email,
+    status: "pending",
+    source: "cinemana-website",
+    created_at: new Date().toISOString()
+  };
+
+  const body = new URLSearchParams({
+    payload: JSON.stringify(payload)
+  });
+
+  await fetch(GOOGLE_SHEETS_WEB_APP_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body
+  });
 }
 
 function setLanguage(language) {
@@ -1184,9 +1241,16 @@ async function submitMember(event) {
     if (submitButton) submitButton.disabled = true;
 
     try {
-      await createFirebaseMemberAccount(pending.data);
+      const referenceCode = generateReferenceCode();
+      const user = await createFirebaseMemberAccount(pending.data, referenceCode);
+      try {
+        await sendMemberToGoogleSheets(pending.data, user, referenceCode);
+      } catch (syncError) {
+        setFormMessage(message, copy.validation.sheetsSyncFailed, "error");
+        return;
+      }
       resetMemberVerification();
-      setFormMessage(message, copy.success(pending.data.full_name), "success");
+      setFormMessage(message, copy.success(pending.data.full_name, referenceCode), "success");
       form.reset();
     } catch (error) {
       const isExistingAccount = error && error.code === "auth/email-already-in-use";
@@ -1213,6 +1277,11 @@ async function submitMember(event) {
 
   if (!initializeEmailJs()) {
     setFormMessage(message, isEmailJsConfigured() ? copy.validation.emailSdkMissing : copy.validation.emailServiceMissing, "error");
+    return;
+  }
+
+  if (!isGoogleSheetsConfigured()) {
+    setFormMessage(message, copy.validation.sheetsMissing, "error");
     return;
   }
 
