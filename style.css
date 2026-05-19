@@ -823,6 +823,39 @@ select:focus {
   grid-column: 1 / -1;
 }
 
+.member-verification {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid rgba(221, 177, 73, 0.3);
+  border-radius: 8px;
+  background: rgba(221, 177, 73, 0.08);
+}
+
+.member-verification[hidden] {
+  display: none;
+}
+
+.member-verification input {
+  text-align: center;
+  letter-spacing: 0.18em;
+  font-weight: 800;
+}
+
+[dir="rtl"] .member-verification input {
+  direction: ltr;
+}
+
+.member-verification p {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.member-modal input:disabled {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.04);
+}
+
 html[lang="ar"] body,
 html[lang="ar"] button,
 html[lang="ar"] input,

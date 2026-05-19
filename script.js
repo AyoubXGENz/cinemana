@@ -10,10 +10,20 @@ const PAGES = [
   "partners"
 ];
 
-const SUPABASE_URL = "https://tekmnebcmhsjnyjeofai.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_aDEon2SP9AJNDxkdyl4gzA_ploHAUVV";
-// Optional: set this to your live site URL after adding it in Supabase Auth redirect URLs.
-const SUPABASE_EMAIL_REDIRECT_TO = "https://ayoubxgenz.github.io/cinemana/";
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCl7S3KtNdRP4t-o8wsEABdezShD1TRd3o",
+  authDomain: "cenimana-106f1.firebaseapp.com",
+  projectId: "cenimana-106f1",
+  storageBucket: "cenimana-106f1.firebasestorage.app",
+  messagingSenderId: "36373295981",
+  appId: "1:36373295981:web:02cc4ff2629d5b2593a064",
+   measurementId: "G-S63HWF9KQ3"
+};
+
+const EMAILJS_PUBLIC_KEY = "YOUR_EMAILJS_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID = "YOUR_EMAILJS_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = "YOUR_EMAILJS_TEMPLATE_ID";
+const EMAIL_CODE_EXPIRY_MINUTES = 10;
 
 const TRANSLATIONS = {
   fr: {
@@ -199,19 +209,32 @@ const TRANSLATIONS = {
         phone: "Téléphone",
         email: "E-mail",
         password: "Mot de passe",
-        repeatPassword: "Répéter le mot de passe"
+        repeatPassword: "Répéter le mot de passe",
+        verificationCode: "Code de vérification"
       },
-      button: "Envoyer ma demande",
-      loading: "Création de votre compte CINEMANA...",
-      success: (name) => `Merci ${name}. Votre compte CINEMANA est créé. Vérifiez votre e-mail pour confirmer votre inscription.`,
+      button: "Envoyer le code de vérification",
+      verifyButton: "Vérifier le code et créer mon compte",
+      loadingCode: "Envoi du code de vérification...",
+      loadingCreate: "Vérification du code et création du compte...",
+      codeSent: (email) => `Un code à 6 chiffres a été envoyé à ${email}. Vérifiez votre boîte mail et le dossier spam.`,
+      verificationHelp: "Entrez le code à 6 chiffres reçu par e-mail.",
+      success: (name) => `Merci ${name}. Votre e-mail est confirmé et votre compte CINEMANA est créé.`,
       validation: {
         required: "Veuillez remplir tous les champs du formulaire.",
+        email: "Veuillez entrer une adresse e-mail valide.",
         birthday: "Veuillez entrer une date de naissance valide dans le passé.",
         passwordLength: "Le mot de passe doit contenir au moins 8 caractères.",
         passwordMatch: "Les deux mots de passe ne correspondent pas.",
-        configMissing: "Configuration Supabase manquante. Remplacez YOUR_SUPABASE_URL et YOUR_SUPABASE_ANON_KEY dans script.js.",
-        supabaseMissing: "Le client Supabase n’est pas chargé. Vérifiez votre connexion ou le lien CDN.",
-        accountExists: "Ce compte existe peut-être déjà. Essayez un autre e-mail ou vérifiez Authentication > Users dans Supabase.",
+        firebaseMissing: "Configuration Firebase manquante. Remplacez les valeurs YOUR_FIREBASE_* dans script.js.",
+        firebaseSdkMissing: "Le SDK Firebase n’est pas chargé. Vérifiez votre connexion ou les liens CDN.",
+        emailServiceMissing: "Configuration EmailJS manquante. Remplacez EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID et EMAILJS_TEMPLATE_ID dans script.js.",
+        emailSdkMissing: "Le SDK EmailJS n’est pas chargé. Vérifiez votre connexion ou le lien CDN.",
+        codeRequired: "Veuillez entrer le code reçu par e-mail.",
+        codeExpired: "Le code a expiré. Demandez un nouveau code.",
+        codeMismatch: "Le code saisi est incorrect.",
+        tooManyAttempts: "Trop de tentatives incorrectes. Demandez un nouveau code.",
+        emailSendFailed: "Impossible d’envoyer le code pour le moment. Vérifiez EmailJS et réessayez.",
+        accountExists: "Ce compte existe déjà. Essayez un autre e-mail ou vérifiez Authentication > Users dans Firebase.",
         generic: "Impossible de créer le compte pour le moment. Veuillez réessayer."
       }
     }
@@ -399,19 +422,32 @@ const TRANSLATIONS = {
         phone: "Phone number",
         email: "E-mail",
         password: "Password",
-        repeatPassword: "Repeat password"
+        repeatPassword: "Repeat password",
+        verificationCode: "Verification code"
       },
-      button: "Send my request",
-      loading: "Creating your CINEMANA account...",
-      success: (name) => `Thank you ${name}. Your CINEMANA account has been created. Check your e-mail to confirm your registration.`,
+      button: "Send verification code",
+      verifyButton: "Verify code and create my account",
+      loadingCode: "Sending the verification code...",
+      loadingCreate: "Verifying the code and creating the account...",
+      codeSent: (email) => `A 6-digit code was sent to ${email}. Check your inbox and spam folder.`,
+      verificationHelp: "Enter the 6-digit code received by e-mail.",
+      success: (name) => `Thank you ${name}. Your e-mail is confirmed and your CINEMANA account has been created.`,
       validation: {
         required: "Please fill in every field in the form.",
+        email: "Please enter a valid e-mail address.",
         birthday: "Please enter a valid date of birth in the past.",
         passwordLength: "The password must contain at least 8 characters.",
         passwordMatch: "The two passwords do not match.",
-        configMissing: "Supabase configuration is missing. Replace YOUR_SUPABASE_URL and YOUR_SUPABASE_ANON_KEY in script.js.",
-        supabaseMissing: "The Supabase client is not loaded. Check your connection or CDN link.",
-        accountExists: "This account may already exist. Try another e-mail or check Authentication > Users in Supabase.",
+        firebaseMissing: "Firebase configuration is missing. Replace the YOUR_FIREBASE_* values in script.js.",
+        firebaseSdkMissing: "The Firebase SDK is not loaded. Check your connection or CDN links.",
+        emailServiceMissing: "EmailJS configuration is missing. Replace EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID and EMAILJS_TEMPLATE_ID in script.js.",
+        emailSdkMissing: "The EmailJS SDK is not loaded. Check your connection or CDN link.",
+        codeRequired: "Please enter the code received by e-mail.",
+        codeExpired: "The code has expired. Request a new code.",
+        codeMismatch: "The code you entered is incorrect.",
+        tooManyAttempts: "Too many incorrect attempts. Request a new code.",
+        emailSendFailed: "Unable to send the code right now. Check EmailJS and try again.",
+        accountExists: "This account already exists. Try another e-mail or check Authentication > Users in Firebase.",
         generic: "Unable to create the account right now. Please try again."
       }
     }
@@ -599,19 +635,32 @@ const TRANSLATIONS = {
         phone: "رقم الهاتف",
         email: "البريد الإلكتروني",
         password: "كلمة المرور",
-        repeatPassword: "تكرار كلمة المرور"
+        repeatPassword: "تكرار كلمة المرور",
+        verificationCode: "رمز التحقق"
       },
-      button: "إرسال طلبي",
-      loading: "جاري إنشاء حساب سينيمانا...",
-      success: (name) => `شكرا ${name}. تم إنشاء حساب سينيمانا. يرجى التحقق من بريدك الإلكتروني لتأكيد التسجيل.`,
+      button: "إرسال رمز التحقق",
+      verifyButton: "تأكيد الرمز وإنشاء الحساب",
+      loadingCode: "جاري إرسال رمز التحقق...",
+      loadingCreate: "جاري تأكيد الرمز وإنشاء الحساب...",
+      codeSent: (email) => `تم إرسال رمز من 6 أرقام إلى ${email}. تحقق من بريدك ومن مجلد الرسائل غير المرغوب فيها.`,
+      verificationHelp: "أدخل الرمز المكون من 6 أرقام الذي وصلك عبر البريد الإلكتروني.",
+      success: (name) => `شكرا ${name}. تم تأكيد بريدك الإلكتروني وإنشاء حساب سينيمانا.`,
       validation: {
         required: "يرجى ملء جميع حقول الاستمارة.",
+        email: "يرجى إدخال بريد إلكتروني صحيح.",
         birthday: "يرجى إدخال تاريخ ميلاد صحيح في الماضي.",
         passwordLength: "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
         passwordMatch: "كلمتا المرور غير متطابقتين.",
-        configMissing: "إعدادات Supabase غير موجودة. عوض YOUR_SUPABASE_URL و YOUR_SUPABASE_ANON_KEY داخل script.js.",
-        supabaseMissing: "لم يتم تحميل عميل Supabase. تحقق من الاتصال أو رابط CDN.",
-        accountExists: "قد يكون هذا الحساب موجودا مسبقا. جرب بريدا آخر أو تحقق من Authentication > Users في Supabase.",
+        firebaseMissing: "إعدادات Firebase غير موجودة. عوض قيم YOUR_FIREBASE_* داخل script.js.",
+        firebaseSdkMissing: "لم يتم تحميل SDK الخاص ب Firebase. تحقق من الاتصال أو روابط CDN.",
+        emailServiceMissing: "إعدادات EmailJS غير موجودة. عوض EMAILJS_PUBLIC_KEY و EMAILJS_SERVICE_ID و EMAILJS_TEMPLATE_ID داخل script.js.",
+        emailSdkMissing: "لم يتم تحميل SDK الخاص ب EmailJS. تحقق من الاتصال أو رابط CDN.",
+        codeRequired: "يرجى إدخال الرمز الذي وصلك عبر البريد الإلكتروني.",
+        codeExpired: "انتهت صلاحية الرمز. اطلب رمزا جديدا.",
+        codeMismatch: "الرمز الذي أدخلته غير صحيح.",
+        tooManyAttempts: "محاولات كثيرة غير صحيحة. اطلب رمزا جديدا.",
+        emailSendFailed: "تعذر إرسال الرمز الآن. تحقق من EmailJS ثم حاول مرة أخرى.",
+        accountExists: "هذا الحساب موجود مسبقا. جرب بريدا آخر أو تحقق من Authentication > Users في Firebase.",
         generic: "تعذر إنشاء الحساب الآن. يرجى المحاولة مرة أخرى."
       }
     }
@@ -619,6 +668,9 @@ const TRANSLATIONS = {
 };
 
 let currentLanguage = "fr";
+let firebaseServices = null;
+let emailJsInitialized = false;
+let pendingMemberRegistration = null;
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -683,19 +735,57 @@ function setFormMessage(element, text, type) {
   if (type) element.classList.add(type);
 }
 
-function isSupabaseConfigured() {
+function isFirebaseConfigured() {
   return Boolean(
-    SUPABASE_URL &&
-    SUPABASE_ANON_KEY &&
-    SUPABASE_URL !== "YOUR_SUPABASE_URL" &&
-    SUPABASE_ANON_KEY !== "YOUR_SUPABASE_ANON_KEY"
+    FIREBASE_CONFIG.apiKey &&
+    FIREBASE_CONFIG.authDomain &&
+    FIREBASE_CONFIG.projectId &&
+    FIREBASE_CONFIG.apiKey !== "YOUR_FIREBASE_API_KEY" &&
+    FIREBASE_CONFIG.authDomain !== "YOUR_FIREBASE_AUTH_DOMAIN" &&
+    FIREBASE_CONFIG.projectId !== "YOUR_FIREBASE_PROJECT_ID"
   );
 }
 
-function getSupabaseClient() {
-  if (!isSupabaseConfigured()) return null;
-  if (!window.supabase || !window.supabase.createClient) return null;
-  return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+function isEmailJsConfigured() {
+  return Boolean(
+    EMAILJS_PUBLIC_KEY &&
+    EMAILJS_SERVICE_ID &&
+    EMAILJS_TEMPLATE_ID &&
+    EMAILJS_PUBLIC_KEY !== "YOUR_EMAILJS_PUBLIC_KEY" &&
+    EMAILJS_SERVICE_ID !== "YOUR_EMAILJS_SERVICE_ID" &&
+    EMAILJS_TEMPLATE_ID !== "YOUR_EMAILJS_TEMPLATE_ID"
+  );
+}
+
+function getFirebaseServices() {
+  if (!isFirebaseConfigured()) return null;
+  if (!window.firebase || !window.firebase.initializeApp) return null;
+
+  if (!firebaseServices) {
+    const app = window.firebase.apps && window.firebase.apps.length
+      ? window.firebase.app()
+      : window.firebase.initializeApp(FIREBASE_CONFIG);
+
+    firebaseServices = {
+      app,
+      auth: app.auth(),
+      db: app.firestore()
+    };
+  }
+
+  return firebaseServices;
+}
+
+function initializeEmailJs() {
+  if (!isEmailJsConfigured()) return false;
+  if (!window.emailjs || !window.emailjs.init || !window.emailjs.send) return false;
+
+  if (!emailJsInitialized) {
+    window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+    emailJsInitialized = true;
+  }
+
+  return true;
 }
 
 function getMemberFormData() {
@@ -723,6 +813,7 @@ function validateMemberForm(data) {
   ];
 
   if (requiredValues.some((value) => !value)) return messages.required;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return messages.email;
 
   const birthday = new Date(`${data.birthday}T00:00:00`);
   const today = new Date();
@@ -733,6 +824,119 @@ function validateMemberForm(data) {
   if (data.password !== data.repeat_password) return messages.passwordMatch;
 
   return "";
+}
+
+function generateVerificationCode() {
+  const bytes = new Uint32Array(1);
+  if (window.crypto && window.crypto.getRandomValues) {
+    window.crypto.getRandomValues(bytes);
+    return String(100000 + (bytes[0] % 900000));
+  }
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function getVerificationCode() {
+  return document.getElementById("memberVerificationCode").value.trim();
+}
+
+function setMemberFieldsDisabled(disabled) {
+  [
+    "memberName",
+    "memberBirthday",
+    "memberCity",
+    "memberPhone",
+    "memberEmail",
+    "memberPassword",
+    "memberRepeatPassword"
+  ].forEach((id) => {
+    const input = document.getElementById(id);
+    if (input) input.disabled = disabled;
+  });
+}
+
+function updateMemberSubmitLabel() {
+  const copy = TRANSLATIONS[currentLanguage].modal;
+  const button = document.querySelector(".member-modal > button");
+  if (button) button.textContent = pendingMemberRegistration ? copy.verifyButton : copy.button;
+}
+
+function resetMemberVerification(clearForm = false) {
+  pendingMemberRegistration = null;
+  setMemberFieldsDisabled(false);
+
+  const step = document.getElementById("memberVerificationStep");
+  const codeInput = document.getElementById("memberVerificationCode");
+  if (step) step.hidden = true;
+  if (codeInput) codeInput.value = "";
+  if (clearForm) {
+    const form = document.querySelector(".member-modal");
+    if (form) form.reset();
+  }
+  updateMemberSubmitLabel();
+}
+
+function showMemberVerificationStep(data, code) {
+  pendingMemberRegistration = {
+    data,
+    code,
+    attempts: 0,
+    expiresAt: Date.now() + EMAIL_CODE_EXPIRY_MINUTES * 60 * 1000
+  };
+
+  setMemberFieldsDisabled(true);
+
+  const step = document.getElementById("memberVerificationStep");
+  const codeInput = document.getElementById("memberVerificationCode");
+  if (step) step.hidden = false;
+  if (codeInput) {
+    codeInput.value = "";
+    codeInput.focus();
+  }
+  updateMemberSubmitLabel();
+}
+
+async function sendMemberVerificationCode(data, code) {
+  const copy = TRANSLATIONS[currentLanguage].modal;
+  const templateParams = {
+    to_email: data.email,
+    to_name: data.full_name,
+    verification_code: code,
+    expiry_minutes: EMAIL_CODE_EXPIRY_MINUTES,
+    site_name: "CINEMANA"
+  };
+
+  try {
+    await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+    return "";
+  } catch (error) {
+    return error && error.text ? error.text : copy.validation.emailSendFailed;
+  }
+}
+
+async function createFirebaseMemberAccount(data) {
+  const services = getFirebaseServices();
+  if (!services) throw new Error("firebase-not-ready");
+
+  const credential = await services.auth.createUserWithEmailAndPassword(data.email, data.password);
+  const user = credential.user;
+  if (user && user.updateProfile) {
+    await user.updateProfile({ displayName: data.full_name });
+  }
+
+  await services.db.collection("cinemana_members").doc(user.uid).set({
+    user_id: user.uid,
+    full_name: data.full_name,
+    birthday: data.birthday,
+    city: data.city,
+    phone: data.phone,
+    email: data.email,
+    email_verified_by_code: true,
+    status: "pending",
+    created_at: window.firebase.firestore.FieldValue.serverTimestamp(),
+    updated_at: window.firebase.firestore.FieldValue.serverTimestamp()
+  });
+
+  return user;
 }
 
 function setLanguage(language) {
@@ -873,7 +1077,9 @@ function setLanguage(language) {
   setLabel("memberEmail", copy.modal.labels.email);
   setLabel("memberPassword", copy.modal.labels.password);
   setLabel("memberRepeatPassword", copy.modal.labels.repeatPassword);
-  setText(".member-modal > button", copy.modal.button);
+  setLabel("memberVerificationCode", copy.modal.labels.verificationCode);
+  setText("#memberVerificationHelp", copy.modal.verificationHelp);
+  updateMemberSubmitLabel();
 
   clearMessage("memberReservationMessage");
   clearMessage("publicReservationMessage");
@@ -923,10 +1129,60 @@ function closeMemberModalOutside(event) {
 async function submitMember(event) {
   event.preventDefault();
   const form = event.currentTarget;
-  const data = getMemberFormData();
   const message = document.getElementById("memberMessage");
   const submitButton = form.querySelector('button[type="submit"]');
   const copy = TRANSLATIONS[currentLanguage].modal;
+
+  if (pendingMemberRegistration) {
+    const code = getVerificationCode();
+    const pending = pendingMemberRegistration;
+
+    if (!code) {
+      setFormMessage(message, copy.validation.codeRequired, "error");
+      return;
+    }
+
+    if (Date.now() > pending.expiresAt) {
+      resetMemberVerification();
+      setFormMessage(message, copy.validation.codeExpired, "error");
+      return;
+    }
+
+    if (code !== pending.code) {
+      pending.attempts += 1;
+      if (pending.attempts >= 5) {
+        resetMemberVerification();
+        setFormMessage(message, copy.validation.tooManyAttempts, "error");
+        return;
+      }
+      setFormMessage(message, copy.validation.codeMismatch, "error");
+      return;
+    }
+
+    const services = getFirebaseServices();
+    if (!services) {
+      setFormMessage(message, isFirebaseConfigured() ? copy.validation.firebaseSdkMissing : copy.validation.firebaseMissing, "error");
+      return;
+    }
+
+    setFormMessage(message, copy.loadingCreate);
+    if (submitButton) submitButton.disabled = true;
+
+    try {
+      await createFirebaseMemberAccount(pending.data);
+      resetMemberVerification();
+      setFormMessage(message, copy.success(pending.data.full_name), "success");
+      form.reset();
+    } catch (error) {
+      const isExistingAccount = error && error.code === "auth/email-already-in-use";
+      setFormMessage(message, isExistingAccount ? copy.validation.accountExists : (error.message || copy.validation.generic), "error");
+    } finally {
+      if (submitButton) submitButton.disabled = false;
+    }
+    return;
+  }
+
+  const data = getMemberFormData();
   const validationError = validateMemberForm(data);
 
   if (validationError) {
@@ -934,56 +1190,32 @@ async function submitMember(event) {
     return;
   }
 
-  if (!isSupabaseConfigured()) {
-    setFormMessage(message, copy.validation.configMissing, "error");
+  const services = getFirebaseServices();
+  if (!services) {
+    setFormMessage(message, isFirebaseConfigured() ? copy.validation.firebaseSdkMissing : copy.validation.firebaseMissing, "error");
     return;
   }
 
-  const supabaseClient = getSupabaseClient();
-  if (!supabaseClient) {
-    setFormMessage(message, copy.validation.supabaseMissing, "error");
+  if (!initializeEmailJs()) {
+    setFormMessage(message, isEmailJsConfigured() ? copy.validation.emailSdkMissing : copy.validation.emailServiceMissing, "error");
     return;
   }
 
-  setFormMessage(message, copy.loading);
+  const code = generateVerificationCode();
+  setFormMessage(message, copy.loadingCode);
   if (submitButton) submitButton.disabled = true;
 
   try {
-    const signUpOptions = {
-      data: {
-        full_name: data.full_name,
-        birthday: data.birthday,
-        city: data.city,
-        phone: data.phone
-      }
-    };
-
-    if (SUPABASE_EMAIL_REDIRECT_TO) {
-      signUpOptions.emailRedirectTo = SUPABASE_EMAIL_REDIRECT_TO;
-    }
-
-    const { data: signUpData, error } = await supabaseClient.auth.signUp({
-      email: data.email,
-      password: data.password,
-      options: signUpOptions
-    });
-
-    if (error) {
-      setFormMessage(message, error.message || copy.validation.generic, "error");
+    const emailError = await sendMemberVerificationCode(data, code);
+    if (emailError) {
+      setFormMessage(message, emailError || copy.validation.emailSendFailed, "error");
       return;
     }
 
-    const identities = signUpData && signUpData.user ? signUpData.user.identities : null;
-    const accountProbablyExists = Array.isArray(identities) && identities.length === 0;
-    if (!signUpData || !signUpData.user || accountProbablyExists) {
-      setFormMessage(message, copy.validation.accountExists, "error");
-      return;
-    }
-
-    setFormMessage(message, copy.success(data.full_name), "success");
-    form.reset();
+    showMemberVerificationStep(data, code);
+    setFormMessage(message, copy.codeSent(data.email), "success");
   } catch (error) {
-    setFormMessage(message, error.message || copy.validation.generic, "error");
+    setFormMessage(message, error.message || copy.validation.emailSendFailed, "error");
   } finally {
     if (submitButton) submitButton.disabled = false;
   }

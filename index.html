@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260519-supabase-membership-4">
+  <link rel="stylesheet" href="style.css?v=20260519-firebase-code">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -467,12 +467,22 @@
           <input type="password" id="memberRepeatPassword" name="repeat_password" autocomplete="new-password" minlength="8" required>
         </label>
       </div>
+      <div class="member-verification" id="memberVerificationStep" hidden>
+        <label>
+          Code de vérification
+          <input type="text" id="memberVerificationCode" name="verification_code" inputmode="numeric" maxlength="6" autocomplete="one-time-code">
+        </label>
+        <p id="memberVerificationHelp">Entrez le code à 6 chiffres reçu par e-mail.</p>
+      </div>
       <button class="btn primary full" type="submit">Envoyer ma demande</button>
       <p class="form-message" id="memberMessage" role="status" aria-live="polite"></p>
     </form>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20260519-supabase-membership-4"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="script.js?v=20260519-firebase-code"></script>
 </body>
 </html>
