@@ -234,6 +234,7 @@ const TRANSLATIONS = {
         codeMismatch: "Le code saisi est incorrect.",
         tooManyAttempts: "Trop de tentatives incorrectes. Demandez un nouveau code.",
         emailSendFailed: "Impossible d’envoyer le code pour le moment. Vérifiez EmailJS et réessayez.",
+        emailRecipientMissing: "Le destinataire est vide dans EmailJS. Dans votre template EmailJS, mettez {{to_email}} dans le champ To Email.",
         accountExists: "Ce compte existe déjà. Essayez un autre e-mail ou vérifiez Authentication > Users dans Firebase.",
         generic: "Impossible de créer le compte pour le moment. Veuillez réessayer."
       }
@@ -447,6 +448,7 @@ const TRANSLATIONS = {
         codeMismatch: "The code you entered is incorrect.",
         tooManyAttempts: "Too many incorrect attempts. Request a new code.",
         emailSendFailed: "Unable to send the code right now. Check EmailJS and try again.",
+        emailRecipientMissing: "The recipient is empty in EmailJS. In your EmailJS template, put {{to_email}} in the To Email field.",
         accountExists: "This account already exists. Try another e-mail or check Authentication > Users in Firebase.",
         generic: "Unable to create the account right now. Please try again."
       }
@@ -660,6 +662,7 @@ const TRANSLATIONS = {
         codeMismatch: "الرمز الذي أدخلته غير صحيح.",
         tooManyAttempts: "محاولات كثيرة غير صحيحة. اطلب رمزا جديدا.",
         emailSendFailed: "تعذر إرسال الرمز الآن. تحقق من EmailJS ثم حاول مرة أخرى.",
+        emailRecipientMissing: "المستلم فارغ في EmailJS. داخل قالب EmailJS ضع {{to_email}} في خانة To Email.",
         accountExists: "هذا الحساب موجود مسبقا. جرب بريدا آخر أو تحقق من Authentication > Users في Firebase.",
         generic: "تعذر إنشاء الحساب الآن. يرجى المحاولة مرة أخرى."
       }
@@ -897,10 +900,18 @@ function showMemberVerificationStep(data, code) {
 
 async function sendMemberVerificationCode(data, code) {
   const copy = TRANSLATIONS[currentLanguage].modal;
+  const email = data.email.trim();
   const templateParams = {
-    to_email: data.email,
+    to_email: email,
+    email,
+    user_email: email,
+    reply_to: email,
     to_name: data.full_name,
+    name: data.full_name,
+    user_name: data.full_name,
+    from_name: data.full_name,
     verification_code: code,
+    code,
     expiry_minutes: EMAIL_CODE_EXPIRY_MINUTES,
     site_name: "CINEMANA"
   };
@@ -909,7 +920,11 @@ async function sendMemberVerificationCode(data, code) {
     await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
     return "";
   } catch (error) {
-    return error && error.text ? error.text : copy.validation.emailSendFailed;
+    const errorText = error && error.text ? error.text : "";
+    if (/recipient|recipients address is empty/i.test(errorText)) {
+      return copy.validation.emailRecipientMissing;
+    }
+    return errorText || copy.validation.emailSendFailed;
   }
 }
 
