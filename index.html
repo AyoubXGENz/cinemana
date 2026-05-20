@@ -8,12 +8,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260520-sheets-reference">
+  <link rel="stylesheet" href="style.css?v=20260520-seat-reservations">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
     <a class="brand" href="javascript:void(0)" onclick="showPage('home')">
-      <img class="brand-logo" src="assets/cinemana-logo.svg?v=20260520-logo" alt="Logo CINEMANA">
+      <img class="brand-logo" src="assets/cinemana-logo.svg?v=20260520-official-logo" alt="Logo CINEMANA">
       <span>CINEMANA</span>
     </a>
     <div class="lang-switcher" aria-label="Choisir la langue">
@@ -45,7 +45,7 @@
         <img class="hero-image" src="https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1800&q=82" alt="Caméra de cinéma sur un plateau de tournage">
         <div class="hero-shade"></div>
         <div class="hero-content">
-          <img class="hero-logo" src="assets/cinemana-logo.svg?v=20260520-logo" alt="Logo CINEMANA">
+          <img class="hero-logo" src="assets/cinemana-logo.svg?v=20260520-official-logo" alt="Logo CINEMANA">
           <div class="animated-logo" aria-label="Logo CINEMANA animé">
             <span>CINE</span><span>MANA</span>
           </div>
@@ -321,25 +321,22 @@
           </ol>
           <form class="form-panel" id="memberReservationForm" onsubmit="submitMemberReservation(event)">
             <label>
-              Code membre
-              <input type="text" id="memberCode" name="memberCode" placeholder="CINEMANA-XXXX" required>
+              Nom complet
+              <input type="text" id="memberReservationName" name="memberReservationName" autocomplete="name" required>
+            </label>
+            <label>
+              Code membre / Référence membre
+              <input type="text" id="memberCode" name="memberCode" placeholder="CIN-2026-XXXXXX" required>
             </label>
             <label>
               Téléphone
               <input type="tel" id="memberTel" name="memberTel" autocomplete="tel" required>
             </label>
             <label>
-              Choix de place
-              <select id="memberSeat" name="memberSeat" required>
-                <option value="">Choisir une place</option>
-                <option value="A1">A1 - VIP</option>
-                <option value="A2">A2 - VIP</option>
-                <option value="B4">B4</option>
-                <option value="C7">C7</option>
-                <option value="D9">D9</option>
-              </select>
+              E-mail
+              <input type="email" id="memberReservationEmail" name="memberReservationEmail" autocomplete="email" required>
             </label>
-            <button class="btn primary full" type="submit">Confirmer la réservation membre</button>
+            <button class="btn primary full" type="submit">Vérifier et choisir un siège</button>
             <p class="form-message" id="memberReservationMessage" role="status" aria-live="polite"></p>
           </form>
         </article>
@@ -362,6 +359,10 @@
             <input type="tel" id="publicWhatsapp" name="whatsapp" autocomplete="tel" required>
           </label>
           <label>
+            E-mail
+            <input type="email" id="publicEmail" name="email" autocomplete="email" required>
+          </label>
+          <label>
             Âge
             <input type="number" id="publicAge" name="age" min="6" max="120" required>
           </label>
@@ -377,6 +378,32 @@
             <p class="form-message" id="publicReservationMessage" role="status" aria-live="polite"></p>
           </form>
         </article>
+      </section>
+      <section class="section seat-selection" id="seatSelection" hidden>
+        <div class="seat-selection-header">
+          <div>
+            <p class="eyebrow">Plan de salle</p>
+            <h2>Choisissez un seul siège.</h2>
+            <p id="seatSelectionIntro">Les sièges déjà réservés ne sont pas disponibles.</p>
+          </div>
+          <button class="btn ghost" type="button" id="seatBackButton" onclick="cancelSeatSelection()">Retour</button>
+        </div>
+        <div class="cinema-stage" id="cinemaStage">SCÈNE</div>
+        <div class="seat-map-shell">
+          <div class="seat-map" id="seatMap" aria-label="Plan de salle CINEMANA"></div>
+        </div>
+        <div class="seat-entrances" aria-hidden="true">
+          <span>ENTRÉE 1</span>
+          <span>ENTRÉE 2</span>
+        </div>
+        <div class="seat-legend" id="seatLegend">
+          <span><i class="seat-swatch available"></i>Disponible</span>
+          <span><i class="seat-swatch selected"></i>Sélectionné</span>
+          <span><i class="seat-swatch reserved"></i>Réservé</span>
+        </div>
+        <p class="selected-seat-summary" id="selectedSeatSummary">Aucun siège sélectionné.</p>
+        <button class="btn primary full" type="button" id="confirmSeatButton" onclick="confirmSeatSelection()" disabled>Confirmer la réservation</button>
+        <p class="form-message" id="seatSelectionMessage" role="status" aria-live="polite"></p>
       </section>
     </section>
 
@@ -455,6 +482,19 @@
           <input type="tel" id="memberPhone" name="phone" autocomplete="tel" required>
         </label>
         <label>
+          Fonction
+          <select id="memberProfessionType" name="profession_type" required>
+            <option value="">Choisir une fonction</option>
+            <option value="student">Étudiant</option>
+            <option value="employee">Employé</option>
+            <option value="other">Autre</option>
+          </select>
+        </label>
+        <label class="member-form-wide" id="memberProfessionOtherWrap" hidden>
+          Autre fonction
+          <input type="text" id="memberProfessionOther" name="profession_other">
+        </label>
+        <label>
           E-mail
           <input type="email" id="memberEmail" name="email" autocomplete="email" required>
         </label>
@@ -483,6 +523,7 @@
   <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="script.js?v=20260520-sheets-reference"></script>
+  <script src="script.js?v=20260520-seat-reservations"></script>
+  <script src="reservation-extension.js?v=20260520-seat-reservations"></script>
 </body>
 </html>
