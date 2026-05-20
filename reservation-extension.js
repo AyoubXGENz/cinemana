@@ -40,20 +40,22 @@ const CINEMANA_EXTENSION_COPY = {
       seat: {
         eyebrow: "Plan de salle",
         title: "Choisissez un seul siège.",
-        intro: "Les sièges déjà réservés ne sont pas disponibles.",
+        intro: "Les sièges réservés ou en attente ne sont pas disponibles.",
         back: "Retour",
         stage: "SCÈNE",
         entrance1: "ENTRÉE 1",
         entrance2: "ENTRÉE 2",
         available: "Disponible",
         selectedLabel: "Sélectionné",
+        pending: "En attente",
         reserved: "Réservé",
         none: "Aucun siège sélectionné.",
         selected: (seat) => `Siège sélectionné : ${seat}`,
         confirm: "Confirmer la réservation",
         loadingSeats: "Chargement des sièges disponibles...",
         loadingCreate: "Enregistrement de la réservation...",
-        success: (name, reference, seat) => `Merci ${name}. Votre réservation ${reference} est confirmée pour le siège ${seat}. Un e-mail avec le QR code va vous arriver.`
+        confirmedSuccess: (name, reference, seat) => `Merci ${name}. Votre réservation ${reference} est confirmée pour le siège ${seat}. Un e-mail avec le QR code va vous arriver.`,
+        pendingSuccess: (name, reference, seat) => `Merci ${name}. Votre demande ${reference} est enregistrée pour le siège ${seat} et reste en attente de confirmation. Le ticket vous sera envoyé par e-mail après validation.`
       },
       validation: {
         required: "Veuillez remplir tous les champs obligatoires.",
@@ -62,9 +64,13 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsMissing: "Configuration Google Sheets manquante. Vérifiez GOOGLE_SHEETS_WEB_APP_URL.",
         referenceNotFound: "Ce code membre n’existe pas dans la liste des membres.",
         emailMismatch: "Cet e-mail n’est pas lié à ce code membre.",
-        identityMismatch: "Les informations saisies ne sont pas enregistrées comme membre.",
+        identityMismatch: "Le nom saisi ne correspond pas à ce code membre.",
         seatRequired: "Veuillez choisir un siège.",
         seatTaken: "Ce siège vient d’être réservé. Choisissez un autre siège.",
+        sheetsTimeout: "Google Apps Script ne répond pas. Vérifiez que le Web App est déployé avec le nouveau code.",
+        sheetsNetwork: "Impossible de contacter Google Apps Script. Vérifiez le Web App URL et les permissions.",
+        sheetsInvalidResponse: "Apps Script n’est pas à jour. Collez le nouveau code, redéployez le Web App, puis remplacez GOOGLE_SHEETS_WEB_APP_URL si l’URL change.",
+        unknownAction: "Apps Script ne reconnaît pas cette action. Redéployez le nouveau script CINEMANA.",
         generic: "Impossible de terminer l’opération pour le moment. Veuillez réessayer."
       }
     }
@@ -107,20 +113,22 @@ const CINEMANA_EXTENSION_COPY = {
       seat: {
         eyebrow: "Hall plan",
         title: "Choose one seat only.",
-        intro: "Already reserved seats are not available.",
+        intro: "Reserved or pending seats are not available.",
         back: "Back",
         stage: "STAGE",
         entrance1: "ENTRANCE 1",
         entrance2: "ENTRANCE 2",
         available: "Available",
         selectedLabel: "Selected",
+        pending: "Pending",
         reserved: "Reserved",
         none: "No seat selected.",
         selected: (seat) => `Selected seat: ${seat}`,
         confirm: "Confirm reservation",
         loadingSeats: "Loading available seats...",
         loadingCreate: "Saving the reservation...",
-        success: (name, reference, seat) => `Thank you ${name}. Your reservation ${reference} is confirmed for seat ${seat}. An e-mail with the QR code will arrive shortly.`
+        confirmedSuccess: (name, reference, seat) => `Thank you ${name}. Your reservation ${reference} is confirmed for seat ${seat}. An e-mail with the QR code will arrive shortly.`,
+        pendingSuccess: (name, reference, seat) => `Thank you ${name}. Your request ${reference} is saved for seat ${seat} and is waiting for confirmation. The ticket will be sent by e-mail after approval.`
       },
       validation: {
         required: "Please fill in all required fields.",
@@ -129,9 +137,13 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsMissing: "Google Sheets configuration is missing. Check GOOGLE_SHEETS_WEB_APP_URL.",
         referenceNotFound: "This member code does not exist in the members list.",
         emailMismatch: "This e-mail is not linked to this member code.",
-        identityMismatch: "The entered information is not registered as a member.",
+        identityMismatch: "The entered name does not match this member code.",
         seatRequired: "Please choose a seat.",
         seatTaken: "This seat has just been reserved. Choose another seat.",
+        sheetsTimeout: "Google Apps Script is not responding. Make sure the Web App is deployed with the new code.",
+        sheetsNetwork: "Unable to contact Google Apps Script. Check the Web App URL and permissions.",
+        sheetsInvalidResponse: "Apps Script is not up to date. Paste the new code, redeploy the Web App, then replace GOOGLE_SHEETS_WEB_APP_URL if the URL changes.",
+        unknownAction: "Apps Script does not recognize this action. Redeploy the new CINEMANA script.",
         generic: "Unable to complete the operation right now. Please try again."
       }
     }
@@ -174,20 +186,22 @@ const CINEMANA_EXTENSION_COPY = {
       seat: {
         eyebrow: "تصميم القاعة",
         title: "اختر كرسيا واحدا فقط.",
-        intro: "الكراسي المحجوزة غير متاحة.",
+        intro: "الكراسي المحجوزة أو المعلقة غير متاحة.",
         back: "رجوع",
         stage: "المنصة",
         entrance1: "المدخل 1",
         entrance2: "المدخل 2",
         available: "متاح",
         selectedLabel: "مختار",
+        pending: "معلق",
         reserved: "محجوز",
         none: "لم يتم اختيار أي كرسي.",
         selected: (seat) => `الكرسي المختار: ${seat}`,
         confirm: "تأكيد الحجز",
         loadingSeats: "جاري تحميل الكراسي المتاحة...",
         loadingCreate: "جاري تسجيل الحجز...",
-        success: (name, reference, seat) => `شكرا ${name}. تم تأكيد الحجز ${reference} للكرسي ${seat}. سيصلك إيميل فيه QR code قريبا.`
+        confirmedSuccess: (name, reference, seat) => `شكرا ${name}. تم تأكيد الحجز ${reference} للكرسي ${seat}. سيصلك إيميل فيه QR code قريبا.`,
+        pendingSuccess: (name, reference, seat) => `شكرا ${name}. تم تسجيل الطلب ${reference} للكرسي ${seat} وهو في انتظار التأكيد. سيصلك ticket عبر الإيميل بعد الموافقة.`
       },
       validation: {
         required: "يرجى ملء جميع الحقول الضرورية.",
@@ -196,9 +210,13 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsMissing: "إعدادات Google Sheets غير موجودة. تحقق من GOOGLE_SHEETS_WEB_APP_URL.",
         referenceNotFound: "كود العضوية غير موجود في لائحة الأعضاء.",
         emailMismatch: "هذا الإيميل غير مرتبط بكود العضوية.",
-        identityMismatch: "المعلومات المدخلة غير مسجلة كعضو.",
+        identityMismatch: "الاسم المدخل لا يطابق كود العضوية.",
         seatRequired: "يرجى اختيار كرسي.",
         seatTaken: "هذا الكرسي تم حجزه الآن. اختر كرسيا آخر.",
+        sheetsTimeout: "Google Apps Script لا يجيب. تأكد أن Web App منشور بالكود الجديد.",
+        sheetsNetwork: "تعذر الاتصال ب Google Apps Script. تحقق من رابط Web App والصلاحيات.",
+        sheetsInvalidResponse: "Apps Script مازال ما محدثش. لسق الكود الجديد، دير Deploy من جديد، وبدل GOOGLE_SHEETS_WEB_APP_URL إذا تبدل الرابط.",
+        unknownAction: "Apps Script ما تعرفش على هاد العملية. دير Deploy للسكريبت الجديد ديال CINEMANA.",
         generic: "تعذر إتمام العملية الآن. حاول مرة أخرى."
       }
     }
@@ -206,7 +224,7 @@ const CINEMANA_EXTENSION_COPY = {
 };
 
 let pendingReservation = null;
-let reservedSeats = new Set();
+let activeSeatStatuses = new Map();
 let selectedSeat = "";
 
 function extendCinemanaTranslations() {
@@ -267,7 +285,8 @@ function applyExtensionTexts() {
   const legendItems = document.querySelectorAll("#seatLegend span");
   if (legendItems[0]) legendItems[0].lastChild.textContent = reservation.seat.available;
   if (legendItems[1]) legendItems[1].lastChild.textContent = reservation.seat.selectedLabel;
-  if (legendItems[2]) legendItems[2].lastChild.textContent = reservation.seat.reserved;
+  if (legendItems[2]) legendItems[2].lastChild.textContent = reservation.seat.pending;
+  if (legendItems[3]) legendItems[3].lastChild.textContent = reservation.seat.reserved;
 
   const summary = document.getElementById("selectedSeatSummary");
   if (summary) summary.textContent = selectedSeat ? reservation.seat.selected(selectedSeat) : reservation.seat.none;
@@ -419,15 +438,16 @@ sendMemberToGoogleSheets = async function sendMemberToGoogleSheetsWithProfession
 
 function callGoogleSheetsAction(action, payload = {}) {
   if (!isGoogleSheetsConfigured()) {
-    return Promise.reject(new Error("sheets-missing"));
+    return Promise.reject(new Error("sheets_missing"));
   }
 
   return new Promise((resolve, reject) => {
     const callbackName = `cinemanaSheets_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement("script");
+    let didCallback = false;
     const timeout = window.setTimeout(() => {
       cleanup();
-      reject(new Error("sheets-timeout"));
+      reject(new Error("sheets_timeout"));
     }, 20000);
 
     function cleanup() {
@@ -437,6 +457,7 @@ function callGoogleSheetsAction(action, payload = {}) {
     }
 
     window[callbackName] = (response) => {
+      didCallback = true;
       cleanup();
       resolve(response);
     };
@@ -448,7 +469,15 @@ function callGoogleSheetsAction(action, payload = {}) {
 
     script.onerror = () => {
       cleanup();
-      reject(new Error("sheets-network"));
+      reject(new Error("sheets_network"));
+    };
+    script.onload = () => {
+      window.setTimeout(() => {
+        if (!didCallback) {
+          cleanup();
+          reject(new Error("sheets_invalid_response"));
+        }
+      }, 250);
     };
     script.src = url.toString();
     document.body.appendChild(script);
@@ -464,11 +493,44 @@ function getReservationErrorMessage(code) {
     identity_mismatch: validation.identityMismatch,
     seat_required: validation.seatRequired,
     seat_taken: validation.seatTaken,
+    sheets_timeout: validation.sheetsTimeout,
+    sheets_network: validation.sheetsNetwork,
+    sheets_invalid_response: validation.sheetsInvalidResponse,
+    unknown_action: validation.unknownAction,
     missing_fields: validation.required,
     invalid_email: validation.email,
     invalid_age: validation.age
   };
   return map[code] || validation.generic;
+}
+
+function normalizeSeatStatuses(result) {
+  const map = new Map();
+  if (Array.isArray(result.seat_statuses)) {
+    result.seat_statuses.forEach((entry) => {
+      const seat = String(entry.seat || "").trim().toUpperCase();
+      const status = String(entry.status || "confirmed").trim().toLowerCase();
+      if (seat) map.set(seat, status === "pending" ? "pending" : "confirmed");
+    });
+    return map;
+  }
+
+  (result.seats || []).forEach((seat) => {
+    const normalized = String(seat || "").trim().toUpperCase();
+    if (normalized) map.set(normalized, "confirmed");
+  });
+  return map;
+}
+
+function getReservationSuccessMessage(name, reference, seat, status) {
+  const seatCopy = getExtensionCopy().reservation.seat;
+  if (status === "pending") return seatCopy.pendingSuccess(name, reference, seat);
+  return seatCopy.confirmedSuccess(name, reference, seat);
+}
+
+function errorCodeFromException(error) {
+  const message = error && error.message ? error.message : "";
+  return message.replace(/-/g, "_");
 }
 
 function normalizeEmail(value) {
@@ -559,7 +621,7 @@ submitMemberReservation = async function submitMemberReservationWithSheets(event
     setFormMessage(message, copy.member.verified, "success");
     await beginSeatSelection(data);
   } catch (error) {
-    setFormMessage(message, getReservationErrorMessage(error.message === "sheets-missing" ? "sheets_missing" : ""), "error");
+    setFormMessage(message, getReservationErrorMessage(errorCodeFromException(error)), "error");
   } finally {
     if (button) button.disabled = false;
   }
@@ -588,7 +650,7 @@ submitPublicReservation = async function submitPublicReservationWithSeats(event)
 async function beginSeatSelection(data) {
   pendingReservation = data;
   selectedSeat = "";
-  reservedSeats = new Set();
+  activeSeatStatuses = new Map();
 
   const cards = document.querySelector(".reservation-choice-grid");
   const section = document.getElementById("seatSelection");
@@ -609,12 +671,12 @@ async function beginSeatSelection(data) {
       setFormMessage(message, getReservationErrorMessage(result && result.code), "error");
       return;
     }
-    reservedSeats = new Set((result.seats || []).map((seat) => String(seat).toUpperCase()));
+    activeSeatStatuses = normalizeSeatStatuses(result);
     renderSeatMap();
     setFormMessage(message, "");
     section.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
-    setFormMessage(message, getReservationErrorMessage(error.message === "sheets-missing" ? "sheets_missing" : ""), "error");
+    setFormMessage(message, getReservationErrorMessage(errorCodeFromException(error)), "error");
   }
 }
 
@@ -656,9 +718,10 @@ function renderSeatMap() {
       button.textContent = String(number);
       button.dataset.seat = seat;
       button.setAttribute("aria-label", seat);
-      if (reservedSeats.has(seat)) {
+      const seatStatus = activeSeatStatuses.get(seat);
+      if (seatStatus) {
         button.disabled = true;
-        button.classList.add("reserved");
+        button.classList.add(seatStatus === "pending" ? "pending" : "reserved");
       }
       if (selectedSeat === seat) button.classList.add("selected");
       button.addEventListener("click", () => selectSeat(seat));
@@ -670,7 +733,7 @@ function renderSeatMap() {
 }
 
 function selectSeat(seat) {
-  if (!pendingReservation || reservedSeats.has(seat)) return;
+  if (!pendingReservation || activeSeatStatuses.has(seat)) return;
   selectedSeat = seat;
   const button = document.getElementById("confirmSeatButton");
   if (button) button.disabled = false;
@@ -706,7 +769,7 @@ async function confirmSeatSelection() {
 
     if (!result || !result.ok) {
       if (result && result.code === "seat_taken" && result.seats) {
-        reservedSeats = new Set(result.seats.map((seat) => String(seat).toUpperCase()));
+        activeSeatStatuses = normalizeSeatStatuses(result);
         selectedSeat = "";
         renderSeatMap();
         updateSelectedSeatSummary();
@@ -716,8 +779,8 @@ async function confirmSeatSelection() {
       return;
     }
 
-    reservedSeats.add(result.seat);
-    setFormMessage(message, copy.seat.success(pendingReservation.full_name, result.reference, result.seat), "success");
+    activeSeatStatuses.set(result.seat, result.status === "pending" ? "pending" : "confirmed");
+    setFormMessage(message, getReservationSuccessMessage(pendingReservation.full_name, result.reference, result.seat, result.status), "success");
     document.getElementById("memberReservationForm").reset();
     document.getElementById("publicReservationForm").reset();
     pendingReservation = null;
@@ -725,7 +788,7 @@ async function confirmSeatSelection() {
     renderSeatMap();
     updateSelectedSeatSummary();
   } catch (error) {
-    setFormMessage(message, getReservationErrorMessage(error.message === "sheets-missing" ? "sheets_missing" : ""), "error");
+    setFormMessage(message, getReservationErrorMessage(errorCodeFromException(error)), "error");
     if (button) button.disabled = false;
   }
 }

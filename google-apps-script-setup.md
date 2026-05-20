@@ -7,22 +7,45 @@
 
 3. Replace the current code with the content of `google-apps-script-cinemana.gs`.
 
-4. Click `Deploy > New deployment`.
+4. Add your Telegram bot settings near the top of the script:
 
-5. Choose `Web app`.
+```js
+const TELEGRAM_BOT_TOKEN = "YOUR_REAL_TELEGRAM_BOT_TOKEN";
+const TELEGRAM_CHAT_ID = "YOUR_REAL_TELEGRAM_CHAT_ID";
+```
 
-6. Use these settings:
+To create/get them:
+- In Telegram, open `@BotFather`, create a bot, and copy the bot token.
+- Send one message to your new bot.
+- Open `https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/getUpdates` in the browser.
+- Copy your chat id from the JSON response and put it in `TELEGRAM_CHAT_ID`.
+
+5. Click `Deploy > New deployment`.
+
+6. Choose `Web app`.
+
+7. Use these settings:
    - Execute as: `Me`
    - Who has access: `Anyone`
 
-7. Copy the Web App URL and put it in `script.js` as:
+8. Copy the Web App URL and put it in `script.js` as:
 
 ```js
 const GOOGLE_SHEETS_WEB_APP_URL = "YOUR_DEPLOYED_WEB_APP_URL";
 ```
 
-8. The script expects these sheets:
+9. Register the Telegram webhook with your deployed Web App URL:
+
+```text
+https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/setWebhook?url=YOUR_DEPLOYED_WEB_APP_URL
+```
+
+10. The script expects these sheets:
    - `membership`
    - `reservation`
 
 The script will create or correct the header row if the sheets are empty.
+
+Public reservations are now saved as `pending` in the `Statu` column. Telegram sends you two buttons:
+- `Confirmer`: changes `Statu` to `confirmed`, marks it green, reserves the seat, and sends the ticket e-mail with QR code.
+- `Annuler`: changes `Statu` to `annulé`, marks it red, and releases the seat on the website.

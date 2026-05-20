@@ -799,12 +799,25 @@ select:focus {
   background: var(--gold-strong);
 }
 
+.seat-button.pending {
+  color: #080808;
+  border-color: #d79b38;
+  background: #d79b38;
+  cursor: not-allowed;
+}
+
 .seat-button.reserved,
 .seat-button:disabled {
   color: rgba(244, 239, 229, 0.46);
   border-color: rgba(244, 239, 229, 0.08);
   background: #3a1717;
   cursor: not-allowed;
+}
+
+.seat-button.pending:disabled {
+  color: #080808;
+  border-color: #d79b38;
+  background: #d79b38;
 }
 
 .seat-entrances {
@@ -843,6 +856,10 @@ select:focus {
 
 .seat-swatch.selected {
   background: var(--gold-strong);
+}
+
+.seat-swatch.pending {
+  background: #d79b38;
 }
 
 .seat-swatch.reserved {

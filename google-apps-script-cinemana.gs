@@ -1,6 +1,8 @@
 const SPREADSHEET_ID = "1b3ZW4esFw0SqFwSw0HwMbtiadsNfYVJ0QdtzWDLGEIU";
 const MEMBERSHIP_SHEET_NAME = "membership";
 const RESERVATION_SHEET_NAME = "reservation";
+const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
+const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
 
 const MEMBERSHIP_HEADERS = [
   "References",
@@ -23,7 +25,8 @@ const RESERVATION_HEADERS = [
   "Seat",
   "member ou non",
   "Created at",
-  "Email status"
+  "Email status",
+  "Statu"
 ];
 
 function doGet(e) {
@@ -31,6 +34,11 @@ function doGet(e) {
 }
 
 function doPost(e) {
+  if (e && e.postData && e.postData.contents) {
+    const telegramResponse = handleTelegramWebhook_(e.postData.contents);
+    if (telegramResponse) return respond_(telegramResponse, null);
+  }
+
   const params = e.parameter || {};
   return respond_(handleRequest_(params), params.callback);
 }
@@ -44,6 +52,7 @@ function handleRequest_(params) {
     if (action === "verifyMember") return verifyMember_(payload);
     if (action === "getReservedSeats") return getReservedSeats_();
     if (action === "createReservation") return createReservation_(payload);
+    if (action === "decision") return processReservationDecision_(payload.reference, payload.decision, null);
 
     return { ok: false, code: "unknown_action", message: "Unknown action." };
   } catch (error) {
@@ -197,7 +206,7 @@ function findMatchingMember_(payload) {
 }
 
 function verifyMemberPayload_(payload) {
-  if (!payload.member_reference || !payload.full_name || !payload.phone || !payload.email) {
+  if (!payload.member_reference || !payload.full_name || !payload.email) {
     return { ok: false, code: "missing_fields" };
   }
 
@@ -206,8 +215,7 @@ function verifyMemberPayload_(payload) {
   if (normalizeEmail_(member.email) !== normalizeEmail_(payload.email)) return { ok: false, code: "email_mismatch" };
 
   const nameMatches = normalizeText_(member.fullName) === normalizeText_(payload.full_name);
-  const phoneMatches = normalizePhone_(member.phone) === normalizePhone_(payload.phone);
-  if (!nameMatches || !phoneMatches) return { ok: false, code: "identity_mismatch" };
+  if (!nameMatches) return { ok: false, code: "identity_mismatch" };
 
   return { ok: true, member };
 }
@@ -263,11 +271,24 @@ function getReservedSeats_() {
   const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
   const map = headerMap_(sheet);
   const seatColumn = map[normalizeHeader_("Seat")];
+  const statusColumn = map[normalizeHeader_("Statu")];
   const rows = getRows_(sheet);
-  const seats = rows
-    .map((row) => String(row[seatColumn - 1] || "").trim().toUpperCase())
-    .filter(Boolean);
-  return { ok: true, seats };
+  const seatStatuses = [];
+
+  rows.forEach((row) => {
+    const seat = String(row[seatColumn - 1] || "").trim().toUpperCase();
+    if (!seat) return;
+    const status = normalizeReservationStatus_(statusColumn ? row[statusColumn - 1] : "");
+    if (status === "confirmed" || status === "pending") {
+      seatStatuses.push({ seat, status });
+    }
+  });
+
+  return {
+    ok: true,
+    seats: seatStatuses.map((entry) => entry.seat),
+    seat_statuses: seatStatuses
+  };
 }
 
 function createReservation_(payload) {
@@ -298,6 +319,7 @@ function createReservation_(payload) {
     }
 
     const reference = generateReservationReference_();
+    const status = payload.type === "member" ? "confirmed" : "pending";
     const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
     const valuesByHeader = {
       "References": reference,
@@ -310,20 +332,28 @@ function createReservation_(payload) {
       "Seat": seat,
       "member ou non": isMember ? "✓" : "✗",
       "Created at": new Date(),
-      "Email status": "pending"
+      "Email status": status === "confirmed" ? "pending" : "waiting confirmation",
+      "Statu": status
     };
     const rowValues = buildRow_(sheet, valuesByHeader);
     sheet.appendRow(rowValues);
 
     const appendedRow = sheet.getLastRow();
     formatMemberMark_(sheet, appendedRow, isMember);
+    formatReservationStatus_(sheet, appendedRow, status);
 
-    const emailStatus = sendReservationEmail_(payload, reference, seat, isMember);
     const map = headerMap_(sheet);
+    let emailStatus = "waiting confirmation";
+    let telegramStatus = "not needed";
+    if (status === "confirmed") {
+      emailStatus = sendReservationEmail_(payload, reference, seat, isMember);
+    } else {
+      telegramStatus = sendTelegramReservationNotification_(payload, reference, seat, isMember);
+    }
     const emailStatusColumn = map[normalizeHeader_("Email status")];
     if (emailStatusColumn) sheet.getRange(appendedRow, emailStatusColumn).setValue(emailStatus);
 
-    return { ok: true, reference, seat, member: isMember, email_status: emailStatus };
+    return { ok: true, reference, seat, status, member: isMember, email_status: emailStatus, telegram_status: telegramStatus };
   } finally {
     lock.releaseLock();
   }
@@ -346,6 +376,254 @@ function formatMemberMark_(sheet, row, isMember) {
     .setHorizontalAlignment("center")
     .setFontColor(isMember ? "#0f8a3b" : "#c62828")
     .setValue(isMember ? "✓" : "✗");
+}
+
+function normalizeReservationStatus_(value) {
+  const status = normalizeText_(value);
+  if (!status) return "confirmed";
+  if (["confirmed", "confirme", "confirmee", "confirmé", "confirmée"].includes(status)) return "confirmed";
+  if (["pending", "en attente", "attente", "معلق"].includes(status)) return "pending";
+  if (["canceled", "cancelled", "annule", "annulee", "annulé", "annulée", "رفض", "ملغي"].includes(status)) return "canceled";
+  return status;
+}
+
+function formatReservationStatus_(sheet, row, status) {
+  const map = headerMap_(sheet);
+  const column = map[normalizeHeader_("Statu")];
+  if (!column) return;
+
+  const normalized = normalizeReservationStatus_(status);
+  const display = normalized === "confirmed" ? "confirmé" : normalized === "canceled" ? "annulé" : normalized;
+  const color = normalized === "confirmed" ? "#0f8a3b" : normalized === "pending" ? "#d9822b" : "#c62828";
+  const background = normalized === "confirmed" ? "#d9f2df" : normalized === "pending" ? "#fff0d6" : "#fde0df";
+
+  sheet.getRange(row, column)
+    .setValue(display)
+    .setFontWeight("bold")
+    .setHorizontalAlignment("center")
+    .setFontColor(color)
+    .setBackground(background);
+}
+
+function findReservationByReference_(reference) {
+  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const map = headerMap_(sheet);
+  const referenceColumn = map[normalizeHeader_("References")];
+  const rows = getRows_(sheet);
+  const target = normalizeText_(reference);
+
+  for (let i = 0; i < rows.length; i += 1) {
+    if (normalizeText_(rows[i][referenceColumn - 1]) === target) {
+      return {
+        sheet,
+        map,
+        rowNumber: i + 2,
+        row: rows[i],
+        reservation: reservationPayloadFromRow_(rows[i], map)
+      };
+    }
+  }
+
+  return null;
+}
+
+function reservationPayloadFromRow_(row, map) {
+  function get(header) {
+    const index = map[normalizeHeader_(header)];
+    return index ? row[index - 1] : "";
+  }
+
+  return {
+    reference: String(get("References") || "").trim(),
+    full_name: String(get("Nom complet") || "").trim(),
+    whatsapp: String(get("Tel WhatsApp") || "").trim(),
+    phone: String(get("Tel WhatsApp") || "").trim(),
+    email: String(get("E-mail") || "").trim(),
+    age: String(get("Âge") || "").trim(),
+    profession: String(get("Fonction") || "").trim(),
+    source: String(get("Comment as-tu su pour la projection?") || "").trim(),
+    seat: String(get("Seat") || "").trim().toUpperCase(),
+    member_mark: String(get("member ou non") || "").trim(),
+    email_status: String(get("Email status") || "").trim(),
+    status: normalizeReservationStatus_(get("Statu"))
+  };
+}
+
+function processReservationDecision_(reference, decision, callbackQueryId) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+
+  try {
+    if (decision !== "confirm" && decision !== "cancel") {
+      return { ok: false, code: "invalid_decision", message: "Décision invalide." };
+    }
+
+    const found = findReservationByReference_(reference);
+    if (!found) return { ok: false, code: "reference_not_found", message: "Réservation introuvable." };
+
+    const currentStatus = found.reservation.status;
+    if (currentStatus === "confirmed" || currentStatus === "canceled") {
+      return {
+        ok: true,
+        reference,
+        seat: found.reservation.seat,
+        status: currentStatus,
+        message: `Déjà ${currentStatus === "confirmed" ? "confirmée" : "annulée"}.`
+      };
+    }
+
+    const status = decision === "confirm" ? "confirmed" : "canceled";
+    const sheet = found.sheet;
+    const map = found.map;
+    const statusColumn = map[normalizeHeader_("Statu")];
+    const emailStatusColumn = map[normalizeHeader_("Email status")];
+    if (statusColumn) sheet.getRange(found.rowNumber, statusColumn).setValue(status === "confirmed" ? "confirmed" : "annulé");
+    formatReservationStatus_(sheet, found.rowNumber, status);
+
+    let emailStatus = "canceled";
+    if (status === "confirmed") {
+      emailStatus = sendReservationEmail_(found.reservation, reference, found.reservation.seat, found.reservation.member_mark === "✓");
+    }
+    if (emailStatusColumn) sheet.getRange(found.rowNumber, emailStatusColumn).setValue(emailStatus);
+
+    return {
+      ok: true,
+      reference,
+      seat: found.reservation.seat,
+      status,
+      email_status: emailStatus,
+      message: status === "confirmed" ? "Réservation confirmée et ticket envoyé." : "Réservation annulée."
+    };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function isTelegramConfigured_() {
+  return TELEGRAM_BOT_TOKEN &&
+    TELEGRAM_CHAT_ID &&
+    TELEGRAM_BOT_TOKEN !== "YOUR_TELEGRAM_BOT_TOKEN" &&
+    TELEGRAM_CHAT_ID !== "YOUR_TELEGRAM_CHAT_ID";
+}
+
+function telegramApi_(method, payload) {
+  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/${method}`;
+  const response = UrlFetchApp.fetch(url, {
+    method: "post",
+    contentType: "application/json",
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true
+  });
+  const code = response.getResponseCode();
+  const body = response.getContentText();
+  if (code < 200 || code >= 300) {
+    throw new Error(`telegram_${code}: ${body}`);
+  }
+
+  try {
+    return JSON.parse(body);
+  } catch (error) {
+    return { ok: true, raw: body };
+  }
+}
+
+function sendTelegramReservationNotification_(payload, reference, seat, isMember) {
+  if (!isTelegramConfigured_()) return "telegram_missing_config";
+
+  try {
+    const memberLabel = isMember ? "Oui" : "Non";
+    const text = [
+      "🎬 <b>Nouvelle demande de réservation CINEMANA</b>",
+      "",
+      "<b>Statut :</b> En attente",
+      `<b>Référence :</b> ${escapeHtml_(reference)}`,
+      `<b>Siège demandé :</b> ${escapeHtml_(seat)}`,
+      `<b>Nom :</b> ${escapeHtml_(payload.full_name)}`,
+      `<b>Téléphone :</b> ${escapeHtml_(payload.whatsapp || payload.phone)}`,
+      `<b>E-mail :</b> ${escapeHtml_(payload.email)}`,
+      `<b>Âge :</b> ${escapeHtml_(payload.age || "-")}`,
+      `<b>Fonction :</b> ${escapeHtml_(payload.profession || "-")}`,
+      `<b>Source :</b> ${escapeHtml_(payload.source || "-")}`,
+      `<b>Membre :</b> ${memberLabel}`,
+      "",
+      "Choisissez une action :"
+    ].join("\n");
+
+    telegramApi_("sendMessage", {
+      chat_id: TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: "HTML",
+      reply_markup: {
+        inline_keyboard: [[
+          { text: "✅ Confirmer", callback_data: `confirm|${reference}` },
+          { text: "❌ Annuler", callback_data: `cancel|${reference}` }
+        ]]
+      }
+    });
+    return "sent";
+  } catch (error) {
+    return `error: ${String(error && error.message ? error.message : error)}`;
+  }
+}
+
+function handleTelegramWebhook_(raw) {
+  let update;
+  try {
+    update = JSON.parse(raw);
+  } catch (error) {
+    return null;
+  }
+
+  if (!update || (!update.update_id && !update.callback_query && !update.message)) return null;
+  if (!update.callback_query) return { ok: true, ignored: true };
+  return handleTelegramCallback_(update.callback_query);
+}
+
+function handleTelegramCallback_(callbackQuery) {
+  const data = String(callbackQuery.data || "");
+  const parts = data.split("|");
+  const decision = parts[0];
+  const reference = parts.slice(1).join("|");
+
+  if (!reference || (decision !== "confirm" && decision !== "cancel")) {
+    answerTelegramCallback_(callbackQuery.id, "Action invalide.");
+    return { ok: false, code: "invalid_callback" };
+  }
+
+  const result = processReservationDecision_(reference, decision, callbackQuery.id);
+  answerTelegramCallback_(callbackQuery.id, result.message || "Action traitée.");
+  editTelegramDecisionMessage_(callbackQuery, result);
+  return result;
+}
+
+function answerTelegramCallback_(callbackQueryId, text) {
+  if (!callbackQueryId || !isTelegramConfigured_()) return;
+  try {
+    telegramApi_("answerCallbackQuery", {
+      callback_query_id: callbackQueryId,
+      text: String(text || "").slice(0, 180),
+      show_alert: false
+    });
+  } catch (error) {
+    // Telegram acknowledgements are best-effort; the sheet remains the source of truth.
+  }
+}
+
+function editTelegramDecisionMessage_(callbackQuery, result) {
+  if (!callbackQuery || !callbackQuery.message || !isTelegramConfigured_()) return;
+  try {
+    const marker = result.status === "confirmed" ? "✅ CONFIRMÉ" : result.status === "canceled" ? "❌ ANNULÉ" : "⚠️ NON TRAITÉ";
+    const originalText = callbackQuery.message.text || "Demande de réservation CINEMANA";
+    const text = `${originalText}\n\n${marker}\n${result.message || ""}`;
+    telegramApi_("editMessageText", {
+      chat_id: callbackQuery.message.chat.id,
+      message_id: callbackQuery.message.message_id,
+      text,
+      reply_markup: { inline_keyboard: [] }
+    });
+  } catch (error) {
+    // The decision is already written in Google Sheets; editing Telegram is only cosmetic.
+  }
 }
 
 function generateReservationReference_() {
@@ -399,21 +677,55 @@ function sendMembershipEmail_(payload) {
 function sendReservationEmail_(payload, reference, seat, isMember) {
   if (!payload.email) return "missing_email";
   try {
+    const memberLabel = isMember ? "Membre CINEMANA" : "Invitation confirmée";
+    const phone = payload.whatsapp || payload.phone || "";
     const html = `
-      <div style="font-family:Arial,sans-serif;background:#101827;color:#f7f0df;padding:28px">
-        <div style="max-width:620px;margin:auto;background:#111;border-radius:14px;overflow:hidden;border:1px solid #d9b24c">
-          <div style="background:#d9b24c;color:#080808;padding:24px;text-align:center">
-            <h1 style="margin:0;font-size:30px">CINEMANA</h1>
-            <p style="margin:6px 0 0;font-weight:700">Confirmation de réservation</p>
+      <div style="font-family:Arial,sans-serif;background:#080808;color:#f7f0df;padding:28px">
+        <div style="max-width:680px;margin:auto;background:#111827;border-radius:18px;overflow:hidden;border:1px solid #d9b24c;box-shadow:0 18px 45px rgba(0,0,0,.35)">
+          <div style="background:#d9b24c;color:#080808;padding:22px 28px;text-align:center">
+            <div style="font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase">CINEMANA</div>
+            <h1 style="margin:8px 0 0;font-size:34px;line-height:1">Billet d’entrée</h1>
+            <p style="margin:8px 0 0;font-weight:700">Réservation confirmée</p>
           </div>
           <div style="padding:28px">
-            <h2 style="margin-top:0;color:#fff">Bonjour ${escapeHtml_(payload.full_name)}</h2>
-            <p>Votre réservation CINEMANA est confirmée.</p>
-            <p><strong>Référence d’entrée :</strong> ${escapeHtml_(reference)}</p>
-            <p><strong>Siège :</strong> ${escapeHtml_(seat)}</p>
-            <p><strong>Statut membre :</strong> ${isMember ? "Membre CINEMANA" : "Non membre"}</p>
-            <p style="text-align:center"><img src="${qrUrl_(reference)}" alt="QR code" width="220" height="220"></p>
-            <p style="color:#b8b0a6">Présentez ce QR code à l’entrée de la salle.</p>
+            <p style="margin:0 0 18px;color:#d7d0c3;font-size:16px">Bonjour <strong style="color:#fff">${escapeHtml_(payload.full_name)}</strong>, votre place est confirmée. Présentez ce billet à l’entrée.</p>
+
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border-spacing:0;background:#0b0f1a;border:2px dashed #d9b24c;border-radius:18px;overflow:hidden">
+              <tr>
+                <td style="padding:24px;vertical-align:top">
+                  <div style="font-size:12px;color:#d9b24c;font-weight:800;letter-spacing:2px;text-transform:uppercase">Référence ticket</div>
+                  <div style="font-size:30px;line-height:1.15;font-weight:900;color:#fff;margin:8px 0 20px">${escapeHtml_(reference)}</div>
+
+                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Nom</td>
+                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${escapeHtml_(payload.full_name)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Siège</td>
+                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#d9b24c;font-size:22px;font-weight:900">${escapeHtml_(seat)}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Statut</td>
+                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${memberLabel}</td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Téléphone</td>
+                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${escapeHtml_(phone)}</td>
+                    </tr>
+                  </table>
+                </td>
+                <td style="width:210px;padding:24px;background:#f7f0df;text-align:center;vertical-align:middle">
+                  <img src="${qrUrl_(reference)}" alt="QR code" width="170" height="170" style="display:block;margin:auto;border:8px solid #fff;border-radius:12px">
+                  <div style="font-size:12px;color:#101827;font-weight:800;margin-top:12px;letter-spacing:1px">SCAN À L’ENTRÉE</div>
+                </td>
+              </tr>
+            </table>
+
+            <div style="margin-top:18px;padding:16px 18px;background:#151c2b;border-radius:12px;color:#d7d0c3">
+              <strong style="color:#d9b24c">Important :</strong> gardez ce ticket avec vous. Le QR code correspond uniquement à la référence ${escapeHtml_(reference)}.
+            </div>
+            <p style="text-align:center;margin:26px 0 0;color:#8f98aa;font-size:13px">© 2026 CINEMANA · Tanger, Maroc</p>
           </div>
         </div>
       </div>`;
