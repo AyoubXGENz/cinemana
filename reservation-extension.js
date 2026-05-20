@@ -55,7 +55,7 @@ const CINEMANA_EXTENSION_COPY = {
         loadingSeats: "Chargement des sièges disponibles...",
         loadingCreate: "Enregistrement de la réservation...",
         confirmedSuccess: (name, reference, seat) => `Merci ${name}. Votre réservation ${reference} est confirmée pour le siège ${seat}. Un e-mail avec le QR code va vous arriver.`,
-        pendingSuccess: (name, reference, seat) => `Merci ${name}. Votre demande ${reference} est enregistrée pour le siège ${seat} et reste en attente de confirmation. Le ticket vous sera envoyé par e-mail après validation.`
+        pendingSuccess: (name) => `Merci ${name}. Votre demande de réservation est enregistrée. Nous vous contacterons pour confirmer votre réservation, puis le ticket vous sera envoyé par e-mail après validation.`
       },
       validation: {
         required: "Veuillez remplir tous les champs obligatoires.",
@@ -71,6 +71,9 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsNetwork: "Impossible de contacter Google Apps Script. Vérifiez le Web App URL et les permissions.",
         sheetsInvalidResponse: "Apps Script n’est pas à jour. Collez le nouveau code, redéployez le Web App, puis remplacez GOOGLE_SHEETS_WEB_APP_URL si l’URL change.",
         unknownAction: "Apps Script ne reconnaît pas cette action. Redéployez le nouveau script CINEMANA.",
+        duplicateEmail: "Cet e-mail a déjà une réservation active.",
+        duplicatePhone: "Ce numéro de téléphone a déjà une réservation active.",
+        memberAlreadyReserved: "Ce code membre a déjà été utilisé pour une réservation active.",
         generic: "Impossible de terminer l’opération pour le moment. Veuillez réessayer."
       }
     }
@@ -128,7 +131,7 @@ const CINEMANA_EXTENSION_COPY = {
         loadingSeats: "Loading available seats...",
         loadingCreate: "Saving the reservation...",
         confirmedSuccess: (name, reference, seat) => `Thank you ${name}. Your reservation ${reference} is confirmed for seat ${seat}. An e-mail with the QR code will arrive shortly.`,
-        pendingSuccess: (name, reference, seat) => `Thank you ${name}. Your request ${reference} is saved for seat ${seat} and is waiting for confirmation. The ticket will be sent by e-mail after approval.`
+        pendingSuccess: (name) => `Thank you ${name}. Your reservation request has been saved. We will contact you to confirm it, then the ticket will be sent by e-mail after approval.`
       },
       validation: {
         required: "Please fill in all required fields.",
@@ -144,6 +147,9 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsNetwork: "Unable to contact Google Apps Script. Check the Web App URL and permissions.",
         sheetsInvalidResponse: "Apps Script is not up to date. Paste the new code, redeploy the Web App, then replace GOOGLE_SHEETS_WEB_APP_URL if the URL changes.",
         unknownAction: "Apps Script does not recognize this action. Redeploy the new CINEMANA script.",
+        duplicateEmail: "This e-mail already has an active reservation.",
+        duplicatePhone: "This phone number already has an active reservation.",
+        memberAlreadyReserved: "This member code has already been used for an active reservation.",
         generic: "Unable to complete the operation right now. Please try again."
       }
     }
@@ -201,7 +207,7 @@ const CINEMANA_EXTENSION_COPY = {
         loadingSeats: "جاري تحميل الكراسي المتاحة...",
         loadingCreate: "جاري تسجيل الحجز...",
         confirmedSuccess: (name, reference, seat) => `شكرا ${name}. تم تأكيد الحجز ${reference} للكرسي ${seat}. سيصلك إيميل فيه QR code قريبا.`,
-        pendingSuccess: (name, reference, seat) => `شكرا ${name}. تم تسجيل الطلب ${reference} للكرسي ${seat} وهو في انتظار التأكيد. سيصلك ticket عبر الإيميل بعد الموافقة.`
+        pendingSuccess: (name) => `شكرا ${name}. تم تسجيل طلب الحجز ديالك. غادي نتواصلو معاك باش نأكدو الحجز، ومن بعد غادي يوصلك ticket عبر الإيميل.`
       },
       validation: {
         required: "يرجى ملء جميع الحقول الضرورية.",
@@ -217,6 +223,9 @@ const CINEMANA_EXTENSION_COPY = {
         sheetsNetwork: "تعذر الاتصال ب Google Apps Script. تحقق من رابط Web App والصلاحيات.",
         sheetsInvalidResponse: "Apps Script مازال ما محدثش. لسق الكود الجديد، دير Deploy من جديد، وبدل GOOGLE_SHEETS_WEB_APP_URL إذا تبدل الرابط.",
         unknownAction: "Apps Script ما تعرفش على هاد العملية. دير Deploy للسكريبت الجديد ديال CINEMANA.",
+        duplicateEmail: "هاد الإيميل راه عندو ريزيرفاسيون نشيطة من قبل.",
+        duplicatePhone: "هاد رقم الهاتف راه عندو ريزيرفاسيون نشيطة من قبل.",
+        memberAlreadyReserved: "هاد كود العضوية تستعمل من قبل فريزيرفاسيون نشيطة.",
         generic: "تعذر إتمام العملية الآن. حاول مرة أخرى."
       }
     }
@@ -499,7 +508,10 @@ function getReservationErrorMessage(code) {
     unknown_action: validation.unknownAction,
     missing_fields: validation.required,
     invalid_email: validation.email,
-    invalid_age: validation.age
+    invalid_age: validation.age,
+    duplicate_email: validation.duplicateEmail,
+    duplicate_phone: validation.duplicatePhone,
+    member_already_reserved: validation.memberAlreadyReserved
   };
   return map[code] || validation.generic;
 }
@@ -524,7 +536,7 @@ function normalizeSeatStatuses(result) {
 
 function getReservationSuccessMessage(name, reference, seat, status) {
   const seatCopy = getExtensionCopy().reservation.seat;
-  if (status === "pending") return seatCopy.pendingSuccess(name, reference, seat);
+  if (status === "pending") return seatCopy.pendingSuccess(name);
   return seatCopy.confirmedSuccess(name, reference, seat);
 }
 
@@ -656,27 +668,32 @@ async function beginSeatSelection(data) {
   const section = document.getElementById("seatSelection");
   const button = document.getElementById("confirmSeatButton");
   const message = document.getElementById("seatSelectionMessage");
+  const sourceMessage = document.getElementById(data.type === "member" ? "memberReservationMessage" : "publicReservationMessage");
   const copy = getExtensionCopy().reservation.seat;
 
-  if (cards) cards.hidden = true;
-  if (section) section.hidden = false;
+  if (section) section.hidden = true;
   if (button) button.disabled = true;
-  setFormMessage(message, copy.loadingSeats);
+  setFormMessage(sourceMessage, copy.loadingSeats);
+  clearMessage("seatSelectionMessage");
   updateSelectedSeatSummary();
-  renderSeatMap();
 
   try {
     const result = await callGoogleSheetsAction("getReservedSeats", {});
     if (!result || !result.ok) {
-      setFormMessage(message, getReservationErrorMessage(result && result.code), "error");
+      pendingReservation = null;
+      setFormMessage(sourceMessage, getReservationErrorMessage(result && result.code), "error");
       return;
     }
     activeSeatStatuses = normalizeSeatStatuses(result);
+    if (cards) cards.hidden = true;
+    if (section) section.hidden = false;
     renderSeatMap();
+    setFormMessage(sourceMessage, "");
     setFormMessage(message, "");
     section.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (error) {
-    setFormMessage(message, getReservationErrorMessage(errorCodeFromException(error)), "error");
+    pendingReservation = null;
+    setFormMessage(sourceMessage, getReservationErrorMessage(errorCodeFromException(error)), "error");
   }
 }
 

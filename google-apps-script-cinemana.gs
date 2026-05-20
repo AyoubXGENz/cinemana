@@ -1,8 +1,8 @@
 const SPREADSHEET_ID = "1b3ZW4esFw0SqFwSw0HwMbtiadsNfYVJ0QdtzWDLGEIU";
 const MEMBERSHIP_SHEET_NAME = "membership";
 const RESERVATION_SHEET_NAME = "reservation";
-const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
-const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
+const TELEGRAM_BOT_TOKEN = "8687104434:AAHtnrf0QcBUpynhh6-to3LQ1yI5O2gS9bY";
+const TELEGRAM_CHAT_ID = "1407038332";
 
 const MEMBERSHIP_HEADERS = [
   "References",
@@ -26,11 +26,15 @@ const RESERVATION_HEADERS = [
   "member ou non",
   "Created at",
   "Email status",
-  "Statu"
+  "Statu",
+  "Code membre"
 ];
 
 function doGet(e) {
-  return respond_(handleRequest_(e.parameter || {}), e.parameter && e.parameter.callback);
+  const params = e.parameter || {};
+  const result = handleRequest_(params);
+  if (params.ui === "telegram") return respondDecisionPage_(result);
+  return respond_(result, params.callback);
 }
 
 function doPost(e) {
@@ -145,6 +149,22 @@ function normalizeText_(value) {
 
 function normalizePhone_(value) {
   return String(value || "").replace(/[^\d+]/g, "").replace(/^00/, "+");
+}
+
+function phoneMatches_(left, right) {
+  const a = normalizePhone_(left);
+  const b = normalizePhone_(right);
+  if (!a || !b) return false;
+  if (a === b) return true;
+
+  const aDigits = a.replace(/\D/g, "");
+  const bDigits = b.replace(/\D/g, "");
+  if (!aDigits || !bDigits) return false;
+  if (aDigits === bDigits) return true;
+  if (aDigits.length >= 9 && bDigits.length >= 9) {
+    return aDigits.slice(-9) === bDigits.slice(-9);
+  }
+  return false;
 }
 
 function normalizeEmail_(value) {
@@ -291,6 +311,58 @@ function getReservedSeats_() {
   };
 }
 
+function isActiveReservationStatus_(status) {
+  const normalized = normalizeReservationStatus_(status);
+  return normalized === "confirmed" || normalized === "pending";
+}
+
+function findActiveReservationByMemberReference_(memberReference) {
+  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const map = headerMap_(sheet);
+  const codeColumn = map[normalizeHeader_("Code membre")];
+  const statusColumn = map[normalizeHeader_("Statu")];
+  if (!codeColumn) return null;
+
+  const target = normalizeText_(memberReference);
+  const rows = getRows_(sheet);
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
+    const code = normalizeText_(row[codeColumn - 1]);
+    const status = statusColumn ? row[statusColumn - 1] : "";
+    if (code && code === target && isActiveReservationStatus_(status)) {
+      return { rowNumber: i + 2, row };
+    }
+  }
+  return null;
+}
+
+function findActiveReservationDuplicate_(payload) {
+  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const map = headerMap_(sheet);
+  const emailColumn = map[normalizeHeader_("E-mail")];
+  const phoneColumn = map[normalizeHeader_("Tel WhatsApp")];
+  const statusColumn = map[normalizeHeader_("Statu")];
+  const targetEmail = normalizeEmail_(payload.email);
+  const targetPhone = payload.whatsapp || payload.phone;
+  const rows = getRows_(sheet);
+
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i];
+    const status = statusColumn ? row[statusColumn - 1] : "";
+    if (!isActiveReservationStatus_(status)) continue;
+
+    if (emailColumn && targetEmail && normalizeEmail_(row[emailColumn - 1]) === targetEmail) {
+      return { code: "duplicate_email", rowNumber: i + 2 };
+    }
+
+    if (phoneColumn && targetPhone && phoneMatches_(row[phoneColumn - 1], targetPhone)) {
+      return { code: "duplicate_phone", rowNumber: i + 2 };
+    }
+  }
+
+  return null;
+}
+
 function createReservation_(payload) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -301,9 +373,9 @@ function createReservation_(payload) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail_(payload.email))) return { ok: false, code: "invalid_email" };
 
     const seat = String(payload.seat || "").trim().toUpperCase();
-    const reserved = getReservedSeats_().seats;
-    if (reserved.includes(seat)) {
-      return { ok: false, code: "seat_taken", seats: reserved };
+    const activeSeats = getReservedSeats_();
+    if (activeSeats.seats.includes(seat)) {
+      return { ok: false, code: "seat_taken", seats: activeSeats.seats, seat_statuses: activeSeats.seat_statuses };
     }
 
     let member = null;
@@ -311,9 +383,14 @@ function createReservation_(payload) {
     if (payload.type === "member") {
       const verification = verifyMemberPayload_(payload);
       if (!verification.ok) return verification;
+      if (findActiveReservationByMemberReference_(payload.member_reference)) {
+        return { ok: false, code: "member_already_reserved" };
+      }
       member = verification.member;
       isMember = true;
     } else {
+      const duplicate = findActiveReservationDuplicate_(payload);
+      if (duplicate) return { ok: false, code: duplicate.code };
       member = findMatchingMember_(payload);
       isMember = Boolean(member);
     }
@@ -333,7 +410,8 @@ function createReservation_(payload) {
       "member ou non": isMember ? "✓" : "✗",
       "Created at": new Date(),
       "Email status": status === "confirmed" ? "pending" : "waiting confirmation",
-      "Statu": status
+      "Statu": status,
+      "Code membre": payload.type === "member" ? payload.member_reference : ""
     };
     const rowValues = buildRow_(sheet, valuesByHeader);
     sheet.appendRow(rowValues);
@@ -353,7 +431,15 @@ function createReservation_(payload) {
     const emailStatusColumn = map[normalizeHeader_("Email status")];
     if (emailStatusColumn) sheet.getRange(appendedRow, emailStatusColumn).setValue(emailStatus);
 
-    return { ok: true, reference, seat, status, member: isMember, email_status: emailStatus, telegram_status: telegramStatus };
+    return {
+      ok: true,
+      reference: status === "confirmed" ? reference : "",
+      seat,
+      status,
+      member: isMember,
+      email_status: emailStatus,
+      telegram_status: telegramStatus
+    };
   } finally {
     lock.releaseLock();
   }
@@ -555,8 +641,8 @@ function sendTelegramReservationNotification_(payload, reference, seat, isMember
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [[
-          { text: "✅ Confirmer", callback_data: `confirm|${reference}` },
-          { text: "❌ Annuler", callback_data: `cancel|${reference}` }
+          { text: "✅ Confirmer", url: buildDecisionUrl_("confirm", reference) },
+          { text: "❌ Annuler", url: buildDecisionUrl_("cancel", reference) }
         ]]
       }
     });
@@ -564,6 +650,56 @@ function sendTelegramReservationNotification_(payload, reference, seat, isMember
   } catch (error) {
     return `error: ${String(error && error.message ? error.message : error)}`;
   }
+}
+
+function buildDecisionUrl_(decision, reference) {
+  const payload = encodeURIComponent(JSON.stringify({ decision, reference }));
+  return `${ScriptApp.getService().getUrl()}?action=decision&ui=telegram&payload=${payload}`;
+}
+
+function respondDecisionPage_(result) {
+  const ok = result && result.ok;
+  const status = result && result.status ? result.status : "";
+  const title = ok
+    ? status === "confirmed"
+      ? "Réservation confirmée"
+      : status === "canceled"
+        ? "Réservation annulée"
+        : "Demande traitée"
+    : "Action impossible";
+  const color = ok && status === "confirmed" ? "#16a34a" : ok && status === "canceled" ? "#dc2626" : "#d9b24c";
+  const message = result && result.message ? result.message : "La décision a été traitée.";
+  const reference = result && result.reference ? result.reference : "";
+  const seat = result && result.seat ? result.seat : "";
+
+  return HtmlService.createHtmlOutput(`
+    <!doctype html>
+    <html lang="fr">
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>${escapeHtml_(title)}</title>
+        <style>
+          body{margin:0;min-height:100vh;display:grid;place-items:center;background:#080808;color:#f7f0df;font-family:Arial,sans-serif}
+          .card{width:min(92vw,520px);background:#111827;border:1px solid #d9b24c;border-radius:18px;padding:30px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.4)}
+          .badge{width:72px;height:72px;margin:0 auto 18px;border-radius:999px;display:grid;place-items:center;background:${color};color:white;font-size:34px;font-weight:900}
+          h1{margin:0 0 12px;font-size:30px;color:white}
+          p{margin:8px 0;color:#d7d0c3;font-size:17px;line-height:1.5}
+          strong{color:#d9b24c}
+        </style>
+      </head>
+      <body>
+        <main class="card">
+          <div class="badge">${status === "canceled" ? "×" : "✓"}</div>
+          <h1>${escapeHtml_(title)}</h1>
+          <p>${escapeHtml_(message)}</p>
+          ${reference ? `<p>Référence : <strong>${escapeHtml_(reference)}</strong></p>` : ""}
+          ${seat ? `<p>Siège : <strong>${escapeHtml_(seat)}</strong></p>` : ""}
+          <p>Vous pouvez fermer cette page et retourner à Telegram.</p>
+        </main>
+      </body>
+    </html>
+  `);
 }
 
 function handleTelegramWebhook_(raw) {
@@ -680,54 +816,63 @@ function sendReservationEmail_(payload, reference, seat, isMember) {
     const memberLabel = isMember ? "Membre CINEMANA" : "Invitation confirmée";
     const phone = payload.whatsapp || payload.phone || "";
     const html = `
-      <div style="font-family:Arial,sans-serif;background:#080808;color:#f7f0df;padding:28px">
-        <div style="max-width:680px;margin:auto;background:#111827;border-radius:18px;overflow:hidden;border:1px solid #d9b24c;box-shadow:0 18px 45px rgba(0,0,0,.35)">
-          <div style="background:#d9b24c;color:#080808;padding:22px 28px;text-align:center">
-            <div style="font-size:14px;font-weight:800;letter-spacing:3px;text-transform:uppercase">CINEMANA</div>
-            <h1 style="margin:8px 0 0;font-size:34px;line-height:1">Billet d’entrée</h1>
-            <p style="margin:8px 0 0;font-weight:700">Réservation confirmée</p>
-          </div>
-          <div style="padding:28px">
-            <p style="margin:0 0 18px;color:#d7d0c3;font-size:16px">Bonjour <strong style="color:#fff">${escapeHtml_(payload.full_name)}</strong>, votre place est confirmée. Présentez ce billet à l’entrée.</p>
+      <div style="margin:0;padding:0;background:#080808">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#080808">
+          <tr>
+            <td style="padding:18px 10px;font-family:Arial,sans-serif;color:#f7f0df">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:560px;margin:0 auto;border-collapse:collapse;background:#111827;border:1px solid #d9b24c;border-radius:18px;overflow:hidden">
+                <tr>
+                  <td style="background:#d9b24c;color:#080808;padding:22px 16px;text-align:center">
+                    <div style="font-size:13px;font-weight:800;letter-spacing:4px;text-transform:uppercase">CINEMANA</div>
+                    <div style="font-size:34px;line-height:1.08;font-weight:900;margin-top:8px">Billet d’entrée</div>
+                    <div style="font-size:16px;font-weight:800;margin-top:8px">Réservation confirmée</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:22px 16px">
+                    <p style="margin:0 0 18px;color:#d7d0c3;font-size:18px;line-height:1.45">Bonjour <strong style="color:#fff">${escapeHtml_(payload.full_name)}</strong>, votre place est confirmée. Présentez ce billet à l’entrée.</p>
 
-            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border-spacing:0;background:#0b0f1a;border:2px dashed #d9b24c;border-radius:18px;overflow:hidden">
-              <tr>
-                <td style="padding:24px;vertical-align:top">
-                  <div style="font-size:12px;color:#d9b24c;font-weight:800;letter-spacing:2px;text-transform:uppercase">Référence ticket</div>
-                  <div style="font-size:30px;line-height:1.15;font-weight:900;color:#fff;margin:8px 0 20px">${escapeHtml_(reference)}</div>
+                    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#0b0f1a;border:2px dashed #d9b24c;border-radius:16px">
+                      <tr>
+                        <td style="padding:20px 16px">
+                          <div style="font-size:12px;color:#d9b24c;font-weight:800;letter-spacing:2px;text-transform:uppercase">Référence ticket</div>
+                          <div style="font-size:28px;line-height:1.18;font-weight:900;color:#fff;margin:8px 0 18px;word-break:break-word;overflow-wrap:anywhere">${escapeHtml_(reference)}</div>
 
-                  <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Nom</td>
-                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${escapeHtml_(payload.full_name)}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Siège</td>
-                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#d9b24c;font-size:22px;font-weight:900">${escapeHtml_(seat)}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Statut</td>
-                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${memberLabel}</td>
-                    </tr>
-                    <tr>
-                      <td style="padding:10px 0;border-top:1px solid #293244;color:#b8c0d0">Téléphone</td>
-                      <td style="padding:10px 0;border-top:1px solid #293244;text-align:right;color:#fff;font-weight:700">${escapeHtml_(phone)}</td>
-                    </tr>
-                  </table>
-                </td>
-                <td style="width:210px;padding:24px;background:#f7f0df;text-align:center;vertical-align:middle">
-                  <img src="${qrUrl_(reference)}" alt="QR code" width="170" height="170" style="display:block;margin:auto;border:8px solid #fff;border-radius:12px">
-                  <div style="font-size:12px;color:#101827;font-weight:800;margin-top:12px;letter-spacing:1px">SCAN À L’ENTRÉE</div>
-                </td>
-              </tr>
-            </table>
+                          <div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Nom</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(payload.full_name)}</div>
+                          </div>
+                          <div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Siège</div>
+                            <div style="font-size:30px;color:#d9b24c;font-weight:900;line-height:1">${escapeHtml_(seat)}</div>
+                          </div>
+                          <div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Statut</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35">${memberLabel}</div>
+                          </div>
+                          <div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Téléphone</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(phone)}</div>
+                          </div>
 
-            <div style="margin-top:18px;padding:16px 18px;background:#151c2b;border-radius:12px;color:#d7d0c3">
-              <strong style="color:#d9b24c">Important :</strong> gardez ce ticket avec vous. Le QR code correspond uniquement à la référence ${escapeHtml_(reference)}.
-            </div>
-            <p style="text-align:center;margin:26px 0 0;color:#8f98aa;font-size:13px">© 2026 CINEMANA · Tanger, Maroc</p>
-          </div>
-        </div>
+                          <div style="margin-top:16px;padding:18px;background:#f7f0df;border-radius:14px;text-align:center">
+                            <img src="${qrUrl_(reference)}" alt="QR code" width="190" height="190" style="display:block;width:190px;height:190px;margin:0 auto;border:8px solid #fff;border-radius:12px">
+                            <div style="font-size:12px;color:#101827;font-weight:900;margin-top:12px;letter-spacing:1px">SCAN À L’ENTRÉE</div>
+                          </div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div style="margin-top:18px;padding:15px 16px;background:#151c2b;border-radius:12px;color:#d7d0c3;font-size:15px;line-height:1.5">
+                      <strong style="color:#d9b24c">Important :</strong> gardez ce ticket avec vous. Le QR code correspond uniquement à la référence ${escapeHtml_(reference)}.
+                    </div>
+                    <p style="text-align:center;margin:24px 0 0;color:#8f98aa;font-size:13px">© 2026 CINEMANA · Tanger, Maroc</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
       </div>`;
 
     MailApp.sendEmail({
