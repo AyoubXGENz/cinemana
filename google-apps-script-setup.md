@@ -50,6 +50,8 @@ Public reservations are now saved as `pending` in the `Statu` column. Telegram s
 - `Confirmer`: changes `Statu` to `confirmed`, marks it green, reserves the seat, and sends the ticket e-mail with QR code.
 - `Annuler`: changes `Statu` to `annulé`, marks it red, and releases the seat on the website.
 
-The script also adds a `Code membre` column to `reservation`. This column is used internally to block a member from reserving more than one active seat with the same member code.
+The script also adds internal columns to `reservation`:
+- `Code membre`: blocks a member from reserving more than one active seat with the same member code.
+- `Telegram chat` and `Telegram message`: let Apps Script edit the original Telegram notification after confirmation/cancellation and remove the buttons.
 
 Important: after changing Apps Script code, always use `Deploy > Manage deployments > Edit > New version > Deploy`. If Telegram buttons were sent before this update, generate a new test reservation so the notification contains the new direct-link buttons.

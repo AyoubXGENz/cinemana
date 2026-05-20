@@ -27,7 +27,9 @@ const RESERVATION_HEADERS = [
   "Created at",
   "Email status",
   "Statu",
-  "Code membre"
+  "Code membre",
+  "Telegram chat",
+  "Telegram message"
 ];
 
 function doGet(e) {
@@ -423,13 +425,21 @@ function createReservation_(payload) {
     const map = headerMap_(sheet);
     let emailStatus = "waiting confirmation";
     let telegramStatus = "not needed";
+    let telegramResult = null;
     if (status === "confirmed") {
       emailStatus = sendReservationEmail_(payload, reference, seat, isMember);
     } else {
-      telegramStatus = sendTelegramReservationNotification_(payload, reference, seat, isMember);
+      telegramResult = sendTelegramReservationNotification_(payload, reference, seat, isMember);
+      telegramStatus = typeof telegramResult === "string" ? telegramResult : telegramResult.status;
     }
     const emailStatusColumn = map[normalizeHeader_("Email status")];
     if (emailStatusColumn) sheet.getRange(appendedRow, emailStatusColumn).setValue(emailStatus);
+    if (telegramResult && typeof telegramResult === "object") {
+      const telegramChatColumn = map[normalizeHeader_("Telegram chat")];
+      const telegramMessageColumn = map[normalizeHeader_("Telegram message")];
+      if (telegramChatColumn) sheet.getRange(appendedRow, telegramChatColumn).setValue(telegramResult.chat_id);
+      if (telegramMessageColumn) sheet.getRange(appendedRow, telegramMessageColumn).setValue(telegramResult.message_id);
+    }
 
     return {
       ok: true,
@@ -531,7 +541,10 @@ function reservationPayloadFromRow_(row, map) {
     seat: String(get("Seat") || "").trim().toUpperCase(),
     member_mark: String(get("member ou non") || "").trim(),
     email_status: String(get("Email status") || "").trim(),
-    status: normalizeReservationStatus_(get("Statu"))
+    status: normalizeReservationStatus_(get("Statu")),
+    member_reference: String(get("Code membre") || "").trim(),
+    telegram_chat_id: String(get("Telegram chat") || "").trim(),
+    telegram_message_id: String(get("Telegram message") || "").trim()
   };
 }
 
@@ -549,13 +562,15 @@ function processReservationDecision_(reference, decision, callbackQueryId) {
 
     const currentStatus = found.reservation.status;
     if (currentStatus === "confirmed" || currentStatus === "canceled") {
-      return {
+      const result = {
         ok: true,
         reference,
         seat: found.reservation.seat,
         status: currentStatus,
         message: `Déjà ${currentStatus === "confirmed" ? "confirmée" : "annulée"}.`
       };
+      editStoredTelegramDecisionMessage_(found.reservation, result);
+      return result;
     }
 
     const status = decision === "confirm" ? "confirmed" : "canceled";
@@ -572,7 +587,7 @@ function processReservationDecision_(reference, decision, callbackQueryId) {
     }
     if (emailStatusColumn) sheet.getRange(found.rowNumber, emailStatusColumn).setValue(emailStatus);
 
-    return {
+    const result = {
       ok: true,
       reference,
       seat: found.reservation.seat,
@@ -580,6 +595,8 @@ function processReservationDecision_(reference, decision, callbackQueryId) {
       email_status: emailStatus,
       message: status === "confirmed" ? "Réservation confirmée et ticket envoyé." : "Réservation annulée."
     };
+    editStoredTelegramDecisionMessage_(found.reservation, result);
+    return result;
   } finally {
     lock.releaseLock();
   }
@@ -617,27 +634,9 @@ function sendTelegramReservationNotification_(payload, reference, seat, isMember
   if (!isTelegramConfigured_()) return "telegram_missing_config";
 
   try {
-    const memberLabel = isMember ? "Oui" : "Non";
-    const text = [
-      "🎬 <b>Nouvelle demande de réservation CINEMANA</b>",
-      "",
-      "<b>Statut :</b> En attente",
-      `<b>Référence :</b> ${escapeHtml_(reference)}`,
-      `<b>Siège demandé :</b> ${escapeHtml_(seat)}`,
-      `<b>Nom :</b> ${escapeHtml_(payload.full_name)}`,
-      `<b>Téléphone :</b> ${escapeHtml_(payload.whatsapp || payload.phone)}`,
-      `<b>E-mail :</b> ${escapeHtml_(payload.email)}`,
-      `<b>Âge :</b> ${escapeHtml_(payload.age || "-")}`,
-      `<b>Fonction :</b> ${escapeHtml_(payload.profession || "-")}`,
-      `<b>Source :</b> ${escapeHtml_(payload.source || "-")}`,
-      `<b>Membre :</b> ${memberLabel}`,
-      "",
-      "Choisissez une action :"
-    ].join("\n");
-
-    telegramApi_("sendMessage", {
+    const response = telegramApi_("sendMessage", {
       chat_id: TELEGRAM_CHAT_ID,
-      text,
+      text: buildTelegramReservationText_(payload, reference, seat, isMember, "pending"),
       parse_mode: "HTML",
       reply_markup: {
         inline_keyboard: [[
@@ -646,9 +645,60 @@ function sendTelegramReservationNotification_(payload, reference, seat, isMember
         ]]
       }
     });
-    return "sent";
+    return {
+      status: "sent",
+      chat_id: response && response.result && response.result.chat ? String(response.result.chat.id) : TELEGRAM_CHAT_ID,
+      message_id: response && response.result ? String(response.result.message_id || "") : ""
+    };
   } catch (error) {
     return `error: ${String(error && error.message ? error.message : error)}`;
+  }
+}
+
+function buildTelegramReservationText_(payload, reference, seat, isMember, status) {
+  const statusLabel = status === "confirmed"
+    ? "✅ Confirmé"
+    : status === "canceled"
+      ? "❌ Annulé"
+      : "⏳ En attente";
+  const memberLabel = isMember ? "Oui" : "Non";
+
+  return [
+    "🎬 <b>Demande de réservation CINEMANA</b>",
+    "",
+    `<b>Statut :</b> ${statusLabel}`,
+    `<b>Référence :</b> ${escapeHtml_(reference)}`,
+    `<b>Siège :</b> ${escapeHtml_(seat)}`,
+    `<b>Nom :</b> ${escapeHtml_(payload.full_name)}`,
+    `<b>Téléphone :</b> ${escapeHtml_(payload.whatsapp || payload.phone)}`,
+    `<b>E-mail :</b> ${escapeHtml_(payload.email)}`,
+    `<b>Âge :</b> ${escapeHtml_(payload.age || "-")}`,
+    `<b>Fonction :</b> ${escapeHtml_(payload.profession || "-")}`,
+    `<b>Source :</b> ${escapeHtml_(payload.source || "-")}`,
+    `<b>Membre :</b> ${memberLabel}`,
+    "",
+    status === "pending" ? "Choisissez une action :" : "Action traitée."
+  ].join("\n");
+}
+
+function editStoredTelegramDecisionMessage_(reservation, result) {
+  if (!reservation || !reservation.telegram_chat_id || !reservation.telegram_message_id || !isTelegramConfigured_()) return;
+  try {
+    telegramApi_("editMessageText", {
+      chat_id: reservation.telegram_chat_id,
+      message_id: reservation.telegram_message_id,
+      text: buildTelegramReservationText_(
+        reservation,
+        result.reference || reservation.reference,
+        result.seat || reservation.seat,
+        reservation.member_mark === "✓",
+        result.status
+      ),
+      parse_mode: "HTML",
+      reply_markup: { inline_keyboard: [] }
+    });
+  } catch (error) {
+    // The Google Sheet status is already updated; Telegram editing is best-effort.
   }
 }
 

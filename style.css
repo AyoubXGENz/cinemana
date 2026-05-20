@@ -705,6 +705,48 @@ select:focus {
   color: #9ed8b4;
 }
 
+.reservation-complete {
+  display: grid;
+  place-items: center;
+  min-height: min(68vh, 620px);
+}
+
+.reservation-complete-card {
+  width: min(100%, 680px);
+  padding: clamp(2rem, 5vw, 3.5rem);
+  border: 1px solid rgba(217, 178, 76, 0.45);
+  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(217, 178, 76, 0.12), rgba(255, 255, 255, 0.03));
+  text-align: center;
+}
+
+.reservation-complete-icon {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 1.2rem;
+  border-radius: 50%;
+  color: #071108;
+  background: #9ed8b4;
+  font-size: 2.8rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.reservation-complete-card h2 {
+  max-width: 13ch;
+  margin-inline: auto;
+}
+
+.reservation-complete-card p:not(.eyebrow) {
+  max-width: 48rem;
+  margin: 0 auto 1.5rem;
+  color: var(--cream);
+  font-size: 1.18rem;
+  line-height: 1.7;
+}
+
 .seat-selection {
   display: grid;
   gap: 1.1rem;

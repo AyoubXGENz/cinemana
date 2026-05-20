@@ -57,6 +57,12 @@ const CINEMANA_EXTENSION_COPY = {
         confirmedSuccess: (name, reference, seat) => `Merci ${name}. Votre réservation ${reference} est confirmée pour le siège ${seat}. Un e-mail avec le QR code va vous arriver.`,
         pendingSuccess: (name) => `Merci ${name}. Votre demande de réservation est enregistrée. Nous vous contacterons pour confirmer votre réservation, puis le ticket vous sera envoyé par e-mail après validation.`
       },
+      complete: {
+        eyebrow: "Réservation",
+        pendingTitle: "Demande enregistrée",
+        confirmedTitle: "Réservation confirmée",
+        home: "Retour à l’accueil"
+      },
       validation: {
         required: "Veuillez remplir tous les champs obligatoires.",
         email: "Veuillez entrer une adresse e-mail valide.",
@@ -132,6 +138,12 @@ const CINEMANA_EXTENSION_COPY = {
         loadingCreate: "Saving the reservation...",
         confirmedSuccess: (name, reference, seat) => `Thank you ${name}. Your reservation ${reference} is confirmed for seat ${seat}. An e-mail with the QR code will arrive shortly.`,
         pendingSuccess: (name) => `Thank you ${name}. Your reservation request has been saved. We will contact you to confirm it, then the ticket will be sent by e-mail after approval.`
+      },
+      complete: {
+        eyebrow: "Reservation",
+        pendingTitle: "Request Saved",
+        confirmedTitle: "Reservation Confirmed",
+        home: "Back to home"
       },
       validation: {
         required: "Please fill in all required fields.",
@@ -209,6 +221,12 @@ const CINEMANA_EXTENSION_COPY = {
         confirmedSuccess: (name, reference, seat) => `شكرا ${name}. تم تأكيد الحجز ${reference} للكرسي ${seat}. سيصلك إيميل فيه QR code قريبا.`,
         pendingSuccess: (name) => `شكرا ${name}. تم تسجيل طلب الحجز ديالك. غادي نتواصلو معاك باش نأكدو الحجز، ومن بعد غادي يوصلك ticket عبر الإيميل.`
       },
+      complete: {
+        eyebrow: "الحجز",
+        pendingTitle: "تم تسجيل الطلب",
+        confirmedTitle: "تم تأكيد الحجز",
+        home: "الرئيسية"
+      },
       validation: {
         required: "يرجى ملء جميع الحقول الضرورية.",
         email: "يرجى إدخال بريد إلكتروني صحيح.",
@@ -254,6 +272,7 @@ function extendCinemanaTranslations() {
     target.reservation.public.labels = { ...target.reservation.public.labels, ...source.reservation.public.labels };
     target.reservation.public.button = source.reservation.public.button;
     target.reservation.seat = source.reservation.seat;
+    target.reservation.complete = source.reservation.complete;
     target.reservation.validation = source.reservation.validation;
   });
 }
@@ -296,6 +315,9 @@ function applyExtensionTexts() {
   if (legendItems[1]) legendItems[1].lastChild.textContent = reservation.seat.selectedLabel;
   if (legendItems[2]) legendItems[2].lastChild.textContent = reservation.seat.pending;
   if (legendItems[3]) legendItems[3].lastChild.textContent = reservation.seat.reserved;
+
+  setText("#reservationCompleteEyebrow", reservation.complete.eyebrow);
+  setText("#reservationCompleteHome", reservation.complete.home);
 
   const summary = document.getElementById("selectedSeatSummary");
   if (summary) summary.textContent = selectedSeat ? reservation.seat.selected(selectedSeat) : reservation.seat.none;
@@ -704,13 +726,52 @@ function cancelSeatSelection() {
   const cards = document.querySelector(".reservation-choice-grid");
   const section = document.getElementById("seatSelection");
   const button = document.getElementById("confirmSeatButton");
+  const complete = document.getElementById("reservationComplete");
 
   if (cards) cards.hidden = false;
   if (section) section.hidden = true;
+  if (complete) complete.hidden = true;
   if (button) button.disabled = true;
   clearMessage("seatSelectionMessage");
   updateSelectedSeatSummary();
   window.scrollTo({ top: document.getElementById("page-reservation").offsetTop, behavior: "smooth" });
+}
+
+function showReservationComplete(result, data) {
+  const section = document.getElementById("seatSelection");
+  const complete = document.getElementById("reservationComplete");
+  const title = document.getElementById("reservationCompleteTitle");
+  const text = document.getElementById("reservationCompleteText");
+  const copy = getExtensionCopy().reservation;
+  const status = result && result.status;
+
+  if (section) section.hidden = true;
+  if (complete) complete.hidden = false;
+  if (title) title.textContent = status === "confirmed" ? copy.complete.confirmedTitle : copy.complete.pendingTitle;
+  if (text) text.textContent = getReservationSuccessMessage(data.full_name, result.reference, result.seat, status);
+  clearMessage("seatSelectionMessage");
+  if (complete) complete.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function goReservationHome() {
+  pendingReservation = null;
+  selectedSeat = "";
+  activeSeatStatuses = new Map();
+
+  const cards = document.querySelector(".reservation-choice-grid");
+  const section = document.getElementById("seatSelection");
+  const complete = document.getElementById("reservationComplete");
+  const button = document.getElementById("confirmSeatButton");
+
+  if (cards) cards.hidden = false;
+  if (section) section.hidden = true;
+  if (complete) complete.hidden = true;
+  if (button) button.disabled = true;
+  clearMessage("memberReservationMessage");
+  clearMessage("publicReservationMessage");
+  clearMessage("seatSelectionMessage");
+  updateSelectedSeatSummary();
+  showPage("home");
 }
 
 function renderSeatMap() {
@@ -796,14 +857,15 @@ async function confirmSeatSelection() {
       return;
     }
 
+    const submittedReservation = pendingReservation;
     activeSeatStatuses.set(result.seat, result.status === "pending" ? "pending" : "confirmed");
-    setFormMessage(message, getReservationSuccessMessage(pendingReservation.full_name, result.reference, result.seat, result.status), "success");
     document.getElementById("memberReservationForm").reset();
     document.getElementById("publicReservationForm").reset();
     pendingReservation = null;
     selectedSeat = "";
     renderSeatMap();
     updateSelectedSeatSummary();
+    showReservationComplete(result, submittedReservation);
   } catch (error) {
     setFormMessage(message, getReservationErrorMessage(errorCodeFromException(error)), "error");
     if (button) button.disabled = false;

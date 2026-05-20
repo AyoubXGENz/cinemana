@@ -7,8 +7,9 @@
   <meta name="description" content="Fondation CINEMANA, institution culturelle à but non lucratif dédiée au cinéma, aux cinéclubs, aux formations et au Festival International du Film de Tanger.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260520-seat-reservations">
+  <link rel="stylesheet" href="style.css?v=20260520-complete-telegram-edit">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -94,15 +95,15 @@
         </div>
         <div class="photo-stack" aria-label="Photos CINEMANA">
           <figure>
-            <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=900&q=80" alt="Salle de cinéma avec fauteuils rouges">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=900&q=80" alt="Salle de cinéma avec fauteuils rouges">
             <figcaption>Projections</figcaption>
           </figure>
           <figure>
-            <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80" alt="Public dans une salle obscure">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80" alt="Public dans une salle obscure">
             <figcaption>Rencontres</figcaption>
           </figure>
           <figure>
-            <img src="https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=900&q=80" alt="Caméra et équipe de tournage">
+            <img loading="lazy" src="https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=900&q=80" alt="Caméra et équipe de tournage">
             <figcaption>Formations</figcaption>
           </figure>
         </div>
@@ -205,7 +206,7 @@
       </header>
       <section class="section activity-list">
         <article class="activity-feature">
-          <img src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1100&q=80" alt="Entrée lumineuse d’un cinéma">
+          <img loading="lazy" src="https://images.unsplash.com/photo-1478720568477-152d9b164e26?auto=format&fit=crop&w=1100&q=80" alt="Entrée lumineuse d’un cinéma">
           <div>
             <p class="eyebrow">Temps fort</p>
             <h2>Festival International du Film de Tanger</h2>
@@ -406,6 +407,15 @@
         <button class="btn primary full" type="button" id="confirmSeatButton" onclick="confirmSeatSelection()" disabled>Confirmer la réservation</button>
         <p class="form-message" id="seatSelectionMessage" role="status" aria-live="polite"></p>
       </section>
+      <section class="section reservation-complete" id="reservationComplete" hidden>
+        <div class="reservation-complete-card">
+          <div class="reservation-complete-icon" aria-hidden="true">✓</div>
+          <p class="eyebrow" id="reservationCompleteEyebrow">Réservation</p>
+          <h2 id="reservationCompleteTitle">Demande enregistrée</h2>
+          <p id="reservationCompleteText">Votre demande de réservation est enregistrée.</p>
+          <button class="btn primary" type="button" id="reservationCompleteHome" onclick="goReservationHome()">Accueil</button>
+        </div>
+      </section>
     </section>
 
     <section class="page" id="page-press">
@@ -520,11 +530,11 @@
     </form>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script src="script.js?v=20260520-seat-reservations"></script>
-  <script src="reservation-extension.js?v=20260520-seat-status-duplicates"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script defer src="script.js?v=20260520-seat-reservations"></script>
+  <script defer src="reservation-extension.js?v=20260520-complete-telegram-edit"></script>
 </body>
 </html>
