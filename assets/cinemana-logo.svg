@@ -1,1 +1,24 @@
-
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">CINEMANA</title>
+  <desc id="desc">CINEMANA film foundation logo</desc>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f6d45b"/>
+      <stop offset="1" stop-color="#b88322"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="42%" r="62%">
+      <stop offset="0" stop-color="#243044"/>
+      <stop offset="1" stop-color="#070707"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="238" fill="url(#glow)"/>
+  <circle cx="256" cy="256" r="232" fill="none" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="256" cy="256" r="204" fill="none" stroke="#7f1219" stroke-width="4" opacity=".75"/>
+  <g transform="translate(132 112)">
+    <rect x="0" y="42" width="248" height="176" rx="22" fill="#111" stroke="url(#gold)" stroke-width="8"/>
+    <path d="M12 42 50 0h58L70 42zm82 0 38-42h58l-38 42zm82 0 38-42h46c13 0 24 11 24 24v18z" fill="url(#gold)"/>
+    <path d="M36 92h176M36 130h176M36 168h110" stroke="#f7f0df" stroke-width="14" stroke-linecap="round" opacity=".92"/>
+  </g>
+  <text x="256" y="374" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="58" font-weight="700" letter-spacing="2" fill="#f7f0df">CINEMANA</text>
+  <text x="256" y="414" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="4" fill="#d9b24c">FONDATION</text>
+</svg>
