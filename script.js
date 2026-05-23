@@ -1116,11 +1116,11 @@ function getActivityItems() {
       paragraphs: mediation.paragraphs,
       cards: mediation.cards,
       images: [
-        activityImage("assets/activities/mediation-cannes-france-tv.jpeg?v=20260523", mediation.alts[0], mediation.captions[0]),
-        activityImage("assets/activities/mediation-clermont-stand.jpeg?v=20260523", mediation.alts[1], mediation.captions[1]),
-        activityImage("assets/activities/mediation-clermont-meeting.jpeg?v=20260523", mediation.alts[2], mediation.captions[2]),
-        activityImage("assets/activities/mediation-clermont-market.jpeg?v=20260523", mediation.alts[3], mediation.captions[3]),
-        activityImage("assets/activities/mediation-cannes-presentation.jpeg?v=20260523", mediation.alts[4], mediation.captions[4])
+        activityImage("assets/activities/WhatsApp%20Image%202026-05-23%20at%2017.31.20.jpeg?v=20260523", mediation.alts[0], mediation.captions[0]),
+        activityImage("assets/activities/WhatsApp%20Image%202026-05-23%20at%2017.04.15.jpeg?v=20260523", mediation.alts[1], mediation.captions[1]),
+        activityImage("assets/activities/WhatsApp%20Image%202026-05-23%20at%2017.02.38.jpeg?v=20260523", mediation.alts[2], mediation.captions[2]),
+        activityImage("assets/activities/WhatsApp%20Image%202026-05-23%20at%2017.00.30.jpeg?v=20260523", mediation.alts[3], mediation.captions[3]),
+        activityImage("assets/activities/WhatsApp%20Image%202026-05-23%20at%2017.00.03.jpeg?v=20260523", mediation.alts[4], mediation.captions[4])
       ]
     },
     {
