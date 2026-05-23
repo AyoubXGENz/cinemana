@@ -879,6 +879,7 @@ let currentLanguage = "fr";
 let firebaseServices = null;
 let emailJsInitialized = false;
 let pendingMemberRegistration = null;
+let activeActivityId = "";
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -941,6 +942,325 @@ function setFormMessage(element, text, type) {
   element.textContent = text;
   element.classList.remove("error", "success");
   if (type) element.classList.add(type);
+}
+
+function escapeHtml(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function getActivityUiCopy() {
+  const labels = {
+    fr: {
+      overviewEyebrow: "Nos activités",
+      overviewTitle: "Explorez les programmes CINEMANA",
+      open: "Découvrir l’activité",
+      back: "Retour aux activités",
+      keyPoints: "Points clés",
+      gallery: "Galerie"
+    },
+    en: {
+      overviewEyebrow: "Our activities",
+      overviewTitle: "Explore CINEMANA programs",
+      open: "Explore activity",
+      back: "Back to activities",
+      keyPoints: "Key points",
+      gallery: "Gallery"
+    },
+    ar: {
+      overviewEyebrow: "أنشطتنا",
+      overviewTitle: "اكتشفوا برامج سينيمانا",
+      open: "اكتشف النشاط",
+      back: "العودة إلى الأنشطة",
+      keyPoints: "محاور أساسية",
+      gallery: "معرض الصور"
+    }
+  };
+
+  return labels[currentLanguage] || labels.fr;
+}
+
+function getMediationActivityCopy() {
+  const copy = {
+    fr: {
+      eyebrow: "Rayonnement international",
+      title: "Médiation internationale",
+      paragraphs: [
+        "La Fondation CINEMANA déploie des efforts constants de médiation culturelle et de rayonnement international afin de promouvoir l’image de Tanger et du cinéma marocain sur les scènes cinématographiques les plus prestigieuses au monde. À travers sa participation active à des manifestations internationales majeures, la fondation contribue à renforcer la visibilité de la création marocaine, à encourager les échanges professionnels et à créer des passerelles entre les talents marocains et les acteurs internationaux du secteur audiovisuel.",
+        "Dans ce cadre, la fondation représente le Maroc au Festival international du court métrage de Clermont-Ferrand grâce à un stand installé au sein du marché professionnel du festival, un espace stratégique fréquenté chaque année par des milliers de visiteurs et des centaines de professionnels venus du monde entier. Cette présence permet de valoriser la richesse culturelle et cinématographique marocaine, tout en mettant en avant le potentiel de Tanger comme terre de tournage, de création et de dialogue interculturel.",
+        "Par ailleurs, au Festival de Cannes, la Fondation CINEMANA participe au rayonnement du cinéma marocain à travers la présentation du programme « Entre Deux Rives » au sein du pavillon de France Télévisions, offrant ainsi une plateforme de visibilité et de coopération artistique entre les deux rives de la Méditerranée. Ces initiatives traduisent l’engagement de la fondation en faveur d’une diplomatie culturelle dynamique, capable de faire de Tanger un carrefour cinématographique international et un symbole d’ouverture, de créativité et de diversité culturelle."
+      ],
+      cards: [
+        ["Clermont-Ferrand", "Un stand au marché professionnel pour représenter le Maroc et valoriser la création marocaine."],
+        ["Festival de Cannes", "Présentation du programme « Entre Deux Rives » au pavillon de France Télévisions."],
+        ["Tanger, carrefour cinématographique", "Une diplomatie culturelle qui relie les talents marocains aux réseaux internationaux."]
+      ],
+      captions: ["Cannes", "Stand professionnel", "Rencontres", "Marché du court métrage", "Entre Deux Rives"],
+      alts: [
+        "Panneau France Télévisions Brut au Festival de Cannes",
+        "Stand Tangier Film Festival au marché de Clermont-Ferrand",
+        "Rencontre professionnelle autour du stand marocain",
+        "Vue du marché professionnel du court métrage à Clermont-Ferrand",
+        "Présentation du programme Entre Deux Rives à Cannes"
+      ]
+    },
+    en: {
+      eyebrow: "International reach",
+      title: "International Mediation",
+      paragraphs: [
+        "The CINEMANA Foundation carries out ongoing cultural mediation and international outreach to promote the image of Tangier and Moroccan cinema on the world’s most prestigious film stages. Through active participation in major international events, the foundation strengthens the visibility of Moroccan creation, encourages professional exchange and builds bridges between Moroccan talent and international audiovisual professionals.",
+        "In this context, the foundation represents Morocco at the Clermont-Ferrand International Short Film Festival with a stand inside the festival’s professional market, a strategic space visited every year by thousands of visitors and hundreds of professionals from around the world. This presence highlights Morocco’s cultural and cinematic richness while promoting Tangier as a land of filming, creation and intercultural dialogue.",
+        "At the Cannes Film Festival, CINEMANA also contributes to the visibility of Moroccan cinema by presenting the “Between Two Shores” program inside the France Télévisions pavilion, creating a platform for artistic visibility and cooperation between both shores of the Mediterranean. These initiatives express the foundation’s commitment to dynamic cultural diplomacy and to making Tangier an international cinematic crossroads."
+      ],
+      cards: [
+        ["Clermont-Ferrand", "A professional-market stand representing Morocco and promoting Moroccan creation."],
+        ["Cannes Film Festival", "Presentation of the “Between Two Shores” program at the France Télévisions pavilion."],
+        ["Tangier as a film crossroads", "Cultural diplomacy connecting Moroccan talent with international networks."]
+      ],
+      captions: ["Cannes", "Professional stand", "Meetings", "Short film market", "Between Two Shores"],
+      alts: [
+        "France Télévisions Brut sign at the Cannes Film Festival",
+        "Tangier Film Festival stand at the Clermont-Ferrand market",
+        "Professional meeting around the Moroccan stand",
+        "View of the Clermont-Ferrand short film market",
+        "Between Two Shores presentation in Cannes"
+      ]
+    },
+    ar: {
+      eyebrow: "إشعاع دولي",
+      title: "الوساطة الدولية",
+      paragraphs: [
+        "تعمل مؤسسة سينيمانا باستمرار على تطوير الوساطة الثقافية والإشعاع الدولي من أجل إبراز صورة طنجة والسينما المغربية في أبرز المحافل السينمائية العالمية. ومن خلال مشاركتها في تظاهرات دولية كبرى، تساهم المؤسسة في تعزيز حضور الإبداع المغربي، وتشجيع التبادل المهني، وبناء جسور بين المواهب المغربية والفاعلين الدوليين في القطاع السمعي البصري.",
+        "وفي هذا الإطار، تمثل المؤسسة المغرب في المهرجان الدولي للفيلم القصير بكليرمون فيران عبر رواق داخل السوق المهني للمهرجان، وهو فضاء استراتيجي يستقبل سنويا آلاف الزوار ومئات المهنيين من مختلف أنحاء العالم. وتتيح هذه المشاركة إبراز الغنى الثقافي والسينمائي المغربي، مع تقديم طنجة كأرض للتصوير والإبداع والحوار بين الثقافات.",
+        "كما تشارك مؤسسة سينيمانا في مهرجان كان في التعريف بالسينما المغربية من خلال تقديم برنامج « بين ضفتين » داخل رواق France Télévisions، بما يوفر منصة للرؤية والتعاون الفني بين ضفتي المتوسط. وتعكس هذه المبادرات التزام المؤسسة بدبلوماسية ثقافية ديناميكية تجعل من طنجة ملتقى سينمائيا دوليا ورمزا للانفتاح والإبداع والتنوع الثقافي."
+      ],
+      cards: [
+        ["كليرمون فيران", "رواق داخل السوق المهني لتمثيل المغرب وإبراز الإبداع السينمائي المغربي."],
+        ["مهرجان كان", "تقديم برنامج « بين ضفتين » داخل رواق France Télévisions."],
+        ["طنجة ملتقى سينمائي", "دبلوماسية ثقافية تربط المواهب المغربية بالشبكات الدولية."]
+      ],
+      captions: ["كان", "الرواق المهني", "لقاءات", "سوق الفيلم القصير", "بين ضفتين"],
+      alts: [
+        "لوحة France Télévisions Brut في مهرجان كان",
+        "رواق مهرجان طنجة للفيلم في سوق كليرمون فيران",
+        "لقاء مهني حول الرواق المغربي",
+        "منظر لسوق الفيلم القصير بكليرمون فيران",
+        "تقديم برنامج بين ضفتين في كان"
+      ]
+    }
+  };
+
+  return copy[currentLanguage] || copy.fr;
+}
+
+function activityImage(src, alt, caption) {
+  return { src, alt, caption: caption || "" };
+}
+
+function getActivityItems() {
+  const copy = TRANSLATIONS[currentLanguage].activities;
+  const mediation = getMediationActivityCopy();
+
+  return [
+    {
+      id: "festival",
+      eyebrow: copy.featureEyebrow,
+      title: copy.featureTitle,
+      short: copy.featureCopy[0],
+      paragraphs: copy.featureCopy,
+      cards: copy.cards,
+      images: [
+        activityImage("assets/activities/tff-lobby.jpg?v=20260522", copy.imageAlt, copy.featureEyebrow),
+        activityImage("assets/activities/tff-red-carpet.jpg?v=20260522", copy.galleryAlts[0], copy.galleryCaptions[0]),
+        activityImage("assets/activities/tff-theatre.jpg?v=20260522", copy.galleryAlts[1], copy.galleryCaptions[1]),
+        activityImage("assets/activities/tff-networking.jpg?v=20260522", copy.galleryAlts[2], copy.galleryCaptions[2]),
+        activityImage("assets/activities/tff-press.webp?v=20260522", copy.galleryAlts[3], copy.galleryCaptions[3]),
+        activityImage("assets/activities/tff-awards.jpg?v=20260522", copy.galleryAlts[4], copy.galleryCaptions[4])
+      ]
+    },
+    {
+      id: "monthly",
+      eyebrow: copy.monthlyEyebrow,
+      title: copy.monthlyTitle,
+      short: copy.monthlyCopy[0],
+      paragraphs: copy.monthlyCopy,
+      cards: copy.monthlyCards,
+      images: [
+        activityImage("assets/activities/monthly-screening.jpg?v=20260522", copy.monthlyImageAlt, copy.monthlyGalleryCaptions[0]),
+        activityImage("assets/activities/monthly-lobby.jpg?v=20260522", copy.monthlyGalleryAlts[1], copy.monthlyGalleryCaptions[1]),
+        activityImage("assets/activities/monthly-award.jpg?v=20260522", copy.monthlyGalleryAlts[2], copy.monthlyGalleryCaptions[2]),
+        activityImage("assets/activities/monthly-guests.jpg?v=20260522", copy.monthlyGalleryAlts[3], copy.monthlyGalleryCaptions[3]),
+        activityImage("assets/activities/monthly-interview.jpg?v=20260522", copy.monthlyGalleryAlts[4], copy.monthlyGalleryCaptions[4])
+      ]
+    },
+    {
+      id: "training",
+      eyebrow: copy.trainingEyebrow,
+      title: copy.trainingTitle,
+      short: copy.trainingCopy[0],
+      paragraphs: copy.trainingCopy,
+      cards: copy.trainingCards,
+      images: [
+        activityImage("assets/activities/courts-entre-2-rives.jpg?v=20260523", copy.trainingImageAlt, copy.trainingTitle)
+      ]
+    },
+    {
+      id: "mediation",
+      eyebrow: mediation.eyebrow,
+      title: mediation.title,
+      short: mediation.paragraphs[0],
+      paragraphs: mediation.paragraphs,
+      cards: mediation.cards,
+      images: [
+        activityImage("assets/activities/mediation-cannes-france-tv.jpeg?v=20260523", mediation.alts[0], mediation.captions[0]),
+        activityImage("assets/activities/mediation-clermont-stand.jpeg?v=20260523", mediation.alts[1], mediation.captions[1]),
+        activityImage("assets/activities/mediation-clermont-meeting.jpeg?v=20260523", mediation.alts[2], mediation.captions[2]),
+        activityImage("assets/activities/mediation-clermont-market.jpeg?v=20260523", mediation.alts[3], mediation.captions[3]),
+        activityImage("assets/activities/mediation-cannes-presentation.jpeg?v=20260523", mediation.alts[4], mediation.captions[4])
+      ]
+    },
+    {
+      id: "school",
+      eyebrow: copy.schoolEyebrow,
+      title: copy.schoolTitle,
+      short: copy.schoolCopy[0],
+      paragraphs: copy.schoolCopy,
+      cards: copy.schoolCards,
+      images: [
+        activityImage("assets/activities/school-cineclub-camera.jpg?v=20260523", copy.schoolImageAlt, copy.schoolGalleryCaptions[0]),
+        activityImage("assets/activities/school-cineclub-group.jpg?v=20260523", copy.schoolGalleryAlts[1], copy.schoolGalleryCaptions[1]),
+        activityImage("assets/activities/school-cineclub-workshop.jpg?v=20260523", copy.schoolGalleryAlts[2], copy.schoolGalleryCaptions[2]),
+        activityImage("assets/activities/school-cineclub-mentor.jpg?v=20260523", copy.schoolGalleryAlts[3], copy.schoolGalleryCaptions[3]),
+        activityImage("assets/activities/school-cineclub-discussion.jpg?v=20260523", copy.schoolGalleryAlts[4], copy.schoolGalleryCaptions[4]),
+        activityImage("assets/activities/school-cineclub-screening.jpg?v=20260523", copy.schoolGalleryAlts[5], copy.schoolGalleryCaptions[5])
+      ]
+    }
+  ];
+}
+
+function activityCarouselMarkup(images) {
+  const sourceImages = Array.isArray(images) ? images.filter(Boolean) : [];
+  if (!sourceImages.length) return "";
+
+  const duration = Math.max(sourceImages.length * 4, 14);
+  const trackClass = sourceImages.length > 1 ? "activity-card-track" : "activity-card-track single";
+
+  return `
+    <span class="${trackClass}" style="--activity-carousel-duration:${duration}s">
+      ${sourceImages.map((image, index) => `
+    <img
+      class="activity-card-slide"
+      src="${escapeHtml(image.src)}"
+      alt="${escapeHtml(image.alt)}"
+      loading="lazy"
+      style="--activity-slide-delay:${index * 4}s"
+    >
+      `).join("")}
+    </span>
+  `;
+}
+
+function renderActivityCards() {
+  const grid = document.getElementById("activityCardGrid");
+  if (!grid) return;
+
+  const ui = getActivityUiCopy();
+  const activities = getActivityItems();
+  setText("#activitiesOverviewEyebrow", ui.overviewEyebrow);
+  setText("#activitiesOverviewTitle", ui.overviewTitle);
+  setText("#activityBackButton", ui.back);
+
+  grid.innerHTML = activities.map((activity) => `
+    <button class="activity-card" type="button" onclick="openActivityDetail('${activity.id}')">
+      <span class="activity-card-media" aria-hidden="true">
+        ${activityCarouselMarkup(activity.images)}
+      </span>
+      <span class="activity-card-body">
+        <span class="eyebrow">${escapeHtml(activity.eyebrow)}</span>
+        <strong>${escapeHtml(activity.title)}</strong>
+        <span>${escapeHtml(activity.short)}</span>
+        <em>${escapeHtml(ui.open)}</em>
+      </span>
+    </button>
+  `).join("");
+
+  if (activeActivityId && !document.getElementById("activityDetail").hidden) {
+    renderActivityDetail(activeActivityId);
+  }
+}
+
+function renderActivityDetail(activityId) {
+  const activity = getActivityItems().find((item) => item.id === activityId);
+  const container = document.getElementById("activityDetailContent");
+  if (!activity || !container) return;
+
+  const ui = getActivityUiCopy();
+  const primaryImage = activity.images[0];
+  const storyParagraphs = activity.paragraphs.slice(1).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
+  const cards = activity.cards.map((card) => `
+    <article class="activity-detail-point">
+      <h3>${escapeHtml(card[0])}</h3>
+      <p>${escapeHtml(card[1])}</p>
+    </article>
+  `).join("");
+  const gallery = activity.images.map((image, index) => `
+    <figure class="${index === 0 ? "featured" : ""}">
+      <img loading="lazy" src="${escapeHtml(image.src)}" alt="${escapeHtml(image.alt)}">
+      <figcaption>${escapeHtml(image.caption)}</figcaption>
+    </figure>
+  `).join("");
+
+  container.innerHTML = `
+    <div class="activity-detail-shell">
+      <header class="activity-detail-hero">
+        <figure class="activity-detail-main-image">
+          <img loading="lazy" src="${escapeHtml(primaryImage.src)}" alt="${escapeHtml(primaryImage.alt)}">
+          <figcaption>${escapeHtml(primaryImage.caption || activity.title)}</figcaption>
+        </figure>
+        <div class="activity-detail-heading">
+        <p class="eyebrow">${escapeHtml(activity.eyebrow)}</p>
+        <h2>${escapeHtml(activity.title)}</h2>
+          <p class="activity-detail-lede">${escapeHtml(activity.short)}</p>
+      </div>
+      </header>
+      ${storyParagraphs ? `<div class="activity-detail-copy">${storyParagraphs}</div>` : ""}
+      <section class="activity-detail-section">
+      <p class="eyebrow">${escapeHtml(ui.keyPoints)}</p>
+      <div class="activity-detail-points">${cards}</div>
+      </section>
+      <section class="activity-detail-section">
+      <p class="eyebrow">${escapeHtml(ui.gallery)}</p>
+      <div class="activity-detail-gallery">${gallery}</div>
+      </section>
+    </div>
+  `;
+}
+
+function openActivityDetail(activityId) {
+  const overview = document.getElementById("activitiesOverview");
+  const detail = document.getElementById("activityDetail");
+  activeActivityId = activityId;
+  renderActivityDetail(activityId);
+  if (overview) overview.hidden = true;
+  if (detail) {
+    detail.hidden = false;
+    detail.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
+function closeActivityDetail(shouldScroll = true) {
+  const overview = document.getElementById("activitiesOverview");
+  const detail = document.getElementById("activityDetail");
+  activeActivityId = "";
+  if (detail) detail.hidden = true;
+  if (overview) {
+    overview.hidden = false;
+    if (shouldScroll) overview.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 }
 
 function isFirebaseConfigured() {
@@ -1347,6 +1667,7 @@ function setLanguage(language) {
     setText(`${selector} figcaption`, caption);
     setAttr(`${selector} img`, "alt", copy.activities.schoolGalleryAlts[index]);
   });
+  renderActivityCards();
 
   setText("#page-membership .page-hero .eyebrow", copy.membership.eyebrow);
   setText("#page-membership .page-hero h1", copy.membership.title);
@@ -1434,6 +1755,8 @@ function setLanguage(language) {
 
 function showPage(name, pushState = true) {
   const target = PAGES.includes(name) ? name : "home";
+
+  if (target === "activities" && pushState) closeActivityDetail(false);
 
   document.querySelectorAll(".page").forEach((page) => {
     page.classList.toggle("active", page.id === `page-${target}`);

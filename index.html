@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260523-school-cineclubs">
+  <link rel="stylesheet" href="style.css?v=20260523-activity-luxe2">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -204,7 +204,18 @@
         <p class="eyebrow">Activités</p>
         <h1>Activités CINEMANA</h1>
       </header>
-      <section class="section activity-list">
+      <section class="section activities-index" id="activitiesOverview">
+        <div class="activities-intro">
+          <p class="eyebrow" id="activitiesOverviewEyebrow">Nos activités</p>
+          <h2 id="activitiesOverviewTitle">Explorez les programmes CINEMANA</h2>
+        </div>
+        <div class="activity-card-grid" id="activityCardGrid"></div>
+      </section>
+      <section class="section activity-detail-view" id="activityDetail" hidden>
+        <button class="btn secondary activity-back" type="button" id="activityBackButton" onclick="closeActivityDetail()">Retour aux activités</button>
+        <article class="activity-detail-card" id="activityDetailContent"></article>
+      </section>
+      <section class="section activity-list legacy-activity-list" hidden>
         <article class="activity-feature">
           <img loading="lazy" src="assets/activities/tff-lobby.jpg?v=20260522" alt="Public du Tangier Film Festival dans le hall">
           <div>
@@ -687,7 +698,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260523-membership-complete"></script>
+  <script defer src="script.js?v=20260523-activity-luxe2"></script>
   <script defer src="reservation-extension.js?v=20260523-membership-complete"></script>
 </body>
 </html>
