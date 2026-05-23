@@ -6,7 +6,10 @@ const CINEMANA_EXTENSION_COPY = {
     modal: {
       labels: {
         profession: "Fonction / Profession",
-        professionOther: "Autre fonction"
+        professionOther: "Autre fonction",
+        referralType: "Comment avez-vous connu CINEMANA ?",
+        referralSocial: "Réseau social",
+        referralOther: "Précisez"
       },
       professionOptions: {
         empty: "Choisir une fonction",
@@ -14,8 +17,31 @@ const CINEMANA_EXTENSION_COPY = {
         employee: "Employé",
         other: "Autre"
       },
+      referralOptions: {
+        empty: "Choisir une réponse",
+        social: "Réseaux sociaux",
+        internet: "Internet",
+        person: "Suggestion d’une personne",
+        chance: "Par hasard",
+        other: "Autre"
+      },
+      socialOptions: {
+        empty: "Choisir le réseau",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        youtube: "YouTube",
+        whatsapp: "WhatsApp",
+        linkedin: "LinkedIn",
+        x: "X / Twitter"
+      },
+      verifyButton: "Vérifier le code et envoyer ma demande",
+      loadingCreate: "Vérification du code et envoi de la demande...",
+      success: (name) => `Merci ${name}. Nous avons bien reçu votre demande d’adhésion CINEMANA. Notre équipe va l’étudier et vous répondra dans les plus brefs délais.`,
       validation: {
-        professionOther: "Veuillez préciser votre fonction."
+        professionOther: "Veuillez préciser votre fonction.",
+        referralSocial: "Veuillez choisir le réseau social.",
+        referralOther: "Veuillez préciser comment vous nous avez connus."
       }
     },
     reservation: {
@@ -71,6 +97,7 @@ const CINEMANA_EXTENSION_COPY = {
         referenceNotFound: "Ce code membre n’existe pas dans la liste des membres.",
         emailMismatch: "Cet e-mail n’est pas lié à ce code membre.",
         identityMismatch: "Le nom saisi ne correspond pas à ce code membre.",
+        memberNotApproved: "Cette carte membre n’est pas encore validée. Votre demande est en cours de revue.",
         seatRequired: "Veuillez choisir un siège.",
         seatTaken: "Ce siège vient d’être réservé. Choisissez un autre siège.",
         sheetsTimeout: "Google Apps Script ne répond pas. Vérifiez que le Web App est déployé avec le nouveau code.",
@@ -88,7 +115,10 @@ const CINEMANA_EXTENSION_COPY = {
     modal: {
       labels: {
         profession: "Role / Profession",
-        professionOther: "Other role"
+        professionOther: "Other role",
+        referralType: "How did you hear about CINEMANA?",
+        referralSocial: "Social network",
+        referralOther: "Please specify"
       },
       professionOptions: {
         empty: "Choose a role",
@@ -96,8 +126,31 @@ const CINEMANA_EXTENSION_COPY = {
         employee: "Employee",
         other: "Other"
       },
+      referralOptions: {
+        empty: "Choose an answer",
+        social: "Social media",
+        internet: "Internet",
+        person: "Suggested by someone",
+        chance: "By chance",
+        other: "Other"
+      },
+      socialOptions: {
+        empty: "Choose the network",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        youtube: "YouTube",
+        whatsapp: "WhatsApp",
+        linkedin: "LinkedIn",
+        x: "X / Twitter"
+      },
+      verifyButton: "Verify code and send my request",
+      loadingCreate: "Verifying the code and sending the request...",
+      success: (name) => `Thank you ${name}. We have received your CINEMANA membership request. Our team will review it and get back to you as soon as possible.`,
       validation: {
-        professionOther: "Please specify your role."
+        professionOther: "Please specify your role.",
+        referralSocial: "Please choose the social network.",
+        referralOther: "Please specify how you heard about us."
       }
     },
     reservation: {
@@ -153,6 +206,7 @@ const CINEMANA_EXTENSION_COPY = {
         referenceNotFound: "This member code does not exist in the members list.",
         emailMismatch: "This e-mail is not linked to this member code.",
         identityMismatch: "The entered name does not match this member code.",
+        memberNotApproved: "This membership card is not approved yet. Your request is still under review.",
         seatRequired: "Please choose a seat.",
         seatTaken: "This seat has just been reserved. Choose another seat.",
         sheetsTimeout: "Google Apps Script is not responding. Make sure the Web App is deployed with the new code.",
@@ -170,7 +224,10 @@ const CINEMANA_EXTENSION_COPY = {
     modal: {
       labels: {
         profession: "المهنة / الصفة",
-        professionOther: "مهنة أخرى"
+        professionOther: "مهنة أخرى",
+        referralType: "كيفاش عرفتينا؟",
+        referralSocial: "موقع التواصل",
+        referralOther: "وضح أكثر"
       },
       professionOptions: {
         empty: "اختر المهنة",
@@ -178,8 +235,31 @@ const CINEMANA_EXTENSION_COPY = {
         employee: "مستخدم",
         other: "أخرى"
       },
+      referralOptions: {
+        empty: "اختار الجواب",
+        social: "مواقع التواصل",
+        internet: "الإنترنت",
+        person: "اقتراح من شخص",
+        chance: "صدفة",
+        other: "آخر"
+      },
+      socialOptions: {
+        empty: "اختار الموقع",
+        instagram: "Instagram",
+        facebook: "Facebook",
+        tiktok: "TikTok",
+        youtube: "YouTube",
+        whatsapp: "WhatsApp",
+        linkedin: "LinkedIn",
+        x: "X / Twitter"
+      },
+      verifyButton: "تأكيد الرمز وإرسال الطلب",
+      loadingCreate: "جاري تأكيد الرمز وإرسال الطلب...",
+      success: (name) => `شكرا ${name}. توصلنا بطلب العضوية ديالك فـ CINEMANA. الفريق ديالنا غادي يراجع الطلب وغادي نجاوبوك ف أقرب وقت.`,
       validation: {
-        professionOther: "يرجى كتابة المهنة."
+        professionOther: "يرجى كتابة المهنة.",
+        referralSocial: "يرجى اختيار موقع التواصل.",
+        referralOther: "يرجى توضيح كيفاش عرفتينا."
       }
     },
     reservation: {
@@ -235,6 +315,7 @@ const CINEMANA_EXTENSION_COPY = {
         referenceNotFound: "كود العضوية غير موجود في لائحة الأعضاء.",
         emailMismatch: "هذا الإيميل غير مرتبط بكود العضوية.",
         identityMismatch: "الاسم المدخل لا يطابق كود العضوية.",
+        memberNotApproved: "بطاقة العضوية مازال ما تقبلاتش. الطلب ديالك باقي قيد المراجعة.",
         seatRequired: "يرجى اختيار كرسي.",
         seatTaken: "هذا الكرسي تم حجزه الآن. اختر كرسيا آخر.",
         sheetsTimeout: "Google Apps Script لا يجيب. تأكد أن Web App منشور بالكود الجديد.",
@@ -262,6 +343,11 @@ function extendCinemanaTranslations() {
 
     target.modal.labels = { ...target.modal.labels, ...source.modal.labels };
     target.modal.professionOptions = source.modal.professionOptions;
+    target.modal.referralOptions = source.modal.referralOptions;
+    target.modal.socialOptions = source.modal.socialOptions;
+    target.modal.verifyButton = source.modal.verifyButton;
+    target.modal.loadingCreate = source.modal.loadingCreate;
+    target.modal.success = source.modal.success;
     target.modal.validation = { ...target.modal.validation, ...source.modal.validation };
 
     target.reservation.member.steps = source.reservation.member.steps;
@@ -292,6 +378,23 @@ function applyExtensionTexts() {
   setOption('#memberProfessionType option[value="student"]', modal.professionOptions.student);
   setOption('#memberProfessionType option[value="employee"]', modal.professionOptions.employee);
   setOption('#memberProfessionType option[value="other"]', modal.professionOptions.other);
+  setLabel("memberReferralType", modal.labels.referralType);
+  setLabel("memberReferralSocial", modal.labels.referralSocial);
+  setLabel("memberReferralOther", modal.labels.referralOther);
+  setOption('#memberReferralType option[value=""]', modal.referralOptions.empty);
+  setOption('#memberReferralType option[value="social"]', modal.referralOptions.social);
+  setOption('#memberReferralType option[value="internet"]', modal.referralOptions.internet);
+  setOption('#memberReferralType option[value="person"]', modal.referralOptions.person);
+  setOption('#memberReferralType option[value="chance"]', modal.referralOptions.chance);
+  setOption('#memberReferralType option[value="other"]', modal.referralOptions.other);
+  setOption('#memberReferralSocial option[value=""]', modal.socialOptions.empty);
+  setOption('#memberReferralSocial option[value="instagram"]', modal.socialOptions.instagram);
+  setOption('#memberReferralSocial option[value="facebook"]', modal.socialOptions.facebook);
+  setOption('#memberReferralSocial option[value="tiktok"]', modal.socialOptions.tiktok);
+  setOption('#memberReferralSocial option[value="youtube"]', modal.socialOptions.youtube);
+  setOption('#memberReferralSocial option[value="whatsapp"]', modal.socialOptions.whatsapp);
+  setOption('#memberReferralSocial option[value="linkedin"]', modal.socialOptions.linkedin);
+  setOption('#memberReferralSocial option[value="x"]', modal.socialOptions.x);
 
   setLabel("memberReservationName", reservation.member.labels.name);
   setLabel("memberCode", reservation.member.labels.code);
@@ -330,6 +433,25 @@ function canonicalMemberProfession(data) {
   return data.profession_other.trim();
 }
 
+function canonicalMemberReferral(data) {
+  if (data.referral_type === "social") {
+    const names = {
+      instagram: "Instagram",
+      facebook: "Facebook",
+      tiktok: "TikTok",
+      youtube: "YouTube",
+      whatsapp: "WhatsApp",
+      linkedin: "LinkedIn",
+      x: "X / Twitter"
+    };
+    return `Réseaux sociaux - ${names[data.referral_social] || data.referral_social}`;
+  }
+  if (data.referral_type === "internet") return "Internet";
+  if (data.referral_type === "person") return "Suggestion d’une personne";
+  if (data.referral_type === "chance") return "Par hasard";
+  return data.referral_other.trim();
+}
+
 function handleMemberProfessionChange() {
   const select = document.getElementById("memberProfessionType");
   const wrap = document.getElementById("memberProfessionOtherWrap");
@@ -343,12 +465,35 @@ function handleMemberProfessionChange() {
   }
 }
 
+function handleMemberReferralChange() {
+  const type = document.getElementById("memberReferralType");
+  const socialWrap = document.getElementById("memberReferralSocialWrap");
+  const social = document.getElementById("memberReferralSocial");
+  const otherWrap = document.getElementById("memberReferralOtherWrap");
+  const other = document.getElementById("memberReferralOther");
+  const showSocial = type && type.value === "social";
+  const showOther = type && type.value === "other";
+
+  if (socialWrap) socialWrap.hidden = !showSocial;
+  if (social) {
+    social.required = Boolean(showSocial);
+    if (!showSocial) social.value = "";
+  }
+
+  if (otherWrap) otherWrap.hidden = !showOther;
+  if (other) {
+    other.required = Boolean(showOther);
+    if (!showOther) other.value = "";
+  }
+}
+
 const originalSetLanguage = setLanguage;
 extendCinemanaTranslations();
 setLanguage = function setLanguageWithReservation(language) {
   originalSetLanguage(language);
   applyExtensionTexts();
   handleMemberProfessionChange();
+  handleMemberReferralChange();
   renderSeatMap();
 };
 
@@ -356,6 +501,7 @@ const originalResetMemberVerification = resetMemberVerification;
 resetMemberVerification = function resetMemberVerificationWithProfession(clearForm = false) {
   originalResetMemberVerification(clearForm);
   handleMemberProfessionChange();
+  handleMemberReferralChange();
 };
 
 getMemberFormData = function getMemberFormDataWithProfession() {
@@ -366,6 +512,9 @@ getMemberFormData = function getMemberFormDataWithProfession() {
     phone: document.getElementById("memberPhone").value.trim(),
     profession_type: document.getElementById("memberProfessionType").value,
     profession_other: document.getElementById("memberProfessionOther").value.trim(),
+    referral_type: document.getElementById("memberReferralType").value,
+    referral_social: document.getElementById("memberReferralSocial").value,
+    referral_other: document.getElementById("memberReferralOther").value.trim(),
     email: document.getElementById("memberEmail").value.trim(),
     password: document.getElementById("memberPassword").value,
     repeat_password: document.getElementById("memberRepeatPassword").value
@@ -380,6 +529,7 @@ validateMemberForm = function validateMemberFormWithProfession(data) {
     data.city,
     data.phone,
     data.profession_type,
+    data.referral_type,
     data.email,
     data.password,
     data.repeat_password
@@ -387,6 +537,8 @@ validateMemberForm = function validateMemberFormWithProfession(data) {
 
   if (requiredValues.some((value) => !value)) return messages.required;
   if (data.profession_type === "other" && !data.profession_other) return messages.professionOther;
+  if (data.referral_type === "social" && !data.referral_social) return messages.referralSocial;
+  if (data.referral_type === "other" && !data.referral_other) return messages.referralOther;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return messages.email;
 
   const birthday = new Date(`${data.birthday}T00:00:00`);
@@ -398,6 +550,7 @@ validateMemberForm = function validateMemberFormWithProfession(data) {
   if (data.password !== data.repeat_password) return messages.passwordMatch;
 
   data.profession = canonicalMemberProfession(data);
+  data.heard_about_us = canonicalMemberReferral(data);
   return "";
 };
 
@@ -409,6 +562,9 @@ setMemberFieldsDisabled = function setMemberFieldsDisabledWithProfession(disable
     "memberPhone",
     "memberProfessionType",
     "memberProfessionOther",
+    "memberReferralType",
+    "memberReferralSocial",
+    "memberReferralOther",
     "memberEmail",
     "memberPassword",
     "memberRepeatPassword"
@@ -436,6 +592,7 @@ createFirebaseMemberAccount = async function createFirebaseMemberAccountWithProf
     city: data.city,
     phone: data.phone,
     profession: data.profession || canonicalMemberProfession(data),
+    heard_about_us: data.heard_about_us || canonicalMemberReferral(data),
     email: data.email,
     email_verified_by_code: true,
     google_sheet_sync_requested: true,
@@ -456,6 +613,7 @@ sendMemberToGoogleSheets = async function sendMemberToGoogleSheetsWithProfession
     city: data.city,
     phone: data.phone,
     profession: data.profession || canonicalMemberProfession(data),
+    heard_about_us: data.heard_about_us || canonicalMemberReferral(data),
     email: data.email,
     status: "pending",
     source: "cinemana-website",
@@ -522,6 +680,7 @@ function getReservationErrorMessage(code) {
     reference_not_found: validation.referenceNotFound,
     email_mismatch: validation.emailMismatch,
     identity_mismatch: validation.identityMismatch,
+    member_not_approved: validation.memberNotApproved,
     seat_required: validation.seatRequired,
     seat_taken: validation.seatTaken,
     sheets_timeout: validation.sheetsTimeout,
@@ -875,6 +1034,9 @@ async function confirmSeatSelection() {
 document.addEventListener("DOMContentLoaded", () => {
   const professionSelect = document.getElementById("memberProfessionType");
   if (professionSelect) professionSelect.addEventListener("change", handleMemberProfessionChange);
+  const referralType = document.getElementById("memberReferralType");
+  if (referralType) referralType.addEventListener("change", handleMemberReferralChange);
   handleMemberProfessionChange();
+  handleMemberReferralChange();
   applyExtensionTexts();
 });

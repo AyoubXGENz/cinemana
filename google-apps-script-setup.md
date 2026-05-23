@@ -7,18 +7,18 @@
 
 3. Replace the current code with the content of `google-apps-script-cinemana.gs`.
 
-4. Add your Telegram bot settings near the top of the script:
+4. Add your Telegram bot settings as private Apps Script properties, not inside the public website files:
 
-```js
-const TELEGRAM_BOT_TOKEN = "YOUR_REAL_TELEGRAM_BOT_TOKEN";
-const TELEGRAM_CHAT_ID = "YOUR_REAL_TELEGRAM_CHAT_ID";
-```
+   - In Apps Script, open `Project Settings`.
+   - Under `Script Properties`, add `TELEGRAM_BOT_TOKEN`.
+   - Add `TELEGRAM_CHAT_ID`.
+   - Paste your real bot token and chat id there.
 
 To create/get them:
 - In Telegram, open `@BotFather`, create a bot, and copy the bot token.
 - Send one message to your new bot.
 - Open `https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/getUpdates` in the browser.
-- Copy your chat id from the JSON response and put it in `TELEGRAM_CHAT_ID`.
+- Copy your chat id from the JSON response and put it in the `TELEGRAM_CHAT_ID` script property.
 
 5. Click `Deploy > New deployment`.
 
@@ -44,7 +44,19 @@ https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/setWebhook?url=YOUR_DEP
    - `membership`
    - `reservation`
 
-The script will create or correct the header row if the sheets are empty.
+The script will create or correct the header row if the sheets are empty or missing new columns.
+
+The `membership` sheet now also uses:
+- `Comment as-tu connu CINEMANA?`
+- `Statu`
+- `Created at`
+- `Email status`
+- `Telegram chat`
+- `Telegram message`
+
+Membership requests are saved as `pending` in `Statu`. Telegram sends you two buttons:
+- `Accepter`: changes `Statu` to `member`, marks it green, and sends the member reference + QR e-mail.
+- `Refuser`: changes `Statu` to `rejected`, marks it red, and removes the Telegram buttons.
 
 Public reservations are now saved as `pending` in the `Statu` column. Telegram sends you two buttons:
 - `Confirmer`: changes `Statu` to `confirmed`, marks it green, reserves the seat, and sends the ticket e-mail with QR code.

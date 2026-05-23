@@ -48,7 +48,7 @@ const TRANSLATIONS = {
     home: {
       heroAlt: "Caméra de cinéma sur un plateau de tournage",
       logoLabel: "Logo CINEMANA animé",
-      eyebrow: "Fondation culturelle à but non lucratif",
+      eyebrow: "CINÉMA est notre oxygène",
       title: "Le cinéma se vit, se partage et se transmet à Tanger.",
       copy: "La Fondation CINEMANA rassemble les passionnés de cinéma autour du Festival International du Film de Tanger, de projections mensuelles, de cinéclubs scolaires, de formations et de rencontres avec les artistes.",
       missionButton: "Découvrir nos missions",
@@ -100,16 +100,80 @@ const TRANSLATIONS = {
     },
     activities: {
       eyebrow: "Activités",
-      title: "Des rendez-vous réguliers pour faire circuler les films, les idées et les talents.",
-      imageAlt: "Entrée lumineuse d’un cinéma",
+      title: "Activités CINEMANA",
+      imageAlt: "Public du Tangier Film Festival dans le hall",
       featureEyebrow: "Temps fort",
-      featureTitle: "Festival International du Film de Tanger",
-      featureCopy: "Sélection de longs et courts métrages, avant-premières, hommages, cérémonies, espace VIP, rencontres professionnelles et échanges avec le public.",
+      featureTitle: "Tangier Film Festival",
+      featureCopy: [
+        "Tangier Film Festival est une manifestation internationale qui s’est solidement imposée dans le circuit régional des festivals de cinéma comme l’un des festivals africains et arabes les plus réputés.",
+        "Il propose une sélection impressionnante de films en compétition, comprenant des longs métrages, des courts métrages de fiction, des courts métrages d’animation et des courts métrages documentaires, avec la présence de distributeurs et d’agents de festivals de renommée internationale.",
+        "Le Festival invite chaque année des cinéastes du monde entier à participer au Tangier Film Factory, où ils auront l’opportunité de développer leur networking entre producteurs, acheteurs, distributeurs et porteurs de projets, et de voir leur film présenté sur la plateforme du Festival ainsi que promu auprès de tous nos membres à travers le monde."
+      ],
       cards: [
-        ["Projections mensuelles", "Séances régulières à Tanger dans des salles partenaires, avec réservation préalable pour les membres et le public."],
-        ["Rencontres et débats", "Échanges inédits avec des stars, réalisateurs, techniciens, auteurs et acteurs de la scène cinématographique marocaine."],
-        ["Cinéclubs scolaires", "Accompagnement des établissements, formation du regard critique et introduction au langage cinématographique."],
-        ["Ateliers et formations", "Réalisation, montage, écriture de scénario, gestion de projet culturel et métiers du cinéma."]
+        ["Compétition internationale", "Longs métrages, courts métrages de fiction, animation et documentaires dans une sélection reconnue."],
+        ["Tangier Film Factory", "Un espace de développement et de networking entre cinéastes, producteurs, acheteurs et distributeurs."],
+        ["Rayonnement mondial", "Des films présentés sur la plateforme du Festival et promus auprès d’un réseau international de membres."]
+      ],
+      galleryLabel: "Photos du Tangier Film Festival",
+      galleryCaptions: ["Tapis rouge", "Cérémonie", "Networking", "Presse", "Lauréats"],
+      galleryAlts: [
+        "Invités sur le tapis rouge du Tangier Film Festival",
+        "Public dans la salle pendant le Tangier Film Festival",
+        "Espace professionnel du Tangier Film Festival",
+        "Interview presse pendant le Tangier Film Festival",
+        "Lauréats avec leurs trophées au Tangier Film Festival"
+      ],
+      monthlyImageAlt: "Projection mensuelle CINEMANA au Palais des Arts de Tanger",
+      monthlyEyebrow: "Cycle de projections",
+      monthlyTitle: "Projections Mensuelles",
+      monthlyCopy: [
+        "Dans le cadre du projet SIN lancé par le ministère de la Jeunesse et de la Culture en partenariat avec la Fédération nationale des cinéclubs, la Fondation CINEMANA organise des cycles de projections mensuelles en collaboration avec la Direction régionale de la culture et le Palais des Arts de Tanger."
+      ],
+      monthlyCards: [
+        ["Projet SIN", "Un programme national qui rapproche le cinéma du public et accompagne la vie culturelle locale."],
+        ["Partenariats institutionnels", "Une action menée avec le ministère, la Fédération nationale des cinéclubs et la Direction régionale de la culture."],
+        ["Palais des Arts de Tanger", "Un espace de projection et de rencontre pour partager les films avec les publics de Tanger."]
+      ],
+      monthlyGalleryLabel: "Photos des projections mensuelles CINEMANA",
+      monthlyGalleryCaptions: ["Projection", "Accueil du public", "Rencontre", "Invités", "Échange"],
+      monthlyGalleryAlts: [
+        "Écran de projection pendant une projection mensuelle CINEMANA",
+        "Public dans le hall pendant les projections mensuelles CINEMANA",
+        "Remise symbolique pendant une projection mensuelle CINEMANA",
+        "Invités devant le panneau CINEMANA pendant les projections mensuelles",
+        "Interview pendant les projections mensuelles CINEMANA"
+      ],
+      trainingImageAlt: "Affiche de la résidence COURTS ENTRE 2 RIVES",
+      trainingEyebrow: "Atelier et formation",
+      trainingTitle: "COURTS ENTRE 2 RIVES",
+      trainingCopy: [
+        "La Fondation CINEMANA organise, en partenariat avec France Télévisions et les trois festivals Les Nuits MED, MoliseCinema et Vues sur les Arts, la résidence méditerranéenne « COURTS ENTRE 2 RIVES », qui invite quatre porteurs de projets de courts métrages du Maroc, de France, de Tunisie et d’Italie à développer leurs projets et à concourir pour un prix d’achat de France Télévisions."
+      ],
+      trainingCards: [
+        ["Résidence méditerranéenne", "Un programme de développement dédié aux courts métrages entre le Maroc, la France, la Tunisie et l’Italie."],
+        ["Partenaires internationaux", "Une résidence organisée avec France Télévisions, Les Nuits MED, MoliseCinema et Vues sur les Arts."],
+        ["Prix d’achat", "Les projets accompagnés concourent pour un prix d’achat de France Télévisions."]
+      ],
+      schoolImageAlt: "Élève manipulant une caméra pendant un cinéclub scolaire CINEMANA",
+      schoolEyebrow: "Cinéclubs scolaires",
+      schoolTitle: "Cinéclubs scolaires",
+      schoolCopy: [
+        "La Fondation CINEMANA anime des ciné-clubs scolaires au sein de plusieurs établissements éducatifs de Tanger, à travers l’organisation de projections de films, d’ateliers d’initiation au cinéma et de formations destinées aux élèves et aux étudiants. À travers ces activités, la fondation œuvre à promouvoir l’éducation à l’image, à développer l’esprit critique et la créativité des jeunes, tout en favorisant l’échange culturel et l’ouverture sur différentes formes d’expression artistique et cinématographique."
+      ],
+      schoolCards: [
+        ["Éducation à l’image", "Des projections et ateliers pour apprendre aux jeunes à lire, analyser et questionner les images."],
+        ["Initiation au cinéma", "Des formations pratiques autour de la caméra, de la narration, de la réalisation et des métiers du cinéma."],
+        ["Créativité et échange", "Un cadre qui développe l’esprit critique, la créativité et l’ouverture culturelle des élèves et étudiants."]
+      ],
+      schoolGalleryLabel: "Photos des cinéclubs scolaires CINEMANA",
+      schoolGalleryCaptions: ["Atelier caméra", "Groupe d’élèves", "Pratique audiovisuelle", "Encadrement", "Échange pédagogique", "Projection scolaire"],
+      schoolGalleryAlts: [
+        "Élève utilisant une caméra pendant un atelier de cinéclub scolaire",
+        "Groupe d’élèves participant à un cinéclub scolaire à Tanger",
+        "Jeunes en pratique audiovisuelle avec caméras et stabilisateur",
+        "Encadrement technique avec des élèves autour d’une caméra",
+        "Échange pédagogique entre formateur et jeunes participants",
+        "Public scolaire assistant à une projection"
       ]
     },
     membership: {
@@ -264,7 +328,7 @@ const TRANSLATIONS = {
     home: {
       heroAlt: "Cinema camera on a film set",
       logoLabel: "Animated CINEMANA logo",
-      eyebrow: "Non-profit cultural foundation",
+      eyebrow: "We breathe CINEMA",
       title: "Cinema is lived, shared and passed on in Tangier.",
       copy: "The CINEMANA Foundation brings film lovers together around the Tangier International Film Festival, monthly screenings, school film clubs, training programs and encounters with artists.",
       missionButton: "Discover our missions",
@@ -316,16 +380,80 @@ const TRANSLATIONS = {
     },
     activities: {
       eyebrow: "Activities",
-      title: "Regular events to circulate films, ideas and talent.",
-      imageAlt: "Bright entrance of a cinema",
+      title: "CINEMANA Activities",
+      imageAlt: "Tangier Film Festival audience in the lobby",
       featureEyebrow: "Highlight",
-      featureTitle: "Tangier International Film Festival",
-      featureCopy: "Feature and short film selections, premieres, tributes, ceremonies, VIP area, professional meetings and public discussions.",
+      featureTitle: "Tangier Film Festival",
+      featureCopy: [
+        "Tangier Film Festival is an international event that has firmly established itself on the regional film-festival circuit as one of the most respected African and Arab festivals.",
+        "It presents an impressive competition selection, including feature films, fiction shorts, animated shorts and documentary shorts, with the presence of internationally renowned distributors and festival agents.",
+        "Each year, the Festival invites filmmakers from around the world to take part in Tangier Film Factory, where they can develop their networking with producers, buyers, distributors and project holders, and see their films presented on the Festival platform and promoted to our members worldwide."
+      ],
       cards: [
-        ["Monthly screenings", "Regular screenings in partner cinemas in Tangier, with prior reservation for members and the public."],
-        ["Meetings and debates", "Unique exchanges with stars, directors, technicians, writers and key voices in Moroccan cinema."],
-        ["School film clubs", "Support for schools, critical-viewing education and introduction to cinematic language."],
-        ["Workshops and training", "Directing, editing, screenwriting, cultural project management and cinema professions."]
+        ["International competition", "Feature films, fiction shorts, animation and documentaries in a recognized selection."],
+        ["Tangier Film Factory", "A development and networking space for filmmakers, producers, buyers and distributors."],
+        ["Global reach", "Films presented on the Festival platform and promoted through an international member network."]
+      ],
+      galleryLabel: "Tangier Film Festival photos",
+      galleryCaptions: ["Red carpet", "Ceremony", "Networking", "Press", "Award winners"],
+      galleryAlts: [
+        "Guests on the Tangier Film Festival red carpet",
+        "Audience in the theatre during Tangier Film Festival",
+        "Professional area at Tangier Film Festival",
+        "Press interview during Tangier Film Festival",
+        "Award winners holding trophies at Tangier Film Festival"
+      ],
+      monthlyImageAlt: "CINEMANA monthly screening at the Palais des Arts in Tangier",
+      monthlyEyebrow: "Screening cycle",
+      monthlyTitle: "Monthly Screenings",
+      monthlyCopy: [
+        "As part of the SIN project launched by the Ministry of Youth and Culture in partnership with the National Federation of Film Clubs, the CINEMANA Foundation organizes monthly screening cycles in collaboration with the Regional Directorate of Culture and the Palais des Arts in Tangier."
+      ],
+      monthlyCards: [
+        ["SIN project", "A national program that brings cinema closer to audiences and supports local cultural life."],
+        ["Institutional partnerships", "An initiative carried out with the ministry, the National Federation of Film Clubs and the Regional Directorate of Culture."],
+        ["Palais des Arts Tangier", "A screening and meeting space where films are shared with Tangier audiences."]
+      ],
+      monthlyGalleryLabel: "CINEMANA monthly screening photos",
+      monthlyGalleryCaptions: ["Screening", "Audience welcome", "Encounter", "Guests", "Exchange"],
+      monthlyGalleryAlts: [
+        "Projection screen during a CINEMANA monthly screening",
+        "Audience in the lobby during CINEMANA monthly screenings",
+        "Symbolic presentation during a CINEMANA monthly screening",
+        "Guests in front of the CINEMANA backdrop during monthly screenings",
+        "Interview during CINEMANA monthly screenings"
+      ],
+      trainingImageAlt: "Poster for the COURTS BETWEEN 2 SHORES residency",
+      trainingEyebrow: "Workshop and training",
+      trainingTitle: "COURTS BETWEEN 2 SHORES",
+      trainingCopy: [
+        "The CINEMANA Foundation organizes, in partnership with France Télévisions and the three festivals Les Nuits MED, MoliseCinema and Vues sur les Arts, the Mediterranean residency “COURTS BETWEEN 2 SHORES”, inviting four short-film project holders from Morocco, France, Tunisia and Italy to develop their projects and compete for a France Télévisions acquisition prize."
+      ],
+      trainingCards: [
+        ["Mediterranean residency", "A development program dedicated to short films connecting Morocco, France, Tunisia and Italy."],
+        ["International partners", "A residency organized with France Télévisions, Les Nuits MED, MoliseCinema and Vues sur les Arts."],
+        ["Acquisition prize", "Supported projects compete for a France Télévisions acquisition prize."]
+      ],
+      schoolImageAlt: "Student handling a camera during a CINEMANA school film club",
+      schoolEyebrow: "School film clubs",
+      schoolTitle: "School Film Clubs",
+      schoolCopy: [
+        "The CINEMANA Foundation runs school film clubs in several educational institutions in Tangier through film screenings, introductory cinema workshops and training sessions for pupils and students. Through these activities, the foundation promotes image education, develops young people’s critical thinking and creativity, and encourages cultural exchange and openness to different forms of artistic and cinematic expression."
+      ],
+      schoolCards: [
+        ["Image education", "Screenings and workshops that help young people read, analyze and question images."],
+        ["Introduction to cinema", "Practical training around the camera, storytelling, directing and cinema professions."],
+        ["Creativity and exchange", "A setting that develops critical thinking, creativity and cultural openness among pupils and students."]
+      ],
+      schoolGalleryLabel: "CINEMANA school film club photos",
+      schoolGalleryCaptions: ["Camera workshop", "Student group", "Audiovisual practice", "Mentoring", "Educational exchange", "School screening"],
+      schoolGalleryAlts: [
+        "Student using a camera during a school film club workshop",
+        "Group of students taking part in a school film club in Tangier",
+        "Young people practicing audiovisual work with cameras and a stabilizer",
+        "Technical mentoring with students around a camera",
+        "Educational exchange between a trainer and young participants",
+        "School audience attending a screening"
       ]
     },
     membership: {
@@ -480,7 +608,7 @@ const TRANSLATIONS = {
     home: {
       heroAlt: "كاميرا سينمائية في موقع تصوير",
       logoLabel: "شعار سينيمانا المتحرك",
-      eyebrow: "مؤسسة ثقافية غير ربحية",
+      eyebrow: "نتنفس سينما",
       title: "السينما تجربة نعيشها ونتقاسمها وننقلها من طنجة.",
       copy: "تجمع مؤسسة سينيمانا عشاق السينما حول المهرجان الدولي للفيلم بطنجة، والعروض الشهرية، والنوادي السينمائية المدرسية، والتكوينات، واللقاءات مع الفنانين.",
       missionButton: "اكتشف مهامنا",
@@ -532,16 +660,80 @@ const TRANSLATIONS = {
     },
     activities: {
       eyebrow: "الأنشطة",
-      title: "مواعيد منتظمة لتداول الأفلام والأفكار والمواهب.",
-      imageAlt: "مدخل مضيء لقاعة سينما",
+      title: "أنشطة سينيمانا",
+      imageAlt: "جمهور مهرجان طنجة للفيلم في بهو القاعة",
       featureEyebrow: "محطة بارزة",
-      featureTitle: "المهرجان الدولي للفيلم بطنجة",
-      featureCopy: "مختارات من الأفلام الطويلة والقصيرة، عروض أولى، تكريمات، حفلات، فضاء VIP، لقاءات مهنية وتبادلات مع الجمهور.",
+      featureTitle: "مهرجان طنجة للفيلم",
+      featureCopy: [
+        "مهرجان طنجة للفيلم تظاهرة دولية فرضت مكانتها بقوة ضمن المسار الجهوي لمهرجانات السينما، كواحد من أبرز المهرجانات الإفريقية والعربية.",
+        "يقترح المهرجان اختيارات مهمة من الأفلام في المسابقة، تشمل الأفلام الطويلة، والأفلام القصيرة الروائية، وأفلام التحريك القصيرة، والأفلام الوثائقية القصيرة، بحضور موزعين ووكلاء مهرجانات ذوي صيت دولي.",
+        "يدعو المهرجان كل سنة سينمائيين من مختلف أنحاء العالم للمشاركة في Tangier Film Factory، حيث تتاح لهم فرصة تطوير شبكة علاقاتهم بين المنتجين والمشترين والموزعين وحاملي المشاريع، وعرض أفلامهم على منصة المهرجان والترويج لها لدى أعضائنا عبر العالم."
+      ],
       cards: [
-        ["العروض الشهرية", "عروض منتظمة في قاعات شريكة بطنجة، مع حجز مسبق للأعضاء والجمهور."],
-        ["لقاءات ونقاشات", "تبادلات غير مسبوقة مع نجوم ومخرجين وتقنيين وكتاب وفاعلين في المشهد السينمائي المغربي."],
-        ["النوادي السينمائية المدرسية", "مواكبة المؤسسات، تكوين النظرة النقدية، والتعريف باللغة السينمائية."],
-        ["ورشات وتكوينات", "الإخراج، المونتاج، كتابة السيناريو، تدبير المشاريع الثقافية ومهن السينما."]
+        ["مسابقة دولية", "أفلام طويلة، وأفلام قصيرة روائية، وتحريك، ووثائقيات ضمن اختيار سينمائي معترف به."],
+        ["Tangier Film Factory", "فضاء للتطوير والتشبيك بين السينمائيين والمنتجين والمشترين والموزعين."],
+        ["إشعاع عالمي", "أفلام تعرض على منصة المهرجان وتروج ضمن شبكة دولية من الأعضاء."]
+      ],
+      galleryLabel: "صور مهرجان طنجة للفيلم",
+      galleryCaptions: ["السجادة الحمراء", "الحفل", "التشبيك", "الصحافة", "الفائزون"],
+      galleryAlts: [
+        "ضيوف على السجادة الحمراء في مهرجان طنجة للفيلم",
+        "الجمهور داخل القاعة خلال مهرجان طنجة للفيلم",
+        "فضاء مهني في مهرجان طنجة للفيلم",
+        "حوار صحفي خلال مهرجان طنجة للفيلم",
+        "فائزون يحملون الجوائز في مهرجان طنجة للفيلم"
+      ],
+      monthlyImageAlt: "عرض شهري لسينيمانا في قصر الفنون بطنجة",
+      monthlyEyebrow: "دورة عروض",
+      monthlyTitle: "العروض الشهرية",
+      monthlyCopy: [
+        "في إطار مشروع SIN الذي أطلقته وزارة الشباب والثقافة بشراكة مع الجامعة الوطنية للأندية السينمائية، تنظم مؤسسة سينيمانا دورات عروض شهرية بتعاون مع المديرية الجهوية للثقافة وقصر الفنون بطنجة."
+      ],
+      monthlyCards: [
+        ["مشروع SIN", "برنامج وطني يقرب السينما من الجمهور ويدعم الحياة الثقافية المحلية."],
+        ["شراكات مؤسساتية", "مبادرة تنجز مع الوزارة والجامعة الوطنية للأندية السينمائية والمديرية الجهوية للثقافة."],
+        ["قصر الفنون بطنجة", "فضاء للعرض واللقاء من أجل تقاسم الأفلام مع جمهور طنجة."]
+      ],
+      monthlyGalleryLabel: "صور العروض الشهرية لسينيمانا",
+      monthlyGalleryCaptions: ["العرض", "استقبال الجمهور", "لقاء", "ضيوف", "تبادل"],
+      monthlyGalleryAlts: [
+        "شاشة عرض خلال عرض شهري لسينيمانا",
+        "الجمهور في بهو القاعة خلال العروض الشهرية لسينيمانا",
+        "تسليم رمزي خلال عرض شهري لسينيمانا",
+        "ضيوف أمام خلفية سينيمانا خلال العروض الشهرية",
+        "حوار خلال العروض الشهرية لسينيمانا"
+      ],
+      trainingImageAlt: "ملصق إقامة COURTS ENTRE 2 RIVES",
+      trainingEyebrow: "ورشات وتكوين",
+      trainingTitle: "COURTS ENTRE 2 RIVES",
+      trainingCopy: [
+        "تنظم مؤسسة سينيمانا، بشراكة مع France Télévisions والمهرجانات الثلاثة Les Nuits MED وMoliseCinema وVues sur les Arts، الإقامة المتوسطية « COURTS ENTRE 2 RIVES »، التي تستضيف أربعة حاملي مشاريع أفلام قصيرة من المغرب وفرنسا وتونس وإيطاليا لتطوير مشاريعهم والتنافس على جائزة شراء من France Télévisions."
+      ],
+      trainingCards: [
+        ["إقامة متوسطية", "برنامج تطوير مخصص للأفلام القصيرة يربط المغرب وفرنسا وتونس وإيطاليا."],
+        ["شركاء دوليون", "إقامة تنظم مع France Télévisions وLes Nuits MED وMoliseCinema وVues sur les Arts."],
+        ["جائزة شراء", "المشاريع المواكبة تتنافس على جائزة شراء من France Télévisions."]
+      ],
+      schoolImageAlt: "تلميذ يستعمل كاميرا خلال نشاط لنادي سينمائي مدرسي لسينيمانا",
+      schoolEyebrow: "الأندية السينمائية المدرسية",
+      schoolTitle: "الأندية السينمائية المدرسية",
+      schoolCopy: [
+        "تنشط مؤسسة سينيمانا أندية سينمائية مدرسية داخل عدد من المؤسسات التعليمية بطنجة، عبر تنظيم عروض أفلام وورشات للتعريف بالسينما وتكوينات موجهة للتلاميذ والطلبة. ومن خلال هذه الأنشطة، تعمل المؤسسة على ترسيخ التربية على الصورة، وتنمية الحس النقدي والإبداع لدى الشباب، مع تشجيع التبادل الثقافي والانفتاح على مختلف أشكال التعبير الفني والسينمائي."
+      ],
+      schoolCards: [
+        ["التربية على الصورة", "عروض وورشات تساعد الشباب على قراءة الصور وتحليلها وطرح الأسئلة حولها."],
+        ["الانفتاح على السينما", "تكوينات تطبيقية حول الكاميرا والسرد والإخراج ومهن السينما."],
+        ["الإبداع والتبادل", "فضاء ينمي الحس النقدي والإبداع والانفتاح الثقافي لدى التلاميذ والطلبة."]
+      ],
+      schoolGalleryLabel: "صور الأندية السينمائية المدرسية لسينيمانا",
+      schoolGalleryCaptions: ["ورشة الكاميرا", "مجموعة تلاميذ", "تطبيق سمعي بصري", "تأطير", "تبادل تربوي", "عرض مدرسي"],
+      schoolGalleryAlts: [
+        "تلميذ يستعمل كاميرا خلال ورشة لناد سينمائي مدرسي",
+        "مجموعة من التلاميذ يشاركون في ناد سينمائي مدرسي بطنجة",
+        "شباب في تطبيق سمعي بصري باستعمال الكاميرات والمثبت",
+        "تأطير تقني مع التلاميذ حول الكاميرا",
+        "تبادل تربوي بين مؤطر وشباب مشاركين",
+        "جمهور مدرسي يتابع عرضا سينمائيا"
       ]
     },
     membership: {
@@ -1074,8 +1266,49 @@ function setLanguage(language) {
   setAttr("#page-activities .activity-feature img", "alt", copy.activities.imageAlt);
   setText("#page-activities .activity-feature .eyebrow", copy.activities.featureEyebrow);
   setText("#page-activities .activity-feature h2", copy.activities.featureTitle);
-  setText("#page-activities .activity-feature p:not(.eyebrow)", copy.activities.featureCopy);
+  document.querySelectorAll("#page-activities .festival-copy p").forEach((paragraph, index) => {
+    paragraph.textContent = copy.activities.featureCopy[index] || "";
+  });
   setCardTexts("#page-activities .cards-grid", copy.activities.cards);
+  setAttr("#page-activities .festival-gallery", "aria-label", copy.activities.galleryLabel);
+  copy.activities.galleryCaptions.forEach((caption, index) => {
+    const selector = `#page-activities .festival-gallery figure:nth-child(${index + 1})`;
+    setText(`${selector} figcaption`, caption);
+    setAttr(`${selector} img`, "alt", copy.activities.galleryAlts[index]);
+  });
+  setAttr("#page-activities .monthly-feature img", "alt", copy.activities.monthlyImageAlt);
+  setText("#page-activities .monthly-feature .eyebrow", copy.activities.monthlyEyebrow);
+  setText("#page-activities .monthly-feature h2", copy.activities.monthlyTitle);
+  document.querySelectorAll("#page-activities .monthly-copy p").forEach((paragraph, index) => {
+    paragraph.textContent = copy.activities.monthlyCopy[index] || "";
+  });
+  setCardTexts("#page-activities .monthly-cards", copy.activities.monthlyCards);
+  setAttr("#page-activities .monthly-gallery", "aria-label", copy.activities.monthlyGalleryLabel);
+  copy.activities.monthlyGalleryCaptions.forEach((caption, index) => {
+    const selector = `#page-activities .monthly-gallery figure:nth-child(${index + 1})`;
+    setText(`${selector} figcaption`, caption);
+    setAttr(`${selector} img`, "alt", copy.activities.monthlyGalleryAlts[index]);
+  });
+  setAttr("#page-activities .training-feature img", "alt", copy.activities.trainingImageAlt);
+  setText("#page-activities .training-feature .eyebrow", copy.activities.trainingEyebrow);
+  setText("#page-activities .training-feature h2", copy.activities.trainingTitle);
+  document.querySelectorAll("#page-activities .training-copy p").forEach((paragraph, index) => {
+    paragraph.textContent = copy.activities.trainingCopy[index] || "";
+  });
+  setCardTexts("#page-activities .training-cards", copy.activities.trainingCards);
+  setAttr("#page-activities .school-feature img", "alt", copy.activities.schoolImageAlt);
+  setText("#page-activities .school-feature .eyebrow", copy.activities.schoolEyebrow);
+  setText("#page-activities .school-feature h2", copy.activities.schoolTitle);
+  document.querySelectorAll("#page-activities .school-copy p").forEach((paragraph, index) => {
+    paragraph.textContent = copy.activities.schoolCopy[index] || "";
+  });
+  setCardTexts("#page-activities .school-cards", copy.activities.schoolCards);
+  setAttr("#page-activities .school-gallery", "aria-label", copy.activities.schoolGalleryLabel);
+  copy.activities.schoolGalleryCaptions.forEach((caption, index) => {
+    const selector = `#page-activities .school-gallery figure:nth-child(${index + 1})`;
+    setText(`${selector} figcaption`, caption);
+    setAttr(`${selector} img`, "alt", copy.activities.schoolGalleryAlts[index]);
+  });
 
   setText("#page-membership .page-hero .eyebrow", copy.membership.eyebrow);
   setText("#page-membership .page-hero h1", copy.membership.title);
