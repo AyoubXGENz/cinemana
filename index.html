@@ -673,6 +673,13 @@
       </div>
       <button class="btn primary full" type="submit">Envoyer ma demande</button>
       <p class="form-message" id="memberMessage" role="status" aria-live="polite"></p>
+      <section class="member-complete" id="memberComplete" hidden>
+        <div class="reservation-complete-icon" aria-hidden="true">✓</div>
+        <p class="eyebrow" id="memberCompleteEyebrow">Carte CINEMANA</p>
+        <h2 id="memberCompleteTitle">Demande envoyée</h2>
+        <p id="memberCompleteText">Nous avons bien reçu votre demande d’adhésion CINEMANA. Notre équipe va l’étudier et vous répondra dans les plus brefs délais.</p>
+        <button class="btn primary" type="button" id="memberCompleteHome" onclick="goMemberHome()">Retour à l’accueil</button>
+      </section>
     </form>
   </div>
 
@@ -680,7 +687,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260523-school-cineclubs"></script>
-  <script defer src="reservation-extension.js?v=20260523-membership-review"></script>
+  <script defer src="script.js?v=20260523-membership-complete"></script>
+  <script defer src="reservation-extension.js?v=20260523-membership-complete"></script>
 </body>
 </html>

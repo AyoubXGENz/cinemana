@@ -3,6 +3,8 @@ const MEMBERSHIP_SHEET_NAME = "membership";
 const RESERVATION_SHEET_NAME = "reservation";
 const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
+const MEMBERSHIP_TELEGRAM_BOT_TOKEN = "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN";
+const MEMBERSHIP_TELEGRAM_CHAT_ID = "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID";
 
 const MEMBERSHIP_HEADERS = [
   "References",
@@ -60,6 +62,7 @@ function handleRequest_(params) {
     const action = params.action || "";
     const payload = parsePayload_(params.payload);
 
+    if (action === "setupSheets") return setupCinemanaSheets();
     if (action === "saveMembership") return saveMembership_(payload);
     if (action === "verifyMember") return verifyMember_(payload);
     if (action === "getReservedSeats") return getReservedSeats_();
@@ -99,6 +102,100 @@ function getSheet_(name, headers) {
   const sheet = ss.getSheetByName(name) || ss.insertSheet(name);
   ensureHeaders_(sheet, headers);
   return sheet;
+}
+
+function setupCinemanaSheets() {
+  const membershipSheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
+  const reservationSheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  SpreadsheetApp.flush();
+
+  return {
+    ok: true,
+    message: "CINEMANA sheets are ready.",
+    membership_headers: membershipSheet.getRange(1, 1, 1, membershipSheet.getLastColumn()).getValues()[0],
+    reservation_headers: reservationSheet.getRange(1, 1, 1, reservationSheet.getLastColumn()).getValues()[0]
+  };
+}
+
+function fixCinemanaSheetColumns() {
+  const spreadsheetId = typeof SPREADSHEET_ID !== "undefined"
+    ? SPREADSHEET_ID
+    : "1b3ZW4esFw0SqFwSw0HwMbtiadsNfYVJ0QdtzWDLGEIU";
+  const membershipHeaders = [
+    "References",
+    "Nom complet",
+    "ville",
+    "Date de naissance",
+    "Téléphone",
+    "E-mail",
+    "Fonction",
+    "Comment as-tu connu CINEMANA?",
+    "Statu",
+    "Created at",
+    "Email status",
+    "Telegram chat",
+    "Telegram message"
+  ];
+  const reservationHeaders = [
+    "References",
+    "Nom complet",
+    "Tel WhatsApp",
+    "E-mail",
+    "Âge",
+    "Fonction",
+    "Comment as-tu su pour la projection?",
+    "Seat",
+    "member ou non",
+    "Created at",
+    "Email status",
+    "Statu",
+    "Code membre",
+    "Telegram chat",
+    "Telegram message"
+  ];
+
+  function normalizeHeaderLocal(value) {
+    return String(value || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, "");
+  }
+
+  function ensureColumns(sheetName, headers) {
+    const spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+    const sheet = spreadsheet.getSheetByName(sheetName) || spreadsheet.insertSheet(sheetName);
+
+    if (sheet.getLastRow() === 0 || sheet.getLastColumn() === 0) {
+      sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+      sheet.setFrozenRows(1);
+      return headers;
+    }
+
+    const width = Math.max(sheet.getLastColumn(), headers.length);
+    const existing = sheet.getRange(1, 1, 1, width).getValues()[0];
+    const normalizedExisting = existing.map(normalizeHeaderLocal);
+
+    headers.forEach((header) => {
+      if (!normalizedExisting.includes(normalizeHeaderLocal(header))) {
+        sheet.getRange(1, sheet.getLastColumn() + 1).setValue(header);
+        normalizedExisting.push(normalizeHeaderLocal(header));
+      }
+    });
+
+    sheet.setFrozenRows(1);
+    return sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+  }
+
+  const membershipResult = ensureColumns("membership", membershipHeaders);
+  const reservationResult = ensureColumns("reservation", reservationHeaders);
+  SpreadsheetApp.flush();
+
+  return {
+    ok: true,
+    membership_headers: membershipResult,
+    reservation_headers: reservationResult
+  };
 }
 
 function ensureHeaders_(sheet, headers) {
@@ -741,6 +838,10 @@ function processMembershipDecision_(reference, decision) {
 }
 
 function isTelegramConfigured_() {
+  return isReservationTelegramConfigured_();
+}
+
+function isReservationTelegramConfigured_() {
   const token = getTelegramBotToken_();
   const chatId = getTelegramChatId_();
   return token &&
@@ -757,8 +858,26 @@ function getTelegramChatId_() {
   return PropertiesService.getScriptProperties().getProperty("TELEGRAM_CHAT_ID") || TELEGRAM_CHAT_ID;
 }
 
-function telegramApi_(method, payload) {
-  const url = `https://api.telegram.org/bot${getTelegramBotToken_()}/${method}`;
+function isMembershipTelegramConfigured_() {
+  const token = getMembershipTelegramBotToken_();
+  const chatId = getMembershipTelegramChatId_();
+  return token &&
+    chatId &&
+    token !== "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN" &&
+    chatId !== "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID";
+}
+
+function getMembershipTelegramBotToken_() {
+  return PropertiesService.getScriptProperties().getProperty("MEMBERSHIP_TELEGRAM_BOT_TOKEN") || MEMBERSHIP_TELEGRAM_BOT_TOKEN;
+}
+
+function getMembershipTelegramChatId_() {
+  return PropertiesService.getScriptProperties().getProperty("MEMBERSHIP_TELEGRAM_CHAT_ID") || MEMBERSHIP_TELEGRAM_CHAT_ID;
+}
+
+function telegramApi_(method, payload, botToken) {
+  const token = botToken || getTelegramBotToken_();
+  const url = `https://api.telegram.org/bot${token}/${method}`;
   const response = UrlFetchApp.fetch(url, {
     method: "post",
     contentType: "application/json",
@@ -830,11 +949,11 @@ function buildTelegramReservationText_(payload, reference, seat, isMember, statu
 }
 
 function sendTelegramMembershipNotification_(payload, reference) {
-  if (!isTelegramConfigured_()) return "telegram_missing_config";
+  if (!isMembershipTelegramConfigured_()) return "membership_telegram_missing_config";
 
   try {
     const response = telegramApi_("sendMessage", {
-      chat_id: getTelegramChatId_(),
+      chat_id: getMembershipTelegramChatId_(),
       text: buildTelegramMembershipText_(payload, reference, "pending"),
       parse_mode: "HTML",
       reply_markup: {
@@ -843,10 +962,10 @@ function sendTelegramMembershipNotification_(payload, reference) {
           { text: "❌ Refuser", url: buildMembershipDecisionUrl_("reject", reference) }
         ]]
       }
-    });
+    }, getMembershipTelegramBotToken_());
     return {
       status: "sent",
-      chat_id: response && response.result && response.result.chat ? String(response.result.chat.id) : getTelegramChatId_(),
+      chat_id: response && response.result && response.result.chat ? String(response.result.chat.id) : getMembershipTelegramChatId_(),
       message_id: response && response.result ? String(response.result.message_id || "") : ""
     };
   } catch (error) {
@@ -879,7 +998,7 @@ function buildTelegramMembershipText_(payload, reference, status) {
 }
 
 function editStoredTelegramMembershipDecisionMessage_(member, result) {
-  if (!member || !member.telegram_chat_id || !member.telegram_message_id || !isTelegramConfigured_()) return;
+  if (!member || !member.telegram_chat_id || !member.telegram_message_id || !isMembershipTelegramConfigured_()) return;
   try {
     telegramApi_("editMessageText", {
       chat_id: member.telegram_chat_id,
@@ -887,7 +1006,7 @@ function editStoredTelegramMembershipDecisionMessage_(member, result) {
       text: buildTelegramMembershipText_(member, result.reference || member.reference, result.status),
       parse_mode: "HTML",
       reply_markup: { inline_keyboard: [] }
-    });
+    }, getMembershipTelegramBotToken_());
   } catch (error) {
     // The Google Sheet status is already updated; Telegram editing is best-effort.
   }

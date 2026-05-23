@@ -7,18 +7,35 @@
 
 3. Replace the current code with the content of `google-apps-script-cinemana.gs`.
 
-4. Add your Telegram bot settings as private Apps Script properties, not inside the public website files:
+3.1. After pasting the code, run `fixCinemanaSheetColumns` once from the Apps Script editor:
+   - Click Save or press `Ctrl + S`.
+   - Refresh the Apps Script page if the function does not appear in the dropdown.
+   - In the function dropdown, choose `fixCinemanaSheetColumns`.
+   - Click `Run`.
+   - Accept the Google permissions.
+
+This immediately adds the missing columns to `membership` and `reservation`, even if the sheets already contain old test rows.
+
+4. Add your Telegram bot settings as private Apps Script properties, not inside the public website files.
+
+   Reservation notifications use the reservation bot:
 
    - In Apps Script, open `Project Settings`.
    - Under `Script Properties`, add `TELEGRAM_BOT_TOKEN`.
    - Add `TELEGRAM_CHAT_ID`.
-   - Paste your real bot token and chat id there.
+   - Paste the real reservation bot token and chat id there.
+
+   Membership-card requests use the separate membership bot:
+
+   - Add `MEMBERSHIP_TELEGRAM_BOT_TOKEN`.
+   - Add `MEMBERSHIP_TELEGRAM_CHAT_ID`.
+   - Paste the real membership bot token and chat id there.
 
 To create/get them:
 - In Telegram, open `@BotFather`, create a bot, and copy the bot token.
-- Send one message to your new bot.
+- Send one message to the bot.
 - Open `https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/getUpdates` in the browser.
-- Copy your chat id from the JSON response and put it in the `TELEGRAM_CHAT_ID` script property.
+- Copy your chat id from the JSON response and put it in the matching chat id script property.
 
 5. Click `Deploy > New deployment`.
 
@@ -34,7 +51,7 @@ To create/get them:
 const GOOGLE_SHEETS_WEB_APP_URL = "YOUR_DEPLOYED_WEB_APP_URL";
 ```
 
-9. The Telegram buttons now use direct Web App links, so they work even without a webhook. If you also want old callback-style Telegram messages to keep working, register the webhook with your deployed Web App URL:
+9. The Telegram buttons now use direct Web App links, so they work even without a webhook. If you also want old callback-style Telegram messages to keep working, register the webhook with your deployed Web App URL for each bot you use:
 
 ```text
 https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/setWebhook?url=YOUR_DEPLOYED_WEB_APP_URL

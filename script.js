@@ -278,12 +278,14 @@ const TRANSLATIONS = {
         verificationCode: "Code de vérification"
       },
       button: "Envoyer le code de vérification",
-      verifyButton: "Vérifier le code et créer mon compte",
+      verifyButton: "Vérifier le code et envoyer ma demande",
       loadingCode: "Envoi du code de vérification...",
-      loadingCreate: "Vérification du code et création du compte...",
+      loadingCreate: "Vérification du code et envoi de la demande...",
       codeSent: (email) => `Un code à 6 chiffres a été envoyé à ${email}. Vérifiez votre boîte mail et le dossier spam.`,
       verificationHelp: "Entrez le code à 6 chiffres reçu par e-mail.",
-      success: (name, referenceCode) => `Merci ${name}. Votre compte CINEMANA est créé. Votre code de référence est ${referenceCode}. Un e-mail avec votre QR code va vous arriver.`,
+      success: (name) => `Merci ${name}. Nous avons bien reçu votre demande d’adhésion CINEMANA. Notre équipe va l’étudier et vous répondra dans les plus brefs délais.`,
+      completeTitle: "Demande envoyée",
+      completeHome: "Retour à l’accueil",
       validation: {
         required: "Veuillez remplir tous les champs du formulaire.",
         email: "Veuillez entrer une adresse e-mail valide.",
@@ -295,15 +297,15 @@ const TRANSLATIONS = {
         emailServiceMissing: "Configuration EmailJS manquante. Remplacez EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID et EMAILJS_TEMPLATE_ID dans script.js.",
         emailSdkMissing: "Le SDK EmailJS n’est pas chargé. Vérifiez votre connexion ou le lien CDN.",
         sheetsMissing: "Configuration Google Sheets manquante. Remplacez GOOGLE_SHEETS_WEB_APP_URL dans script.js après avoir déployé Apps Script.",
-        sheetsSyncFailed: "Le compte est créé, mais l’envoi vers Google Sheets a échoué. Vérifiez le Web App URL de Apps Script.",
+        sheetsSyncFailed: "Votre demande est presque finalisée, mais l’enregistrement a échoué. Veuillez réessayer dans un instant.",
         codeRequired: "Veuillez entrer le code reçu par e-mail.",
         codeExpired: "Le code a expiré. Demandez un nouveau code.",
         codeMismatch: "Le code saisi est incorrect.",
         tooManyAttempts: "Trop de tentatives incorrectes. Demandez un nouveau code.",
         emailSendFailed: "Impossible d’envoyer le code pour le moment. Vérifiez EmailJS et réessayez.",
         emailRecipientMissing: "Le destinataire est vide dans EmailJS. Dans votre template EmailJS, mettez {{to_email}} dans le champ To Email.",
-        accountExists: "Ce compte existe déjà. Essayez un autre e-mail ou vérifiez Authentication > Users dans Firebase.",
-        generic: "Impossible de créer le compte pour le moment. Veuillez réessayer."
+        accountExists: "Une demande existe déjà avec cet e-mail. Veuillez utiliser un autre e-mail ou contacter CINEMANA.",
+        generic: "Impossible d’envoyer la demande pour le moment. Veuillez réessayer."
       }
     }
   },
@@ -558,12 +560,14 @@ const TRANSLATIONS = {
         verificationCode: "Verification code"
       },
       button: "Send verification code",
-      verifyButton: "Verify code and create my account",
+      verifyButton: "Verify code and send my request",
       loadingCode: "Sending the verification code...",
-      loadingCreate: "Verifying the code and creating the account...",
+      loadingCreate: "Verifying the code and sending the request...",
       codeSent: (email) => `A 6-digit code was sent to ${email}. Check your inbox and spam folder.`,
       verificationHelp: "Enter the 6-digit code received by e-mail.",
-      success: (name, referenceCode) => `Thank you ${name}. Your CINEMANA account has been created. Your reference code is ${referenceCode}. An e-mail with your QR code will arrive shortly.`,
+      success: (name) => `Thank you ${name}. We have received your CINEMANA membership request. Our team will review it and get back to you as soon as possible.`,
+      completeTitle: "Request sent",
+      completeHome: "Back to home",
       validation: {
         required: "Please fill in every field in the form.",
         email: "Please enter a valid e-mail address.",
@@ -575,15 +579,15 @@ const TRANSLATIONS = {
         emailServiceMissing: "EmailJS configuration is missing. Replace EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID and EMAILJS_TEMPLATE_ID in script.js.",
         emailSdkMissing: "The EmailJS SDK is not loaded. Check your connection or CDN link.",
         sheetsMissing: "Google Sheets configuration is missing. Replace GOOGLE_SHEETS_WEB_APP_URL in script.js after deploying Apps Script.",
-        sheetsSyncFailed: "The account was created, but sending to Google Sheets failed. Check the Apps Script Web App URL.",
+        sheetsSyncFailed: "Your request is almost complete, but saving failed. Please try again in a moment.",
         codeRequired: "Please enter the code received by e-mail.",
         codeExpired: "The code has expired. Request a new code.",
         codeMismatch: "The code you entered is incorrect.",
         tooManyAttempts: "Too many incorrect attempts. Request a new code.",
         emailSendFailed: "Unable to send the code right now. Check EmailJS and try again.",
         emailRecipientMissing: "The recipient is empty in EmailJS. In your EmailJS template, put {{to_email}} in the To Email field.",
-        accountExists: "This account already exists. Try another e-mail or check Authentication > Users in Firebase.",
-        generic: "Unable to create the account right now. Please try again."
+        accountExists: "A request already exists with this e-mail. Please use another e-mail or contact CINEMANA.",
+        generic: "Unable to send the request right now. Please try again."
       }
     }
   },
@@ -838,12 +842,14 @@ const TRANSLATIONS = {
         verificationCode: "رمز التحقق"
       },
       button: "إرسال رمز التحقق",
-      verifyButton: "تأكيد الرمز وإنشاء الحساب",
+      verifyButton: "تأكيد الرمز وإرسال الطلب",
       loadingCode: "جاري إرسال رمز التحقق...",
-      loadingCreate: "جاري تأكيد الرمز وإنشاء الحساب...",
+      loadingCreate: "جاري تأكيد الرمز وإرسال الطلب...",
       codeSent: (email) => `تم إرسال رمز من 6 أرقام إلى ${email}. تحقق من بريدك ومن مجلد الرسائل غير المرغوب فيها.`,
       verificationHelp: "أدخل الرمز المكون من 6 أرقام الذي وصلك عبر البريد الإلكتروني.",
-      success: (name, referenceCode) => `شكرا ${name}. تم إنشاء حساب سينيمانا. كود الريفيرونس ديالك هو ${referenceCode}. سيصلك إيميل فيه QR code قريبا.`,
+      success: (name) => `شكرا ${name}. توصلنا بطلب العضوية ديالك فـ CINEMANA. الفريق ديالنا غادي يراجع الطلب وغادي نجاوبوك ف أقرب وقت.`,
+      completeTitle: "تم إرسال الطلب",
+      completeHome: "الرئيسية",
       validation: {
         required: "يرجى ملء جميع حقول الاستمارة.",
         email: "يرجى إدخال بريد إلكتروني صحيح.",
@@ -855,15 +861,15 @@ const TRANSLATIONS = {
         emailServiceMissing: "إعدادات EmailJS غير موجودة. عوض EMAILJS_PUBLIC_KEY و EMAILJS_SERVICE_ID و EMAILJS_TEMPLATE_ID داخل script.js.",
         emailSdkMissing: "لم يتم تحميل SDK الخاص ب EmailJS. تحقق من الاتصال أو رابط CDN.",
         sheetsMissing: "إعدادات Google Sheets غير موجودة. عوض GOOGLE_SHEETS_WEB_APP_URL داخل script.js بعد نشر Apps Script.",
-        sheetsSyncFailed: "تم إنشاء الحساب، لكن الإرسال إلى Google Sheets فشل. تحقق من رابط Web App ديال Apps Script.",
+        sheetsSyncFailed: "الطلب ديالك تقريبا تسجل، ولكن وقع مشكل فالحفظ. عاود المحاولة بعد لحظات.",
         codeRequired: "يرجى إدخال الرمز الذي وصلك عبر البريد الإلكتروني.",
         codeExpired: "انتهت صلاحية الرمز. اطلب رمزا جديدا.",
         codeMismatch: "الرمز الذي أدخلته غير صحيح.",
         tooManyAttempts: "محاولات كثيرة غير صحيحة. اطلب رمزا جديدا.",
         emailSendFailed: "تعذر إرسال الرمز الآن. تحقق من EmailJS ثم حاول مرة أخرى.",
         emailRecipientMissing: "المستلم فارغ في EmailJS. داخل قالب EmailJS ضع {{to_email}} في خانة To Email.",
-        accountExists: "هذا الحساب موجود مسبقا. جرب بريدا آخر أو تحقق من Authentication > Users في Firebase.",
-        generic: "تعذر إنشاء الحساب الآن. يرجى المحاولة مرة أخرى."
+        accountExists: "هاد الإيميل مستعمل من قبل. استعمل إيميل آخر أو تواصل مع CINEMANA.",
+        generic: "تعذر إرسال الطلب الآن. يرجى المحاولة مرة أخرى."
       }
     }
   }
@@ -1083,6 +1089,38 @@ function updateMemberSubmitLabel() {
   const copy = TRANSLATIONS[currentLanguage].modal;
   const button = document.querySelector(".member-modal > button");
   if (button) button.textContent = pendingMemberRegistration ? copy.verifyButton : copy.button;
+}
+
+function setMemberCompleteMode(active, text = "") {
+  const modal = document.querySelector(".member-modal");
+  const header = modal ? modal.querySelector(".modal-header") : null;
+  const grid = modal ? modal.querySelector(".member-form-grid") : null;
+  const verification = document.getElementById("memberVerificationStep");
+  const submitButton = modal ? modal.querySelector('button[type="submit"]') : null;
+  const message = document.getElementById("memberMessage");
+  const complete = document.getElementById("memberComplete");
+  const completeText = document.getElementById("memberCompleteText");
+
+  if (header) header.hidden = active;
+  if (grid) grid.hidden = active;
+  if (verification) verification.hidden = active || !pendingMemberRegistration;
+  if (submitButton) submitButton.hidden = active;
+  if (message) message.hidden = active;
+  if (complete) complete.hidden = !active;
+  if (completeText && text) completeText.textContent = text;
+}
+
+function showMemberComplete(name) {
+  const copy = TRANSLATIONS[currentLanguage].modal;
+  setMemberCompleteMode(true, copy.success(name));
+  const complete = document.getElementById("memberComplete");
+  if (complete) complete.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+function goMemberHome() {
+  closeMemberForm();
+  setMemberCompleteMode(false);
+  showPage("home");
 }
 
 function resetMemberVerification(clearForm = false) {
@@ -1384,6 +1422,9 @@ function setLanguage(language) {
   setLabel("memberRepeatPassword", copy.modal.labels.repeatPassword);
   setLabel("memberVerificationCode", copy.modal.labels.verificationCode);
   setText("#memberVerificationHelp", copy.modal.verificationHelp);
+  setText("#memberCompleteEyebrow", copy.modal.eyebrow);
+  setText("#memberCompleteTitle", copy.modal.completeTitle || copy.modal.title);
+  setText("#memberCompleteHome", copy.modal.completeHome || copy.nav.home);
   updateMemberSubmitLabel();
 
   clearMessage("memberReservationMessage");
@@ -1417,6 +1458,7 @@ function toggleMenu() {
 }
 
 function openMemberForm() {
+  setMemberCompleteMode(false);
   document.getElementById("memberModal").classList.add("open");
   clearMessage("memberMessage");
 }
@@ -1483,8 +1525,8 @@ async function submitMember(event) {
         return;
       }
       resetMemberVerification();
-      setFormMessage(message, copy.success(pending.data.full_name, referenceCode), "success");
       form.reset();
+      showMemberComplete(pending.data.full_name);
     } catch (error) {
       const isExistingAccount = error && error.code === "auth/email-already-in-use";
       setFormMessage(message, isExistingAccount ? copy.validation.accountExists : (error.message || copy.validation.generic), "error");

@@ -38,6 +38,8 @@ const CINEMANA_EXTENSION_COPY = {
       verifyButton: "Vérifier le code et envoyer ma demande",
       loadingCreate: "Vérification du code et envoi de la demande...",
       success: (name) => `Merci ${name}. Nous avons bien reçu votre demande d’adhésion CINEMANA. Notre équipe va l’étudier et vous répondra dans les plus brefs délais.`,
+      completeTitle: "Demande envoyée",
+      completeHome: "Retour à l’accueil",
       validation: {
         professionOther: "Veuillez préciser votre fonction.",
         referralSocial: "Veuillez choisir le réseau social.",
@@ -147,6 +149,8 @@ const CINEMANA_EXTENSION_COPY = {
       verifyButton: "Verify code and send my request",
       loadingCreate: "Verifying the code and sending the request...",
       success: (name) => `Thank you ${name}. We have received your CINEMANA membership request. Our team will review it and get back to you as soon as possible.`,
+      completeTitle: "Request sent",
+      completeHome: "Back to home",
       validation: {
         professionOther: "Please specify your role.",
         referralSocial: "Please choose the social network.",
@@ -256,6 +260,8 @@ const CINEMANA_EXTENSION_COPY = {
       verifyButton: "تأكيد الرمز وإرسال الطلب",
       loadingCreate: "جاري تأكيد الرمز وإرسال الطلب...",
       success: (name) => `شكرا ${name}. توصلنا بطلب العضوية ديالك فـ CINEMANA. الفريق ديالنا غادي يراجع الطلب وغادي نجاوبوك ف أقرب وقت.`,
+      completeTitle: "تم إرسال الطلب",
+      completeHome: "الرئيسية",
       validation: {
         professionOther: "يرجى كتابة المهنة.",
         referralSocial: "يرجى اختيار موقع التواصل.",
@@ -348,6 +354,8 @@ function extendCinemanaTranslations() {
     target.modal.verifyButton = source.modal.verifyButton;
     target.modal.loadingCreate = source.modal.loadingCreate;
     target.modal.success = source.modal.success;
+    target.modal.completeTitle = source.modal.completeTitle;
+    target.modal.completeHome = source.modal.completeHome;
     target.modal.validation = { ...target.modal.validation, ...source.modal.validation };
 
     target.reservation.member.steps = source.reservation.member.steps;
@@ -395,6 +403,8 @@ function applyExtensionTexts() {
   setOption('#memberReferralSocial option[value="whatsapp"]', modal.socialOptions.whatsapp);
   setOption('#memberReferralSocial option[value="linkedin"]', modal.socialOptions.linkedin);
   setOption('#memberReferralSocial option[value="x"]', modal.socialOptions.x);
+  setText("#memberCompleteTitle", modal.completeTitle);
+  setText("#memberCompleteHome", modal.completeHome);
 
   setLabel("memberReservationName", reservation.member.labels.name);
   setLabel("memberCode", reservation.member.labels.code);

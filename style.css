@@ -1140,6 +1140,28 @@ select:focus {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.member-complete {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+  padding: clamp(1.5rem, 6vw, 3.5rem) 0.5rem 0.75rem;
+  text-align: center;
+}
+
+.member-complete h2 {
+  max-width: 12ch;
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.member-complete p:not(.eyebrow) {
+  max-width: 34rem;
+  margin: 0 0 0.5rem;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
 html[lang="ar"] body,
 html[lang="ar"] button,
 html[lang="ar"] input,
