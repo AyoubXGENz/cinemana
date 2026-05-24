@@ -65,6 +65,7 @@ function handleRequest_(params) {
     if (action === "setupSheets") return setupCinemanaSheets();
     if (action === "saveMembership") return saveMembership_(payload);
     if (action === "verifyMember") return verifyMember_(payload);
+    if (action === "getMemberDashboard") return getMemberDashboard_(payload);
     if (action === "getReservedSeats") return getReservedSeats_();
     if (action === "createReservation") return createReservation_(payload);
     if (action === "decision") return processReservationDecision_(payload.reference, payload.decision, null);
@@ -367,6 +368,75 @@ function verifyMember_(payload) {
   };
 }
 
+function findMemberForDashboard_(payload) {
+  const sheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
+  const map = headerMap_(sheet);
+  const rows = getRows_(sheet);
+  const email = normalizeEmail_(payload.email);
+  const reference = normalizeText_(payload.reference_code || payload.reference || payload.member_reference);
+
+  for (let i = 0; i < rows.length; i += 1) {
+    const member = rowObject_(rows[i], map);
+    const emailMatches = email && normalizeEmail_(member.email) === email;
+    const referenceMatches = reference && normalizeText_(member.reference) === reference;
+    if (emailMatches || referenceMatches) return member;
+  }
+  return null;
+}
+
+function getMemberDashboard_(payload) {
+  const email = normalizeEmail_(payload.email);
+  const reference = normalizeText_(payload.reference_code || payload.reference || payload.member_reference);
+  if (!email && !reference) return { ok: false, code: "missing_fields" };
+
+  const member = findMemberForDashboard_(payload);
+  if (!member) return { ok: false, code: "member_not_found" };
+
+  const reservationSheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const reservationMap = headerMap_(reservationSheet);
+  const rows = getRows_(reservationSheet);
+  const memberEmail = normalizeEmail_(member.email);
+  const memberReference = normalizeText_(member.reference);
+  const reservations = [];
+
+  rows.forEach((row) => {
+    const reservation = reservationPayloadFromRow_(row, reservationMap);
+    const emailMatches = memberEmail && normalizeEmail_(reservation.email) === memberEmail;
+    const referenceMatches = memberReference && normalizeText_(reservation.member_reference) === memberReference;
+    if (!emailMatches && !referenceMatches) return;
+
+    reservations.push({
+      reference: reservation.reference,
+      full_name: reservation.full_name,
+      email: reservation.email,
+      phone: reservation.phone,
+      seat: reservation.seat,
+      status: reservation.status,
+      created_at: reservation.created_at,
+      member_reference: reservation.member_reference,
+      email_status: reservation.email_status
+    });
+  });
+
+  return {
+    ok: true,
+    member: {
+      reference: member.reference,
+      reference_code: member.reference,
+      full_name: member.fullName,
+      fullName: member.fullName,
+      birthday: member.birthday,
+      city: member.city,
+      phone: member.phone,
+      email: member.email,
+      profession: member.profession,
+      heard_about_us: member.heard_about_us,
+      status: member.status
+    },
+    reservations: reservations.reverse()
+  };
+}
+
 function normalizeMembershipStatus_(value) {
   const status = normalizeText_(value);
   if (!status) return "member";
@@ -661,6 +731,7 @@ function normalizeReservationStatus_(value) {
   if (!status) return "confirmed";
   if (["confirmed", "confirme", "confirmee", "confirmé", "confirmée"].includes(status)) return "confirmed";
   if (["pending", "en attente", "attente", "معلق"].includes(status)) return "pending";
+  if (["attended", "present", "presence", "présence", "checkedin", "checked in", "حضر"].includes(status)) return "attended";
   if (["canceled", "cancelled", "annule", "annulee", "annulé", "annulée", "رفض", "ملغي"].includes(status)) return "canceled";
   return status;
 }
@@ -671,9 +742,10 @@ function formatReservationStatus_(sheet, row, status) {
   if (!column) return;
 
   const normalized = normalizeReservationStatus_(status);
-  const display = normalized === "confirmed" ? "confirmé" : normalized === "canceled" ? "annulé" : normalized;
-  const color = normalized === "confirmed" ? "#0f8a3b" : normalized === "pending" ? "#d9822b" : "#c62828";
-  const background = normalized === "confirmed" ? "#d9f2df" : normalized === "pending" ? "#fff0d6" : "#fde0df";
+  const display = normalized === "confirmed" ? "confirmé" : normalized === "canceled" ? "annulé" : normalized === "attended" ? "présence" : normalized;
+  const isGreen = normalized === "confirmed" || normalized === "attended";
+  const color = isGreen ? "#0f8a3b" : normalized === "pending" ? "#d9822b" : "#c62828";
+  const background = isGreen ? "#d9f2df" : normalized === "pending" ? "#fff0d6" : "#fde0df";
 
   sheet.getRange(row, column)
     .setValue(display)
@@ -722,6 +794,7 @@ function reservationPayloadFromRow_(row, map) {
     source: String(get("Comment as-tu su pour la projection?") || "").trim(),
     seat: String(get("Seat") || "").trim().toUpperCase(),
     member_mark: String(get("member ou non") || "").trim(),
+    created_at: get("Created at") || "",
     email_status: String(get("Email status") || "").trim(),
     status: normalizeReservationStatus_(get("Statu")),
     member_reference: String(get("Code membre") || "").trim(),

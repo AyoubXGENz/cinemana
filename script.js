@@ -6,6 +6,7 @@ const PAGES = [
   "membership",
   "partner",
   "reservation",
+  "dashboard",
   "press",
   "partners"
 ];
@@ -42,6 +43,7 @@ const TRANSLATIONS = {
       membership: "Pourquoi devenir membre",
       partner: "Devenir partenaire",
       reservation: "Réservation",
+      dashboard: "Espace membre",
       press: "Presse",
       partners: "Partenaires"
     },
@@ -324,6 +326,7 @@ const TRANSLATIONS = {
       membership: "Why become a member",
       partner: "Become a partner",
       reservation: "Reservation",
+      dashboard: "Member area",
       press: "Press",
       partners: "Partners"
     },
@@ -606,6 +609,7 @@ const TRANSLATIONS = {
       membership: "لماذا تصبح عضوا",
       partner: "كن شريكا",
       reservation: "الحجز",
+      dashboard: "فضاء العضو",
       press: "الصحافة",
       partners: "الشركاء"
     },
@@ -875,11 +879,236 @@ const TRANSLATIONS = {
   }
 };
 
+const DASHBOARD_TRANSLATIONS = {
+  fr: {
+    heroEyebrow: "Espace membre",
+    heroTitle: "Connectez-vous à votre compte CINEMANA.",
+    loginEyebrow: "Carte CINEMANA",
+    loginTitle: "Connexion membre",
+    loginCopy: "Utilisez l’e-mail et le mot de passe créés lors de votre demande d’adhésion.",
+    labels: {
+      email: "E-mail",
+      password: "Mot de passe",
+      reference: "Référence membre",
+      phone: "Téléphone",
+      city: "Ville",
+      seat: "Siège",
+      date: "Date"
+    },
+    loginButton: "Se connecter",
+    loginLoading: "Connexion en cours...",
+    refresh: "Actualiser",
+    logout: "Se déconnecter",
+    greeting: (name) => `Bonjour ${name}`,
+    intro: "Voici votre espace membre CINEMANA.",
+    accessEyebrow: "Avantages connectés",
+    accessTitle: "Votre carte devient un vrai espace de suivi.",
+    accessItems: [
+      "Réservations prioritaires pour les membres validés.",
+      "Suivi des tickets et des demandes en cours.",
+      "Historique des projections et présence."
+    ],
+    priorityEyebrow: "Priorité membre",
+    priorityTitle: "Réservez avant l’ouverture au public.",
+    priorityText: "Les membres validés bénéficient d’un accès prioritaire lorsque les réservations d’un événement sont ouvertes.",
+    reserveButton: "Réserver maintenant",
+    stats: {
+      active: "Réservations actives",
+      pending: "En attente",
+      attended: "Déjà assistées",
+      privileges: "Avantages disponibles"
+    },
+    reservationsEyebrow: "Mes réservations",
+    reservationsTitle: "Réservations en cours",
+    attendedEyebrow: "Historique",
+    attendedTitle: "Projections déjà assistées",
+    benefitsEyebrow: "Privilèges",
+    benefitsTitle: "Avantages de votre carte CINEMANA",
+    noReservations: "Aucune réservation active pour le moment.",
+    noAttended: "Votre historique de présence apparaîtra ici après les prochaines projections.",
+    noSeat: "Siège à confirmer",
+    memberFallback: "Membre CINEMANA",
+    statuses: {
+      member: "Membre validé",
+      pending: "Demande en revue",
+      rejected: "Demande refusée",
+      confirmed: "Confirmée",
+      reservationPending: "En attente",
+      canceled: "Annulée",
+      attended: "Présence validée",
+      unknown: "À vérifier"
+    },
+    errors: {
+      required: "Veuillez saisir votre e-mail et votre mot de passe.",
+      email: "Veuillez saisir un e-mail valide.",
+      firebaseMissing: "Firebase n’est pas prêt. Vérifiez la configuration et les scripts Firebase.",
+      invalidLogin: "E-mail ou mot de passe incorrect.",
+      generic: "Connexion impossible pour le moment. Veuillez réessayer.",
+      dashboardUnavailable: "Le compte est connecté, mais les données Google Sheets ne sont pas encore disponibles."
+    },
+    benefits: [
+      ["Réservation prioritaire", "Accès anticipé aux réservations des projections et événements CINEMANA."],
+      ["Suivi des tickets", "Vos demandes, confirmations et sièges sont regroupés au même endroit."],
+      ["Rencontres exclusives", "Accès privilégié aux rencontres avec les artistes, réalisateurs et invités."],
+      ["Avantages festival", "Invitations et accès réservés selon le statut de votre carte CINEMANA."]
+    ]
+  },
+  en: {
+    heroEyebrow: "Member area",
+    heroTitle: "Sign in to your CINEMANA account.",
+    loginEyebrow: "CINEMANA card",
+    loginTitle: "Member login",
+    loginCopy: "Use the e-mail and password created when you submitted your membership request.",
+    labels: {
+      email: "E-mail",
+      password: "Password",
+      reference: "Member reference",
+      phone: "Phone",
+      city: "City",
+      seat: "Seat",
+      date: "Date"
+    },
+    loginButton: "Sign in",
+    loginLoading: "Signing in...",
+    refresh: "Refresh",
+    logout: "Sign out",
+    greeting: (name) => `Hello ${name}`,
+    intro: "This is your CINEMANA member space.",
+    accessEyebrow: "Connected benefits",
+    accessTitle: "Your card becomes a real tracking space.",
+    accessItems: [
+      "Priority reservations for approved members.",
+      "Ticket and request tracking.",
+      "Screening attendance history."
+    ],
+    priorityEyebrow: "Member priority",
+    priorityTitle: "Book before public opening.",
+    priorityText: "Approved members get priority access when reservations open for an event.",
+    reserveButton: "Reserve now",
+    stats: {
+      active: "Active reservations",
+      pending: "Pending",
+      attended: "Already attended",
+      privileges: "Available benefits"
+    },
+    reservationsEyebrow: "My reservations",
+    reservationsTitle: "Current reservations",
+    attendedEyebrow: "History",
+    attendedTitle: "Screenings already attended",
+    benefitsEyebrow: "Privileges",
+    benefitsTitle: "Benefits of your CINEMANA card",
+    noReservations: "No active reservations yet.",
+    noAttended: "Your attendance history will appear here after future screenings.",
+    noSeat: "Seat to confirm",
+    memberFallback: "CINEMANA member",
+    statuses: {
+      member: "Approved member",
+      pending: "Under review",
+      rejected: "Request rejected",
+      confirmed: "Confirmed",
+      reservationPending: "Pending",
+      canceled: "Canceled",
+      attended: "Attendance validated",
+      unknown: "To verify"
+    },
+    errors: {
+      required: "Please enter your e-mail and password.",
+      email: "Please enter a valid e-mail.",
+      firebaseMissing: "Firebase is not ready. Check the Firebase configuration and scripts.",
+      invalidLogin: "Incorrect e-mail or password.",
+      generic: "Unable to sign in right now. Please try again.",
+      dashboardUnavailable: "The account is signed in, but Google Sheets data is not available yet."
+    },
+    benefits: [
+      ["Priority reservation", "Early access to CINEMANA screening and event reservations."],
+      ["Ticket tracking", "Your requests, confirmations and seats are grouped in one place."],
+      ["Exclusive encounters", "Privileged access to meetings with artists, directors and guests."],
+      ["Festival benefits", "Invitations and reserved access depending on your CINEMANA card status."]
+    ]
+  },
+  ar: {
+    heroEyebrow: "فضاء العضو",
+    heroTitle: "سجل الدخول إلى حسابك في سينيمانا.",
+    loginEyebrow: "بطاقة سينيمانا",
+    loginTitle: "دخول الأعضاء",
+    loginCopy: "استعمل البريد الإلكتروني وكلمة المرور التي أنشأتها أثناء طلب العضوية.",
+    labels: {
+      email: "البريد الإلكتروني",
+      password: "كلمة المرور",
+      reference: "مرجع العضوية",
+      phone: "الهاتف",
+      city: "المدينة",
+      seat: "المقعد",
+      date: "التاريخ"
+    },
+    loginButton: "تسجيل الدخول",
+    loginLoading: "جاري تسجيل الدخول...",
+    refresh: "تحديث",
+    logout: "تسجيل الخروج",
+    greeting: (name) => `مرحبا ${name}`,
+    intro: "هذا هو فضاء العضو الخاص بك في سينيمانا.",
+    accessEyebrow: "امتيازات متصلة",
+    accessTitle: "بطاقتك تصبح فضاء حقيقيا للتتبع.",
+    accessItems: [
+      "حجز مسبق للأعضاء المقبولين.",
+      "تتبع التذاكر والطلبات الجارية.",
+      "تاريخ الحضور للعروض."
+    ],
+    priorityEyebrow: "أولوية العضو",
+    priorityTitle: "احجز قبل فتح الحجز للعموم.",
+    priorityText: "الأعضاء المقبولون يستفيدون من أولوية الحجز عند فتح حجوزات أي حدث.",
+    reserveButton: "احجز الآن",
+    stats: {
+      active: "الحجوزات النشيطة",
+      pending: "في الانتظار",
+      attended: "حضرت من قبل",
+      privileges: "امتيازات متاحة"
+    },
+    reservationsEyebrow: "حجوزاتي",
+    reservationsTitle: "الحجوزات الجارية",
+    attendedEyebrow: "السجل",
+    attendedTitle: "العروض التي حضرتها",
+    benefitsEyebrow: "الامتيازات",
+    benefitsTitle: "امتيازات بطاقة سينيمانا",
+    noReservations: "لا توجد حجوزات نشيطة حاليا.",
+    noAttended: "سيظهر سجل حضورك هنا بعد العروض القادمة.",
+    noSeat: "المقعد سيؤكد لاحقا",
+    memberFallback: "عضو سينيمانا",
+    statuses: {
+      member: "عضو مقبول",
+      pending: "قيد المراجعة",
+      rejected: "طلب مرفوض",
+      confirmed: "مؤكد",
+      reservationPending: "في الانتظار",
+      canceled: "ملغى",
+      attended: "تم تأكيد الحضور",
+      unknown: "يحتاج التحقق"
+    },
+    errors: {
+      required: "يرجى إدخال البريد الإلكتروني وكلمة المرور.",
+      email: "يرجى إدخال بريد إلكتروني صحيح.",
+      firebaseMissing: "Firebase غير جاهز. تحقق من الإعدادات وروابط Firebase.",
+      invalidLogin: "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      generic: "تعذر تسجيل الدخول حاليا. حاول مرة أخرى.",
+      dashboardUnavailable: "تم تسجيل الدخول، لكن بيانات Google Sheets غير متاحة حاليا."
+    },
+    benefits: [
+      ["حجز بالأولوية", "ولوج مبكر لحجز عروض وفعاليات سينيمانا."],
+      ["تتبع التذاكر", "طلباتك وتأكيداتك ومقاعدك في مكان واحد."],
+      ["لقاءات حصرية", "ولوج مميز للقاءات مع الفنانين والمخرجين والضيوف."],
+      ["امتيازات المهرجان", "دعوات وولوج خاص حسب حالة بطاقة سينيمانا."]
+    ]
+  }
+};
+
 let currentLanguage = "fr";
 let firebaseServices = null;
 let emailJsInitialized = false;
 let pendingMemberRegistration = null;
 let activeActivityId = "";
+let currentMemberUser = null;
+let currentMemberProfile = null;
+let currentMemberDashboardData = null;
 
 function setText(selector, value) {
   const element = document.querySelector(selector);
@@ -1312,6 +1541,228 @@ function getFirebaseServices() {
   return firebaseServices;
 }
 
+function getDashboardCopy() {
+  return DASHBOARD_TRANSLATIONS[currentLanguage] || DASHBOARD_TRANSLATIONS.fr;
+}
+
+function normalizeDashboardEmail(value) {
+  return String(value || "").trim().toLowerCase();
+}
+
+function normalizeDashboardStatus(value) {
+  const status = String(value || "").trim().toLowerCase();
+  if (!status) return "unknown";
+  if (["member", "membre", "approved", "accepted", "accepté", "acceptée"].includes(status)) return "member";
+  if (["pending", "en attente", "review", "under review"].includes(status)) return "pending";
+  if (["rejected", "refused", "refusé", "refusée"].includes(status)) return "rejected";
+  if (["confirmed", "confirmé", "confirmee", "confirmée"].includes(status)) return "confirmed";
+  if (["canceled", "cancelled", "annulé", "annulee", "annulée"].includes(status)) return "canceled";
+  if (["attended", "present", "presence", "présence", "checked-in", "checked in"].includes(status)) return "attended";
+  return status;
+}
+
+function getMemberDisplayName(member, user) {
+  return member.full_name || member.fullName || (user && user.displayName) || member.email || getDashboardCopy().memberFallback;
+}
+
+function mergeMemberProfile(firestoreProfile, sheetsMember, user) {
+  const profile = firestoreProfile || {};
+  const member = sheetsMember || {};
+  return {
+    user_id: (user && user.uid) || profile.user_id || "",
+    reference_code: member.reference || member.reference_code || profile.reference_code || profile.reference || "",
+    full_name: member.full_name || member.fullName || profile.full_name || (user && user.displayName) || "",
+    email: normalizeDashboardEmail(member.email || profile.email || (user && user.email) || ""),
+    phone: member.phone || profile.phone || "",
+    city: member.city || profile.city || "",
+    profession: member.profession || profile.profession || "",
+    status: normalizeDashboardStatus(member.status || profile.status || "pending")
+  };
+}
+
+function reservationMatchesHistory(reservation) {
+  const status = normalizeDashboardStatus(reservation.status);
+  return status === "attended" || status === "canceled";
+}
+
+function dashboardReservationCard(reservation) {
+  const copy = getDashboardCopy();
+  const status = normalizeDashboardStatus(reservation.status);
+  const statusLabel = status === "confirmed"
+    ? copy.statuses.confirmed
+    : status === "pending"
+      ? copy.statuses.reservationPending
+      : status === "canceled"
+        ? copy.statuses.canceled
+        : status === "attended"
+          ? copy.statuses.attended
+          : copy.statuses.unknown;
+  const seat = reservation.seat || copy.noSeat;
+  const reference = reservation.reference || "-";
+  const created = reservation.created_at || reservation.createdAt || "";
+
+  return `
+    <article class="dashboard-reservation-card status-${escapeHtml(status)}">
+      <div>
+        <strong>${escapeHtml(reference)}</strong>
+        <span>${escapeHtml(statusLabel)}</span>
+      </div>
+      <dl>
+        <div><dt>${escapeHtml(copy.labels.seat)}</dt><dd>${escapeHtml(seat)}</dd></div>
+        <div><dt>${escapeHtml(copy.labels.email)}</dt><dd>${escapeHtml(reservation.email || "-")}</dd></div>
+        <div><dt>${escapeHtml(copy.labels.date)}</dt><dd>${escapeHtml(created ? String(created).slice(0, 16) : "-")}</dd></div>
+      </dl>
+    </article>
+  `;
+}
+
+function renderReservationList(containerId, reservations, emptyText) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.innerHTML = reservations.length
+    ? reservations.map(dashboardReservationCard).join("")
+    : `<div class="dashboard-empty">${escapeHtml(emptyText)}</div>`;
+}
+
+function renderMemberBenefits() {
+  const grid = document.getElementById("memberBenefitGrid");
+  if (!grid) return;
+
+  grid.innerHTML = getDashboardCopy().benefits.map((benefit) => `
+    <article>
+      <span></span>
+      <h4>${escapeHtml(benefit[0])}</h4>
+      <p>${escapeHtml(benefit[1])}</p>
+    </article>
+  `).join("");
+}
+
+function renderMemberLoggedOut() {
+  const loginPanel = document.getElementById("memberLoginPanel");
+  const dashboard = document.getElementById("memberDashboard");
+  if (loginPanel) loginPanel.hidden = false;
+  if (dashboard) dashboard.hidden = true;
+  currentMemberProfile = null;
+  currentMemberDashboardData = null;
+}
+
+function renderMemberDashboard(data) {
+  const copy = getDashboardCopy();
+  const loginPanel = document.getElementById("memberLoginPanel");
+  const dashboard = document.getElementById("memberDashboard");
+  if (loginPanel) loginPanel.hidden = true;
+  if (dashboard) dashboard.hidden = false;
+
+  const member = data.member || {};
+  const reservations = Array.isArray(data.reservations) ? data.reservations : [];
+  const activeReservations = reservations.filter((reservation) => !reservationMatchesHistory(reservation));
+  const attendedReservations = reservations.filter(reservationMatchesHistory);
+  const pendingReservations = activeReservations.filter((reservation) => normalizeDashboardStatus(reservation.status) === "pending");
+  const attendedCount = reservations.filter((reservation) => normalizeDashboardStatus(reservation.status) === "attended").length;
+  const name = getMemberDisplayName(member, currentMemberUser);
+  const status = normalizeDashboardStatus(member.status);
+  const statusLabel = status === "member"
+    ? copy.statuses.member
+    : status === "pending"
+      ? copy.statuses.pending
+      : status === "rejected"
+        ? copy.statuses.rejected
+        : copy.statuses.unknown;
+
+  setText("#memberDashboardGreeting", copy.greeting(name));
+  setText("#memberDashboardIntro", copy.intro);
+  setText("#memberDashboardName", name);
+  setText("#memberDashboardStatus", statusLabel);
+  setText("#memberDashboardReference", member.reference_code || "-");
+  setText("#memberDashboardEmail", member.email || "-");
+  setText("#memberDashboardPhone", member.phone || "-");
+  setText("#memberDashboardCity", member.city || "-");
+  setText("#memberStatActive", String(activeReservations.length));
+  setText("#memberStatPending", String(pendingReservations.length));
+  setText("#memberStatAttended", String(attendedCount));
+  setText("#memberStatPrivileges", String(copy.benefits.length));
+
+  const chip = document.getElementById("memberDashboardStatus");
+  if (chip) {
+    chip.className = "member-status-chip";
+    chip.classList.add(`status-${status}`);
+  }
+
+  renderReservationList("memberReservationList", activeReservations, copy.noReservations);
+  renderReservationList("memberAttendedList", attendedReservations, copy.noAttended);
+  renderMemberBenefits();
+}
+
+async function getFirestoreMemberProfile(user) {
+  const services = getFirebaseServices();
+  if (!services || !user) return null;
+  const doc = await services.db.collection("cinemana_members").doc(user.uid).get();
+  return doc.exists ? doc.data() : null;
+}
+
+async function getSheetsMemberDashboard(profile, user) {
+  if (typeof callGoogleSheetsAction !== "function" || !isGoogleSheetsConfigured()) return null;
+
+  try {
+    const response = await callGoogleSheetsAction("getMemberDashboard", {
+      email: normalizeDashboardEmail((profile && profile.email) || (user && user.email)),
+      reference_code: (profile && (profile.reference_code || profile.reference)) || ""
+    });
+    return response && response.ok ? response : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function loadMemberDashboard(user, options = {}) {
+  if (!user) {
+    renderMemberLoggedOut();
+    return;
+  }
+
+  const copy = getDashboardCopy();
+  const message = document.getElementById("memberLoginMessage");
+  if (!options.silent) setFormMessage(message, copy.loginLoading);
+
+  try {
+    const firestoreProfile = await getFirestoreMemberProfile(user);
+    const sheetsDashboard = await getSheetsMemberDashboard(firestoreProfile, user);
+    const member = mergeMemberProfile(firestoreProfile, sheetsDashboard && sheetsDashboard.member, user);
+    const reservations = sheetsDashboard && Array.isArray(sheetsDashboard.reservations)
+      ? sheetsDashboard.reservations
+      : [];
+
+    currentMemberProfile = member;
+    currentMemberDashboardData = { member, reservations };
+    clearMessage("memberLoginMessage");
+    renderMemberDashboard(currentMemberDashboardData);
+  } catch (error) {
+    setFormMessage(message, copy.errors.dashboardUnavailable, "error");
+    const fallbackMember = mergeMemberProfile(null, null, user);
+    currentMemberProfile = fallbackMember;
+    currentMemberDashboardData = { member: fallbackMember, reservations: [] };
+    renderMemberDashboard(currentMemberDashboardData);
+  }
+}
+
+function initializeMemberAuth() {
+  const services = getFirebaseServices();
+  if (!services || !services.auth) return;
+
+  services.auth.onAuthStateChanged((user) => {
+    currentMemberUser = user || null;
+    const dashboardPage = document.getElementById("page-dashboard");
+    const dashboardIsVisible = window.location.hash.replace("#", "") === "dashboard" ||
+      Boolean(dashboardPage && dashboardPage.classList.contains("active"));
+    if (user && dashboardIsVisible) {
+      loadMemberDashboard(user, { silent: true });
+    } else {
+      renderMemberLoggedOut();
+    }
+  });
+}
+
 function initializeEmailJs() {
   if (!isEmailJsConfigured()) return false;
   if (!window.emailjs || !window.emailjs.init || !window.emailjs.send) return false;
@@ -1727,6 +2178,7 @@ function setLanguage(language) {
   setText(".site-footer > div:nth-child(2) a:nth-of-type(1)", copy.footer.links[0]);
   setText(".site-footer > div:nth-child(2) a:nth-of-type(2)", copy.footer.links[1]);
   setText(".site-footer > div:nth-child(2) a:nth-of-type(3)", copy.footer.links[2]);
+  setText(".site-footer > div:nth-child(2) a:nth-of-type(4)", copy.nav.dashboard);
   setText(".site-footer > div:nth-child(3) a:nth-of-type(1)", copy.footer.links[3]);
   setText(".site-footer > div:nth-child(3) a:nth-of-type(2)", copy.footer.links[4]);
   setText(".site-footer > div:nth-child(3) a:nth-of-type(3)", copy.footer.links[5]);
@@ -1746,6 +2198,42 @@ function setLanguage(language) {
   setText("#memberCompleteEyebrow", copy.modal.eyebrow);
   setText("#memberCompleteTitle", copy.modal.completeTitle || copy.modal.title);
   setText("#memberCompleteHome", copy.modal.completeHome || copy.nav.home);
+
+  const dashboardCopy = getDashboardCopy();
+  setText("#dashboardHeroEyebrow", dashboardCopy.heroEyebrow);
+  setText("#dashboardHeroTitle", dashboardCopy.heroTitle);
+  setText("#memberLoginEyebrow", dashboardCopy.loginEyebrow);
+  setText("#memberLoginTitle", dashboardCopy.loginTitle);
+  setText("#memberLoginCopy", dashboardCopy.loginCopy);
+  setText("#memberLoginEmailLabel", dashboardCopy.labels.email);
+  setText("#memberLoginPasswordLabel", dashboardCopy.labels.password);
+  setText("#memberLoginButton", dashboardCopy.loginButton);
+  setText("#dashboardAccessEyebrow", dashboardCopy.accessEyebrow);
+  setText("#dashboardAccessTitle", dashboardCopy.accessTitle);
+  dashboardCopy.accessItems.forEach((item, index) => setText(`#dashboardAccessItem${index + 1}`, item));
+  setText("#memberDashboardEyebrow", dashboardCopy.heroEyebrow);
+  setText("#memberDashboardRefresh", dashboardCopy.refresh);
+  setText("#memberDashboardLogout", dashboardCopy.logout);
+  setText("#memberDashboardReferenceLabel", dashboardCopy.labels.reference);
+  setText("#memberDashboardEmailLabel", dashboardCopy.labels.email);
+  setText("#memberDashboardPhoneLabel", dashboardCopy.labels.phone);
+  setText("#memberDashboardCityLabel", dashboardCopy.labels.city);
+  setText("#memberDashboardPriorityEyebrow", dashboardCopy.priorityEyebrow);
+  setText("#memberDashboardPriorityTitle", dashboardCopy.priorityTitle);
+  setText("#memberDashboardPriorityText", dashboardCopy.priorityText);
+  setText("#memberDashboardReserveButton", dashboardCopy.reserveButton);
+  setText("#memberStatActiveLabel", dashboardCopy.stats.active);
+  setText("#memberStatPendingLabel", dashboardCopy.stats.pending);
+  setText("#memberStatAttendedLabel", dashboardCopy.stats.attended);
+  setText("#memberStatPrivilegesLabel", dashboardCopy.stats.privileges);
+  setText("#memberReservationsEyebrow", dashboardCopy.reservationsEyebrow);
+  setText("#memberReservationsTitle", dashboardCopy.reservationsTitle);
+  setText("#memberAttendedEyebrow", dashboardCopy.attendedEyebrow);
+  setText("#memberAttendedTitle", dashboardCopy.attendedTitle);
+  setText("#memberBenefitsEyebrow", dashboardCopy.benefitsEyebrow);
+  setText("#memberBenefitsTitle", dashboardCopy.benefitsTitle);
+  if (currentMemberDashboardData) renderMemberDashboard(currentMemberDashboardData);
+
   updateMemberSubmitLabel();
 
   clearMessage("memberReservationMessage");
@@ -1774,6 +2262,14 @@ function showPage(name, pushState = true) {
   if (pushState) {
     history.pushState({ page: target }, "", `#${target}`);
   }
+
+  if (target === "dashboard") {
+    if (currentMemberUser) {
+      loadMemberDashboard(currentMemberUser, { silent: true });
+    } else {
+      renderMemberLoggedOut();
+    }
+  }
 }
 
 function toggleMenu() {
@@ -1794,6 +2290,64 @@ function closeMemberModalOutside(event) {
   if (event.target.id === "memberModal") {
     closeMemberForm();
   }
+}
+
+async function submitMemberLogin(event) {
+  event.preventDefault();
+  const copy = getDashboardCopy();
+  const form = event.currentTarget;
+  const email = normalizeDashboardEmail(document.getElementById("memberLoginEmail").value);
+  const password = document.getElementById("memberLoginPassword").value;
+  const message = document.getElementById("memberLoginMessage");
+  const button = form.querySelector('button[type="submit"]');
+
+  if (!email || !password) {
+    setFormMessage(message, copy.errors.required, "error");
+    return;
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    setFormMessage(message, copy.errors.email, "error");
+    return;
+  }
+
+  const services = getFirebaseServices();
+  if (!services) {
+    setFormMessage(message, copy.errors.firebaseMissing, "error");
+    return;
+  }
+
+  setFormMessage(message, copy.loginLoading);
+  if (button) button.disabled = true;
+
+  try {
+    const credential = await services.auth.signInWithEmailAndPassword(email, password);
+    currentMemberUser = credential.user;
+    await loadMemberDashboard(credential.user);
+    form.reset();
+  } catch (error) {
+    const code = error && error.code ? error.code : "";
+    const invalid = ["auth/user-not-found", "auth/wrong-password", "auth/invalid-credential", "auth/invalid-email"].includes(code);
+    setFormMessage(message, invalid ? copy.errors.invalidLogin : (error.message || copy.errors.generic), "error");
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function refreshMemberDashboard() {
+  if (!currentMemberUser) {
+    renderMemberLoggedOut();
+    return;
+  }
+  await loadMemberDashboard(currentMemberUser);
+}
+
+async function logoutMember() {
+  const services = getFirebaseServices();
+  if (services && services.auth) await services.auth.signOut();
+  currentMemberUser = null;
+  renderMemberLoggedOut();
+  showPage("dashboard");
 }
 
 async function submitMember(event) {
@@ -1939,4 +2493,5 @@ window.addEventListener("DOMContentLoaded", () => {
   history.replaceState({ page: start }, "", `#${start}`);
   showPage(start, false);
   setLanguage(startLanguage);
+  initializeMemberAuth();
 });

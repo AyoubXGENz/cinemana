@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260523-activity-luxe2">
+  <link rel="stylesheet" href="style.css?v=20260524-member-dashboard">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -35,6 +35,7 @@
       <li><a href="javascript:void(0)" id="nav-membership" onclick="showPage('membership')">Pourquoi devenir membre</a></li>
       <li><a href="javascript:void(0)" id="nav-partner" onclick="showPage('partner')">Devenir partenaire</a></li>
       <li><a href="javascript:void(0)" id="nav-reservation" onclick="showPage('reservation')">Réservation</a></li>
+      <li><a href="javascript:void(0)" id="nav-dashboard" onclick="showPage('dashboard')">Espace membre</a></li>
       <li><a href="javascript:void(0)" id="nav-press" onclick="showPage('press')">Presse</a></li>
       <li><a href="javascript:void(0)" id="nav-partners" onclick="showPage('partners')">Partenaires</a></li>
     </ul>
@@ -547,6 +548,107 @@
       </section>
     </section>
 
+    <section class="page" id="page-dashboard">
+      <header class="page-hero compact member-space-hero">
+        <p class="eyebrow" id="dashboardHeroEyebrow">Espace membre</p>
+        <h1 id="dashboardHeroTitle">Connectez-vous à votre compte CINEMANA.</h1>
+      </header>
+
+      <section class="section dashboard-auth-grid" id="memberLoginPanel">
+        <article class="member-login-card">
+          <p class="eyebrow" id="memberLoginEyebrow">Carte CINEMANA</p>
+          <h2 id="memberLoginTitle">Connexion membre</h2>
+          <p id="memberLoginCopy">Utilisez l’e-mail et le mot de passe créés lors de votre demande d’adhésion.</p>
+          <form class="dashboard-login-form" id="memberLoginForm" onsubmit="submitMemberLogin(event)" novalidate>
+            <label>
+              <span id="memberLoginEmailLabel">E-mail</span>
+              <input type="email" id="memberLoginEmail" autocomplete="email" required>
+            </label>
+            <label>
+              <span id="memberLoginPasswordLabel">Mot de passe</span>
+              <input type="password" id="memberLoginPassword" autocomplete="current-password" required>
+            </label>
+            <button class="btn primary full" type="submit" id="memberLoginButton">Se connecter</button>
+            <p class="form-message" id="memberLoginMessage" role="status" aria-live="polite"></p>
+          </form>
+        </article>
+        <aside class="dashboard-access-card">
+          <p class="eyebrow" id="dashboardAccessEyebrow">Avantages connectés</p>
+          <h2 id="dashboardAccessTitle">Votre carte devient un vrai espace de suivi.</h2>
+          <div class="dashboard-access-list">
+            <span id="dashboardAccessItem1">Réservations prioritaires pour les membres validés.</span>
+            <span id="dashboardAccessItem2">Suivi des tickets et des demandes en cours.</span>
+            <span id="dashboardAccessItem3">Historique des projections et présence.</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section member-dashboard" id="memberDashboard" hidden>
+        <div class="dashboard-topbar">
+          <div>
+            <p class="eyebrow" id="memberDashboardEyebrow">Tableau de bord</p>
+            <h2 id="memberDashboardGreeting">Bonjour</h2>
+            <p id="memberDashboardIntro">Voici votre espace membre CINEMANA.</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn secondary" type="button" id="memberDashboardRefresh" onclick="refreshMemberDashboard()">Actualiser</button>
+            <button class="btn ghost" type="button" id="memberDashboardLogout" onclick="logoutMember()">Se déconnecter</button>
+          </div>
+        </div>
+
+        <div class="dashboard-profile-grid">
+          <article class="dashboard-profile-card">
+            <span class="member-status-chip" id="memberDashboardStatus">Statut</span>
+            <h3 id="memberDashboardName">Membre CINEMANA</h3>
+            <dl>
+              <div><dt id="memberDashboardReferenceLabel">Référence membre</dt><dd id="memberDashboardReference">-</dd></div>
+              <div><dt id="memberDashboardEmailLabel">E-mail</dt><dd id="memberDashboardEmail">-</dd></div>
+              <div><dt id="memberDashboardPhoneLabel">Téléphone</dt><dd id="memberDashboardPhone">-</dd></div>
+              <div><dt id="memberDashboardCityLabel">Ville</dt><dd id="memberDashboardCity">-</dd></div>
+            </dl>
+          </article>
+          <article class="dashboard-priority-card">
+            <p class="eyebrow" id="memberDashboardPriorityEyebrow">Priorité membre</p>
+            <h3 id="memberDashboardPriorityTitle">Réservez avant l’ouverture au public.</h3>
+            <p id="memberDashboardPriorityText">Les membres validés bénéficient d’un accès prioritaire lorsque les réservations d’un événement sont ouvertes.</p>
+            <button class="btn primary" type="button" id="memberDashboardReserveButton" onclick="showPage('reservation')">Réserver maintenant</button>
+          </article>
+        </div>
+
+        <div class="dashboard-stat-grid" id="memberDashboardStats">
+          <article><strong id="memberStatActive">0</strong><span id="memberStatActiveLabel">Réservations actives</span></article>
+          <article><strong id="memberStatPending">0</strong><span id="memberStatPendingLabel">En attente</span></article>
+          <article><strong id="memberStatAttended">0</strong><span id="memberStatAttendedLabel">Déjà assistées</span></article>
+          <article><strong id="memberStatPrivileges">4</strong><span id="memberStatPrivilegesLabel">Avantages disponibles</span></article>
+        </div>
+
+        <div class="dashboard-content-grid">
+          <section class="dashboard-panel">
+            <div class="dashboard-panel-heading">
+              <p class="eyebrow" id="memberReservationsEyebrow">Mes réservations</p>
+              <h3 id="memberReservationsTitle">Réservations en cours</h3>
+            </div>
+            <div class="dashboard-reservation-list" id="memberReservationList"></div>
+          </section>
+          <section class="dashboard-panel">
+            <div class="dashboard-panel-heading">
+              <p class="eyebrow" id="memberAttendedEyebrow">Historique</p>
+              <h3 id="memberAttendedTitle">Projections déjà assistées</h3>
+            </div>
+            <div class="dashboard-reservation-list compact" id="memberAttendedList"></div>
+          </section>
+        </div>
+
+        <section class="dashboard-panel member-benefits-panel">
+          <div class="dashboard-panel-heading">
+            <p class="eyebrow" id="memberBenefitsEyebrow">Privilèges</p>
+            <h3 id="memberBenefitsTitle">Avantages de votre carte CINEMANA</h3>
+          </div>
+          <div class="dashboard-benefit-grid" id="memberBenefitGrid"></div>
+        </section>
+      </section>
+    </section>
+
     <section class="page" id="page-press">
       <header class="page-hero compact">
         <p class="eyebrow">Presse</p>
@@ -586,6 +688,7 @@
       <a href="javascript:void(0)" onclick="showPage('missions')">Missions</a>
       <a href="javascript:void(0)" onclick="showPage('membership')">Carte CINEMANA</a>
       <a href="javascript:void(0)" onclick="showPage('reservation')">Réservation</a>
+      <a href="javascript:void(0)" onclick="showPage('dashboard')">Espace membre</a>
     </div>
     <div>
       <span>Fondation</span>
@@ -698,7 +801,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260523-activity-luxe3"></script>
+  <script defer src="script.js?v=20260524-member-dashboard"></script>
   <script defer src="reservation-extension.js?v=20260523-membership-complete"></script>
 </body>
 </html>
