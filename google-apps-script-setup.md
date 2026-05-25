@@ -14,7 +14,7 @@
    - Click `Run`.
    - Accept the Google permissions.
 
-This immediately adds the missing columns to `membership` and `reservation`, even if the sheets already contain old test rows.
+This immediately reorders the columns in `membership` and `reservation` to match the current layout. If an old `Nom complet` column still exists, the helper tries to split it into `Prénom` and `Nom`, then removes the old header from the active layout.
 
 4. Add your Telegram bot settings as private Apps Script properties, not inside the public website files.
 
@@ -63,7 +63,7 @@ https://api.telegram.org/botYOUR_REAL_TELEGRAM_BOT_TOKEN/setWebhook?url=YOUR_DEP
    - `membership`
    - `reservation`
 
-The script will create or correct the header row if the sheets are empty or missing new columns.
+The script will create the header row if the sheets are empty. To force the exact current column order after editing the Apps Script code, run `fixCinemanaSheetColumns` once.
 
 The `membership` sheet now also uses:
 - `Comment as-tu connu CINEMANA?`

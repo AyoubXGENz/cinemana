@@ -11,6 +11,8 @@ const PAGES = [
   "partners"
 ];
 
+const CONNECT_HIDDEN_PAGES = new Set(["membership", "reservation"]);
+
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCl7S3KtNdRP4t-o8wsEABdezShD1TRd3o",
   authDomain: "cenimana-106f1.firebaseapp.com",
@@ -2211,11 +2213,10 @@ function setLanguage(language) {
 
   setText("#page-press .page-hero .eyebrow", copy.press.eyebrow);
   setText("#page-press .page-hero h1", copy.press.title);
-  setText("#pressSocialEyebrow", copy.press.socialEyebrow);
-  setText("#pressSocialTitle", copy.press.socialTitle);
-  setText("#pressContactEyebrow", copy.press.contactEyebrow);
-  setText("#pressContactTitle", copy.press.contactTitle);
-  setText("#pressContactPhone", copy.press.contactPhone);
+  setText("#globalSocialEyebrow", copy.press.socialEyebrow);
+  setText("#globalSocialTitle", copy.press.socialTitle);
+  setText("#globalContactEyebrow", copy.press.contactEyebrow);
+  setText("#globalContactPhone", copy.press.contactPhone);
   setCardTexts("#page-press .cards-grid", copy.press.cards);
 
   setText("#page-partners .page-hero .eyebrow", copy.partners.eyebrow);
@@ -2292,6 +2293,30 @@ function setLanguage(language) {
   clearMessage("memberMessage");
 }
 
+function updateGlobalConnectPlacement(target) {
+  const connect = document.getElementById("globalConnect");
+  if (!connect) return;
+
+  const shouldHide = CONNECT_HIDDEN_PAGES.has(target);
+  connect.hidden = shouldHide;
+  document.body.dataset.page = target;
+  if (shouldHide) return;
+
+  const page = document.getElementById(`page-${target}`);
+  if (!page) return;
+
+  const anchor = target === "home"
+    ? page.querySelector(".hero")
+    : page.querySelector(".page-hero");
+
+  if (anchor && anchor.parentElement === page) {
+    anchor.insertAdjacentElement("afterend", connect);
+    return;
+  }
+
+  page.appendChild(connect);
+}
+
 function showPage(name, pushState = true) {
   const target = PAGES.includes(name) ? name : "home";
 
@@ -2304,6 +2329,8 @@ function showPage(name, pushState = true) {
   document.querySelectorAll(".nav-links a").forEach((link) => {
     link.classList.toggle("active", link.id === `nav-${target}`);
   });
+
+  updateGlobalConnectPlacement(target);
 
   const navLinks = document.getElementById("navLinks");
   if (navLinks) navLinks.classList.remove("open");

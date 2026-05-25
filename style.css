@@ -490,39 +490,58 @@ h3 {
   padding-top: 0;
 }
 
-.press-connect {
+.global-connect {
   display: grid;
-  grid-template-columns: 1.25fr 0.85fr;
-  gap: 1rem;
-  padding-bottom: 0;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem;
+  align-items: center;
+  padding: 2.2rem 0 0;
 }
 
-.press-social-panel,
-.press-contact-panel {
+.global-connect[hidden],
+body[data-page="membership"] .global-connect,
+body[data-page="reservation"] .global-connect {
+  display: none;
+}
+
+.global-social-panel,
+.global-contact-panel {
   min-height: 100%;
-  padding: clamp(1.2rem, 2.4vw, 1.8rem);
-  background:
-    linear-gradient(145deg, rgba(217, 178, 76, 0.11), rgba(59, 140, 130, 0.1)),
-    var(--panel);
-  border: 1px solid rgba(217, 178, 76, 0.24);
+  padding: 0.95rem 1.05rem;
+  background: rgba(24, 24, 23, 0.82);
+  border: 1px solid rgba(244, 239, 229, 0.12);
   border-radius: 8px;
+  backdrop-filter: blur(10px);
 }
 
-.press-social-panel h2,
-.press-contact-panel h2 {
-  margin-bottom: 1rem;
-  font-size: clamp(1.6rem, 3vw, 2.4rem);
+.global-social-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.global-social-panel .eyebrow,
+.global-contact-panel .eyebrow {
+  margin-bottom: 0.25rem;
+  font-size: 0.66rem;
+}
+
+.global-social-panel h2 {
+  margin-bottom: 0;
+  font-size: clamp(1.1rem, 1.9vw, 1.45rem);
 }
 
 .social-icon-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.7rem;
+  gap: 0.5rem;
+  justify-content: flex-end;
 }
 
 .social-link {
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 2.35rem;
+  height: 2.35rem;
   display: grid;
   place-items: center;
   color: var(--cream);
@@ -530,21 +549,21 @@ h3 {
   border: 1px solid rgba(244, 239, 229, 0.14);
   border-radius: 999px;
   text-decoration: none;
-  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.22);
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.2);
+  transition: transform 0.18s ease, border-color 0.18s ease, filter 0.18s ease;
 }
 
-.social-link span {
-  font-size: 0.82rem;
-  font-weight: 950;
-  letter-spacing: 0;
+.social-link svg {
+  width: 1.18rem;
+  height: 1.18rem;
+  fill: currentColor;
 }
 
 .social-link:hover,
 .social-link:focus-visible {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: var(--gold);
-  background: rgba(217, 178, 76, 0.14);
+  filter: brightness(1.08);
 }
 
 .social-link.instagram {
@@ -555,32 +574,25 @@ h3 {
   background: #1877f2;
 }
 
-.social-link.tiktok {
-  background: linear-gradient(135deg, #111, #00f2ea 52%, #ff0050);
-}
-
 .social-link.youtube {
-  background: #ff0033;
+  background: #ff0000;
 }
 
-.social-link.whatsapp {
-  background: #168c4f;
-}
-
-.press-contact-list {
+.global-contact-list {
   display: grid;
-  gap: 0.7rem;
+  gap: 0.15rem;
 }
 
-.press-contact-list a,
-.press-contact-list span {
+.global-contact-list a,
+.global-contact-list span {
   display: block;
   min-width: 0;
   color: var(--soft);
   overflow-wrap: anywhere;
+  font-size: 0.86rem;
 }
 
-.press-contact-list a {
+.global-contact-list a {
   color: var(--gold-strong);
   font-weight: 900;
   text-decoration: none;
@@ -2089,13 +2101,26 @@ html[dir="rtl"] .seat-selection-header {
   .partner-layout,
   .reservation-layout,
   .reservation-choice-grid,
-  .press-connect,
+  .global-connect,
   .activity-feature,
   .dashboard-auth-grid,
   .dashboard-profile-grid,
   .dashboard-content-grid,
   .site-footer {
     grid-template-columns: 1fr;
+  }
+
+  .global-connect {
+    padding-top: 1.25rem;
+  }
+
+  .global-social-panel {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .social-icon-grid {
+    justify-content: flex-start;
   }
 
   .metrics-band div {
