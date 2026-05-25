@@ -40,7 +40,7 @@ const TRANSLATIONS = {
       missions: "Missions",
       bureau: "Bureau & Comités",
       activities: "Activités",
-      membership: "Pourquoi devenir membre",
+      membership: "Devenir membre",
       partner: "Devenir partenaire",
       reservation: "Réservation",
       dashboard: "Espace membre",
@@ -180,7 +180,7 @@ const TRANSLATIONS = {
     },
     membership: {
       eyebrow: "Carte CINEMANA",
-      title: "Pourquoi devenir membre",
+      title: "Devenir membre",
       copy: "En devenant membre de la Fondation CINEMANA, vous accédez à un ensemble d’avantages exclusifs conçus pour les passionnés de cinéma et de la culture.",
       benefits: [
         ["Projections sur réservation", "L’entrée par réservation préalable à plus de quinze projections cinématographiques organisées tout au long de l’année, couvrant aussi bien les séances mensuelles que la programmation spéciale du Festival International du Film de Tanger."],
@@ -217,7 +217,7 @@ const TRANSLATIONS = {
       note: "La réception du ticket indique le numéro de place confirmé.",
       quote: "Un parcours clair pour confirmer les places et garder une expérience fluide le jour de la projection.",
       member: {
-        eyebrow: "Membre",
+        eyebrow: "Réserver comme membre",
         title: "Réservation membre",
         steps: ["Demande du code membre.", "Vérification par téléphone.", "Choix de la place.", "Confirmation de la réservation."],
         labels: {
@@ -230,7 +230,7 @@ const TRANSLATIONS = {
         message: (code, seat, number) => `Code ${code} vérifié par téléphone. Votre place ${seat} est réservée sous la référence MEM-${number}.`
       },
       public: {
-        eyebrow: "Particulier",
+        eyebrow: "Réserver comme particulier",
         title: "Demande de réservation",
         steps: ["Remplir le formulaire.", "Attendre la validation.", "Recevoir la confirmation.", "Recevoir le ticket avec numéro de place."],
         labels: {
@@ -323,7 +323,7 @@ const TRANSLATIONS = {
       missions: "Missions",
       bureau: "Board & Committees",
       activities: "Activities",
-      membership: "Why become a member",
+      membership: "Become a member",
       partner: "Become a partner",
       reservation: "Reservation",
       dashboard: "Member area",
@@ -463,7 +463,7 @@ const TRANSLATIONS = {
     },
     membership: {
       eyebrow: "CINEMANA card",
-      title: "Why become a member",
+      title: "Become a member",
       copy: "By becoming a member of the CINEMANA Foundation, you gain access to exclusive benefits designed for cinema and culture lovers.",
       benefits: [
         ["Reserved screenings", "Admission by prior reservation to more than fifteen film screenings organized throughout the year, including monthly sessions and the special program of the Tangier International Film Festival."],
@@ -500,7 +500,7 @@ const TRANSLATIONS = {
       note: "The ticket received includes the confirmed seat number.",
       quote: "A clear path to confirm seats and keep the screening-day experience smooth.",
       member: {
-        eyebrow: "Member",
+        eyebrow: "Reserve as a member",
         title: "Member reservation",
         steps: ["Request member code.", "Phone verification.", "Seat selection.", "Reservation confirmation."],
         labels: {
@@ -513,7 +513,7 @@ const TRANSLATIONS = {
         message: (code, seat, number) => `Code ${code} verified by phone. Your seat ${seat} is reserved under reference MEM-${number}.`
       },
       public: {
-        eyebrow: "Individual",
+        eyebrow: "Reserve as an individual",
         title: "Reservation request",
         steps: ["Fill in the form.", "Wait for validation.", "Receive confirmation.", "Receive the ticket with seat number."],
         labels: {
@@ -606,7 +606,7 @@ const TRANSLATIONS = {
       missions: "المهام",
       bureau: "المكتب واللجان",
       activities: "الأنشطة",
-      membership: "لماذا تصبح عضوا",
+      membership: "كن عضوا",
       partner: "كن شريكا",
       reservation: "الحجز",
       dashboard: "فضاء العضو",
@@ -746,7 +746,7 @@ const TRANSLATIONS = {
     },
     membership: {
       eyebrow: "بطاقة سينيمانا",
-      title: "لماذا تصبح عضوا",
+      title: "كن عضوا",
       copy: "بانضمامك إلى مؤسسة سينيمانا، تستفيد من مجموعة امتيازات حصرية موجهة لعشاق السينما والثقافة.",
       benefits: [
         ["عروض بالحجز المسبق", "الدخول بالحجز المسبق إلى أكثر من خمسة عشر عرضا سينمائيا طوال السنة، تشمل العروض الشهرية والبرنامج الخاص للمهرجان الدولي للفيلم بطنجة."],
@@ -783,7 +783,7 @@ const TRANSLATIONS = {
       note: "التذكرة المستلمة تتضمن رقم المقعد المؤكد.",
       quote: "مسار واضح لتأكيد المقاعد وضمان تجربة سلسة يوم العرض.",
       member: {
-        eyebrow: "عضو",
+        eyebrow: "احجز كعضو",
         title: "حجز الأعضاء",
         steps: ["طلب رمز العضوية.", "التحقق عبر الهاتف.", "اختيار المقعد.", "تأكيد الحجز."],
         labels: {
@@ -796,7 +796,7 @@ const TRANSLATIONS = {
         message: (code, seat, number) => `تم التحقق من الرمز ${code} عبر الهاتف. تم حجز المقعد ${seat} تحت المرجع MEM-${number}.`
       },
       public: {
-        eyebrow: "فرد",
+        eyebrow: "احجز كفرد",
         title: "طلب الحجز",
         steps: ["ملء الاستمارة.", "انتظار المصادقة.", "استلام التأكيد.", "استلام التذكرة مع رقم المقعد."],
         labels: {

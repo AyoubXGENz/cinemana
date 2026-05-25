@@ -118,6 +118,16 @@ function setupCinemanaSheets() {
   };
 }
 
+function setReservationTelegramToNewChat() {
+  PropertiesService.getScriptProperties().setProperty("TELEGRAM_CHAT_ID", "5799678675");
+  return {
+    ok: true,
+    property: "TELEGRAM_CHAT_ID",
+    chat_id: "5799678675",
+    message: "Reservation Telegram notifications now use the new chat id."
+  };
+}
+
 function fixCinemanaSheetColumns() {
   const spreadsheetId = typeof SPREADSHEET_ID !== "undefined"
     ? SPREADSHEET_ID

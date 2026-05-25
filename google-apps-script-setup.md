@@ -24,6 +24,8 @@ This immediately adds the missing columns to `membership` and `reservation`, eve
    - Under `Script Properties`, add `TELEGRAM_BOT_TOKEN`.
    - Add `TELEGRAM_CHAT_ID`.
    - Paste the real reservation bot token and chat id there.
+   - Current requested reservation chat id from your latest Telegram screenshot: `5799678675`.
+   - If the reservation bot token is already saved, you can also run `setReservationTelegramToNewChat` once from Apps Script to update only `TELEGRAM_CHAT_ID`.
 
    Membership-card requests use the separate membership bot:
 
