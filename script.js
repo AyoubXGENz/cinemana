@@ -69,9 +69,9 @@ const TRANSLATIONS = {
       supportButton: "Soutenir la fondation",
       photosLabel: "Photos CINEMANA",
       photoAlts: [
-        "Salle de cinéma avec fauteuils rouges",
-        "Public dans une salle obscure",
-        "Caméra et équipe de tournage"
+        "Projection CINEMANA dans une salle de cinéma",
+        "Rencontre professionnelle pendant le festival",
+        "Atelier de formation audiovisuelle avec caméra"
       ],
       captions: ["Projections", "Rencontres", "Formations"]
     },
@@ -235,6 +235,8 @@ const TRANSLATIONS = {
         steps: ["Remplir le formulaire.", "Attendre la validation.", "Recevoir la confirmation.", "Recevoir le ticket avec numéro de place."],
         labels: {
           name: "Nom complet",
+          firstName: "Prénom",
+          lastName: "Nom",
           whatsapp: "Tel WhatsApp",
           age: "Âge",
           role: "Fonction",
@@ -247,6 +249,11 @@ const TRANSLATIONS = {
     press: {
       eyebrow: "Presse",
       title: "Informations presse et demandes médias.",
+      socialEyebrow: "Réseaux sociaux",
+      socialTitle: "Suivez CINEMANA",
+      contactEyebrow: "Contact us",
+      contactTitle: "Contact us",
+      contactPhone: "Téléphone et WhatsApp à ajouter",
       cards: [
         ["Communiqués", "Actualités de la Fondation CINEMANA, annonces de programmation, partenariats et temps forts du festival."],
         ["Dossier de presse", "Présentation de la fondation, missions, bureau, visuels officiels et chiffres clés à mettre à jour avec les prochains documents."],
@@ -271,6 +278,8 @@ const TRANSLATIONS = {
       close: "Fermer",
       labels: {
         name: "Nom complet",
+        firstName: "Prénom",
+        lastName: "Nom",
         birthday: "Date de naissance",
         city: "Ville",
         phone: "Téléphone",
@@ -352,9 +361,9 @@ const TRANSLATIONS = {
       supportButton: "Support the foundation",
       photosLabel: "CINEMANA photos",
       photoAlts: [
-        "Cinema hall with red seats",
-        "Audience in a dark movie theater",
-        "Camera and film crew"
+        "CINEMANA screening inside a cinema hall",
+        "Professional encounter during the festival",
+        "Audiovisual training workshop with a camera"
       ],
       captions: ["Screenings", "Encounters", "Training"]
     },
@@ -518,6 +527,8 @@ const TRANSLATIONS = {
         steps: ["Fill in the form.", "Wait for validation.", "Receive confirmation.", "Receive the ticket with seat number."],
         labels: {
           name: "Full name",
+          firstName: "First name",
+          lastName: "Last name",
           whatsapp: "WhatsApp phone",
           age: "Age",
           role: "Occupation",
@@ -530,6 +541,11 @@ const TRANSLATIONS = {
     press: {
       eyebrow: "Press",
       title: "Press information and media requests.",
+      socialEyebrow: "Social media",
+      socialTitle: "Follow CINEMANA",
+      contactEyebrow: "Contact us",
+      contactTitle: "Contact us",
+      contactPhone: "Phone and WhatsApp to add",
       cards: [
         ["Press releases", "CINEMANA Foundation news, program announcements, partnerships and festival highlights."],
         ["Press kit", "Foundation presentation, missions, board, official visuals and key figures to update with upcoming documents."],
@@ -554,6 +570,8 @@ const TRANSLATIONS = {
       close: "Close",
       labels: {
         name: "Full name",
+        firstName: "First name",
+        lastName: "Last name",
         birthday: "Date of birth",
         city: "City",
         phone: "Phone number",
@@ -635,9 +653,9 @@ const TRANSLATIONS = {
       supportButton: "ادعم المؤسسة",
       photosLabel: "صور سينيمانا",
       photoAlts: [
-        "قاعة سينما بمقاعد حمراء",
-        "جمهور داخل قاعة سينمائية مظلمة",
-        "كاميرا وفريق تصوير"
+        "عرض سينيمانا داخل قاعة سينما",
+        "لقاء مهني خلال المهرجان",
+        "ورشة تكوين سمعي بصري بالكاميرا"
       ],
       captions: ["العروض", "اللقاءات", "التكوينات"]
     },
@@ -801,6 +819,8 @@ const TRANSLATIONS = {
         steps: ["ملء الاستمارة.", "انتظار المصادقة.", "استلام التأكيد.", "استلام التذكرة مع رقم المقعد."],
         labels: {
           name: "الاسم الكامل",
+          firstName: "الاسم",
+          lastName: "النسب",
           whatsapp: "هاتف واتساب",
           age: "العمر",
           role: "المهنة",
@@ -813,6 +833,11 @@ const TRANSLATIONS = {
     press: {
       eyebrow: "الصحافة",
       title: "معلومات صحفية وطلبات إعلامية.",
+      socialEyebrow: "مواقع التواصل",
+      socialTitle: "تابعوا CINEMANA",
+      contactEyebrow: "تواصل معنا",
+      contactTitle: "تواصل معنا",
+      contactPhone: "الهاتف والواتساب سيتم إضافتهما لاحقاً",
       cards: [
         ["بلاغات", "أخبار مؤسسة سينيمانا، إعلانات البرمجة، الشراكات، وأبرز لحظات المهرجان."],
         ["الملف الصحفي", "تقديم المؤسسة، المهام، المكتب، الصور الرسمية، والأرقام الأساسية التي سيتم تحديثها مع الوثائق المقبلة."],
@@ -837,6 +862,8 @@ const TRANSLATIONS = {
       close: "إغلاق",
       labels: {
         name: "الاسم الكامل",
+        firstName: "الاسم",
+        lastName: "النسب",
         birthday: "تاريخ الميلاد",
         city: "المدينة",
         phone: "رقم الهاتف",
@@ -1775,9 +1802,20 @@ function initializeEmailJs() {
   return true;
 }
 
+function combineNameParts(firstName, lastName) {
+  return [firstName, lastName]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
 function getMemberFormData() {
+  const firstName = document.getElementById("memberFirstName").value.trim();
+  const lastName = document.getElementById("memberLastName").value.trim();
   return {
-    full_name: document.getElementById("memberName").value.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: combineNameParts(firstName, lastName),
     birthday: document.getElementById("memberBirthday").value,
     city: document.getElementById("memberCity").value.trim(),
     phone: document.getElementById("memberPhone").value.trim(),
@@ -1790,7 +1828,8 @@ function getMemberFormData() {
 function validateMemberForm(data) {
   const messages = TRANSLATIONS[currentLanguage].modal.validation;
   const requiredValues = [
-    data.full_name,
+    data.first_name,
+    data.last_name,
     data.birthday,
     data.city,
     data.phone,
@@ -1843,7 +1882,8 @@ function getVerificationCode() {
 
 function setMemberFieldsDisabled(disabled) {
   [
-    "memberName",
+    "memberFirstName",
+    "memberLastName",
     "memberBirthday",
     "memberCity",
     "memberPhone",
@@ -1972,6 +2012,8 @@ async function createFirebaseMemberAccount(data, referenceCode) {
   await services.db.collection("cinemana_members").doc(user.uid).set({
     user_id: user.uid,
     reference_code: referenceCode,
+    first_name: data.first_name,
+    last_name: data.last_name,
     full_name: data.full_name,
     birthday: data.birthday,
     city: data.city,
@@ -1991,6 +2033,8 @@ async function sendMemberToGoogleSheets(data, user, referenceCode) {
   const payload = {
     reference_code: referenceCode,
     user_id: user.uid,
+    first_name: data.first_name,
+    last_name: data.last_name,
     full_name: data.full_name,
     birthday: data.birthday,
     city: data.city,
@@ -2157,7 +2201,8 @@ function setLanguage(language) {
   setText("#page-reservation .reservation-card:nth-child(2) .eyebrow", copy.reservation.public.eyebrow);
   setText("#page-reservation .reservation-card:nth-child(2) h2", copy.reservation.public.title);
   setListTexts("#page-reservation .reservation-card:nth-child(2) .flow-steps li", copy.reservation.public.steps);
-  setLabel("publicName", copy.reservation.public.labels.name);
+  setLabel("publicFirstName", copy.reservation.public.labels.firstName);
+  setLabel("publicLastName", copy.reservation.public.labels.lastName);
   setLabel("publicWhatsapp", copy.reservation.public.labels.whatsapp);
   setLabel("publicAge", copy.reservation.public.labels.age);
   setLabel("publicRole", copy.reservation.public.labels.role);
@@ -2166,6 +2211,11 @@ function setLanguage(language) {
 
   setText("#page-press .page-hero .eyebrow", copy.press.eyebrow);
   setText("#page-press .page-hero h1", copy.press.title);
+  setText("#pressSocialEyebrow", copy.press.socialEyebrow);
+  setText("#pressSocialTitle", copy.press.socialTitle);
+  setText("#pressContactEyebrow", copy.press.contactEyebrow);
+  setText("#pressContactTitle", copy.press.contactTitle);
+  setText("#pressContactPhone", copy.press.contactPhone);
   setCardTexts("#page-press .cards-grid", copy.press.cards);
 
   setText("#page-partners .page-hero .eyebrow", copy.partners.eyebrow);
@@ -2186,7 +2236,8 @@ function setLanguage(language) {
   setText(".member-modal .modal-header .eyebrow", copy.modal.eyebrow);
   setText(".member-modal .modal-header h2", copy.modal.title);
   setAttr(".member-modal .modal-header button", "aria-label", copy.modal.close);
-  setLabel("memberName", copy.modal.labels.name);
+  setLabel("memberFirstName", copy.modal.labels.firstName);
+  setLabel("memberLastName", copy.modal.labels.lastName);
   setLabel("memberBirthday", copy.modal.labels.birthday);
   setLabel("memberCity", copy.modal.labels.city);
   setLabel("memberPhone", copy.modal.labels.phone);
@@ -2460,7 +2511,8 @@ async function submitMember(event) {
 function submitMemberReservation(event) {
   event.preventDefault();
   const code = document.getElementById("memberCode").value.trim();
-  const seat = document.getElementById("memberSeat").value;
+  const seatInput = document.getElementById("memberSeat");
+  const seat = seatInput ? seatInput.value : "";
   const message = document.getElementById("memberReservationMessage");
   const number = Math.floor(1000 + Math.random() * 9000);
 
@@ -2470,7 +2522,10 @@ function submitMemberReservation(event) {
 
 function submitPublicReservation(event) {
   event.preventDefault();
-  const name = document.getElementById("publicName").value.trim();
+  const name = combineNameParts(
+    document.getElementById("publicFirstName").value,
+    document.getElementById("publicLastName").value
+  );
   const message = document.getElementById("publicReservationMessage");
   const number = Math.floor(1000 + Math.random() * 9000);
   const seats = ["B4", "C7", "D9", "E5", "F8"];

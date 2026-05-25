@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260524-member-dashboard">
+  <link rel="stylesheet" href="style.css?v=20260525-split-names-contact">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -98,15 +98,15 @@
         </div>
         <div class="photo-stack" aria-label="Photos CINEMANA">
           <figure>
-            <img loading="lazy" src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?auto=format&fit=crop&w=900&q=80" alt="Salle de cinéma avec fauteuils rouges">
+            <img loading="lazy" src="assets/activities/monthly-screening.jpg?v=20260525" alt="Projection CINEMANA dans une salle de cinéma">
             <figcaption>Projections</figcaption>
           </figure>
           <figure>
-            <img loading="lazy" src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=900&q=80" alt="Public dans une salle obscure">
+            <img loading="lazy" src="assets/activities/tff-networking.jpg?v=20260525" alt="Rencontre professionnelle pendant le festival">
             <figcaption>Rencontres</figcaption>
           </figure>
           <figure>
-            <img loading="lazy" src="https://images.unsplash.com/photo-1505686994434-e3cc5abf1330?auto=format&fit=crop&w=900&q=80" alt="Caméra et équipe de tournage">
+            <img loading="lazy" src="assets/activities/school-cineclub-workshop.jpg?v=20260525" alt="Atelier de formation audiovisuelle avec caméra">
             <figcaption>Formations</figcaption>
           </figure>
         </div>
@@ -454,8 +454,12 @@
           </ol>
           <form class="form-panel" id="memberReservationForm" onsubmit="submitMemberReservation(event)">
             <label>
-              Nom complet
-              <input type="text" id="memberReservationName" name="memberReservationName" autocomplete="name" required>
+              Prénom
+              <input type="text" id="memberReservationFirstName" name="memberReservationFirstName" autocomplete="given-name" required>
+            </label>
+            <label>
+              Nom
+              <input type="text" id="memberReservationLastName" name="memberReservationLastName" autocomplete="family-name" required>
             </label>
             <label>
               Code membre / Référence membre
@@ -484,8 +488,12 @@
           </ol>
           <form class="form-panel" id="publicReservationForm" onsubmit="submitPublicReservation(event)">
           <label>
-            Nom complet
-            <input type="text" id="publicName" name="name" autocomplete="name" required>
+            Prénom
+            <input type="text" id="publicFirstName" name="first_name" autocomplete="given-name" required>
+          </label>
+          <label>
+            Nom
+            <input type="text" id="publicLastName" name="last_name" autocomplete="family-name" required>
           </label>
           <label>
             Tel WhatsApp
@@ -656,6 +664,37 @@
         <p class="eyebrow">Presse</p>
         <h1>Informations presse et demandes médias.</h1>
       </header>
+      <section class="section press-connect">
+        <div class="press-social-panel">
+          <p class="eyebrow" id="pressSocialEyebrow">Réseaux sociaux</p>
+          <h2 id="pressSocialTitle">Suivez CINEMANA</h2>
+          <div class="social-icon-grid" aria-label="Réseaux sociaux CINEMANA">
+            <a class="social-link instagram" href="javascript:void(0)" aria-label="Instagram" title="Instagram">
+              <span>IG</span>
+            </a>
+            <a class="social-link facebook" href="javascript:void(0)" aria-label="Facebook" title="Facebook">
+              <span>f</span>
+            </a>
+            <a class="social-link tiktok" href="javascript:void(0)" aria-label="TikTok" title="TikTok">
+              <span>TT</span>
+            </a>
+            <a class="social-link youtube" href="javascript:void(0)" aria-label="YouTube" title="YouTube">
+              <span>YT</span>
+            </a>
+            <a class="social-link whatsapp" href="javascript:void(0)" aria-label="WhatsApp" title="WhatsApp">
+              <span>WA</span>
+            </a>
+          </div>
+        </div>
+        <div class="press-contact-panel">
+          <p class="eyebrow" id="pressContactEyebrow">Contact us</p>
+          <h2 id="pressContactTitle">Contact us</h2>
+          <div class="press-contact-list">
+            <a id="pressContactEmail" href="mailto:s.a.o.c.tanger@gmail.com">s.a.o.c.tanger@gmail.com</a>
+            <span id="pressContactPhone">Téléphone et WhatsApp à ajouter</span>
+          </div>
+        </div>
+      </section>
       <section class="section cards-grid">
         <article class="info-card"><h3>Communiqués</h3><p>Actualités de la Fondation CINEMANA, annonces de programmation, partenariats et temps forts du festival.</p></article>
         <article class="info-card"><h3>Dossier de presse</h3><p>Présentation de la fondation, missions, bureau, visuels officiels et chiffres clés à mettre à jour avec les prochains documents.</p></article>
@@ -711,8 +750,12 @@
       </div>
       <div class="member-form-grid">
         <label>
-          Nom complet
-          <input type="text" id="memberName" name="full_name" autocomplete="name" required>
+          Prénom
+          <input type="text" id="memberFirstName" name="first_name" autocomplete="given-name" required>
+        </label>
+        <label>
+          Nom
+          <input type="text" id="memberLastName" name="last_name" autocomplete="family-name" required>
         </label>
         <label>
           Date de naissance
@@ -803,7 +846,7 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260524-member-dashboard"></script>
-  <script defer src="reservation-extension.js?v=20260523-membership-complete"></script>
+  <script defer src="script.js?v=20260525-split-names-contact"></script>
+  <script defer src="reservation-extension.js?v=20260525-split-names-contact"></script>
 </body>
 </html>

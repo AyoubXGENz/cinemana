@@ -51,6 +51,8 @@ const CINEMANA_EXTENSION_COPY = {
         steps: ["Saisir les informations membre.", "Vérification dans la base CINEMANA.", "Choix d’un seul siège.", "Confirmation avec référence et QR code."],
         labels: {
           name: "Nom complet",
+          firstName: "Prénom",
+          lastName: "Nom",
           code: "Code membre / Référence membre",
           phone: "Téléphone",
           email: "E-mail"
@@ -162,6 +164,8 @@ const CINEMANA_EXTENSION_COPY = {
         steps: ["Enter member information.", "Verify it in the CINEMANA database.", "Choose one seat only.", "Confirm with a reference and QR code."],
         labels: {
           name: "Full name",
+          firstName: "First name",
+          lastName: "Last name",
           code: "Member code / Member reference",
           phone: "Phone number",
           email: "E-mail"
@@ -273,6 +277,8 @@ const CINEMANA_EXTENSION_COPY = {
         steps: ["أدخل معلومات العضوية.", "التحقق من قاعدة بيانات سينيمانا.", "اختر كرسيا واحدا فقط.", "تأكيد الحجز مع المرجع و QR code."],
         labels: {
           name: "الاسم الكامل",
+          firstName: "الاسم",
+          lastName: "النسب",
           code: "كود العضوية / ريفيرونس العضوية",
           phone: "رقم الهاتف",
           email: "البريد الإلكتروني"
@@ -406,12 +412,15 @@ function applyExtensionTexts() {
   setText("#memberCompleteTitle", modal.completeTitle);
   setText("#memberCompleteHome", modal.completeHome);
 
-  setLabel("memberReservationName", reservation.member.labels.name);
+  setLabel("memberReservationFirstName", reservation.member.labels.firstName);
+  setLabel("memberReservationLastName", reservation.member.labels.lastName);
   setLabel("memberCode", reservation.member.labels.code);
   setLabel("memberTel", reservation.member.labels.phone);
   setLabel("memberReservationEmail", reservation.member.labels.email);
   setText("#memberReservationForm button", reservation.member.button);
 
+  setLabel("publicFirstName", reservation.public.labels.firstName);
+  setLabel("publicLastName", reservation.public.labels.lastName);
   setLabel("publicEmail", reservation.public.labels.email);
   setText("#publicReservationForm button", reservation.public.button);
 
@@ -515,8 +524,12 @@ resetMemberVerification = function resetMemberVerificationWithProfession(clearFo
 };
 
 getMemberFormData = function getMemberFormDataWithProfession() {
+  const firstName = document.getElementById("memberFirstName").value.trim();
+  const lastName = document.getElementById("memberLastName").value.trim();
   return {
-    full_name: document.getElementById("memberName").value.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: combineNameParts(firstName, lastName),
     birthday: document.getElementById("memberBirthday").value,
     city: document.getElementById("memberCity").value.trim(),
     phone: document.getElementById("memberPhone").value.trim(),
@@ -534,7 +547,8 @@ getMemberFormData = function getMemberFormDataWithProfession() {
 validateMemberForm = function validateMemberFormWithProfession(data) {
   const messages = TRANSLATIONS[currentLanguage].modal.validation;
   const requiredValues = [
-    data.full_name,
+    data.first_name,
+    data.last_name,
     data.birthday,
     data.city,
     data.phone,
@@ -566,7 +580,8 @@ validateMemberForm = function validateMemberFormWithProfession(data) {
 
 setMemberFieldsDisabled = function setMemberFieldsDisabledWithProfession(disabled) {
   [
-    "memberName",
+    "memberFirstName",
+    "memberLastName",
     "memberBirthday",
     "memberCity",
     "memberPhone",
@@ -597,6 +612,8 @@ createFirebaseMemberAccount = async function createFirebaseMemberAccountWithProf
   await services.db.collection("cinemana_members").doc(user.uid).set({
     user_id: user.uid,
     reference_code: referenceCode,
+    first_name: data.first_name,
+    last_name: data.last_name,
     full_name: data.full_name,
     birthday: data.birthday,
     city: data.city,
@@ -618,6 +635,8 @@ sendMemberToGoogleSheets = async function sendMemberToGoogleSheetsWithProfession
   const result = await callGoogleSheetsAction("saveMembership", {
     reference_code: referenceCode,
     user_id: user.uid,
+    first_name: data.first_name,
+    last_name: data.last_name,
     full_name: data.full_name,
     birthday: data.birthday,
     city: data.city,
@@ -745,9 +764,13 @@ function isValidEmail(value) {
 }
 
 function getMemberReservationData() {
+  const firstName = document.getElementById("memberReservationFirstName").value.trim();
+  const lastName = document.getElementById("memberReservationLastName").value.trim();
   return {
     type: "member",
-    full_name: document.getElementById("memberReservationName").value.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: combineNameParts(firstName, lastName),
     member_reference: document.getElementById("memberCode").value.trim(),
     phone: document.getElementById("memberTel").value.trim(),
     whatsapp: document.getElementById("memberTel").value.trim(),
@@ -759,9 +782,13 @@ function getMemberReservationData() {
 }
 
 function getPublicReservationData() {
+  const firstName = document.getElementById("publicFirstName").value.trim();
+  const lastName = document.getElementById("publicLastName").value.trim();
   return {
     type: "public",
-    full_name: document.getElementById("publicName").value.trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: combineNameParts(firstName, lastName),
     whatsapp: document.getElementById("publicWhatsapp").value.trim(),
     phone: document.getElementById("publicWhatsapp").value.trim(),
     email: normalizeEmail(document.getElementById("publicEmail").value),
@@ -775,7 +802,8 @@ function getPublicReservationData() {
 function validateReservationData(data, requireMemberReference) {
   const validation = getExtensionCopy().reservation.validation;
   const required = [
-    data.full_name,
+    data.first_name,
+    data.last_name,
     data.phone || data.whatsapp,
     data.email
   ];

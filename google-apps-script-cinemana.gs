@@ -5,10 +5,13 @@ const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
 const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
 const MEMBERSHIP_TELEGRAM_BOT_TOKEN = "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN";
 const MEMBERSHIP_TELEGRAM_CHAT_ID = "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID";
+const ADMIN_BADGE_EMAIL = "s.a.o.c.tanger@gmail.com";
 
 const MEMBERSHIP_HEADERS = [
   "References",
   "Nom complet",
+  "Prénom",
+  "Nom",
   "ville",
   "Date de naissance",
   "Téléphone",
@@ -25,6 +28,8 @@ const MEMBERSHIP_HEADERS = [
 const RESERVATION_HEADERS = [
   "References",
   "Nom complet",
+  "Prénom",
+  "Nom",
   "Tel WhatsApp",
   "E-mail",
   "Âge",
@@ -135,6 +140,8 @@ function fixCinemanaSheetColumns() {
   const membershipHeaders = [
     "References",
     "Nom complet",
+    "Prénom",
+    "Nom",
     "ville",
     "Date de naissance",
     "Téléphone",
@@ -150,6 +157,8 @@ function fixCinemanaSheetColumns() {
   const reservationHeaders = [
     "References",
     "Nom complet",
+    "Prénom",
+    "Nom",
     "Tel WhatsApp",
     "E-mail",
     "Âge",
@@ -288,6 +297,13 @@ function normalizeEmail_(value) {
   return String(value || "").trim().toLowerCase();
 }
 
+function combineNameParts_(firstName, lastName) {
+  return [firstName, lastName]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
 function getRows_(sheet) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
@@ -300,9 +316,15 @@ function rowObject_(row, map) {
     return index ? row[index - 1] : "";
   }
 
+  const firstName = String(get("Prénom") || "").trim();
+  const lastName = String(get("Nom") || "").trim();
+  const fullName = String(get("Nom complet") || "").trim() || combineNameParts_(firstName, lastName);
+
   return {
     reference: String(get("References") || "").trim(),
-    fullName: String(get("Nom complet") || "").trim(),
+    firstName,
+    lastName,
+    fullName,
     city: String(get("ville") || "").trim(),
     birthday: get("Date de naissance"),
     phone: String(get("Téléphone") || "").trim(),
@@ -370,6 +392,8 @@ function verifyMember_(payload) {
     ok: true,
     member: {
       reference: result.member.reference,
+      first_name: result.member.firstName,
+      last_name: result.member.lastName,
       full_name: result.member.fullName,
       email: result.member.email,
       phone: result.member.phone,
@@ -433,6 +457,8 @@ function getMemberDashboard_(payload) {
     member: {
       reference: member.reference,
       reference_code: member.reference,
+      first_name: member.firstName,
+      last_name: member.lastName,
       full_name: member.fullName,
       fullName: member.fullName,
       birthday: member.birthday,
@@ -496,7 +522,8 @@ function findMembershipByReference_(reference) {
 }
 
 function saveMembership_(payload) {
-  const required = ["reference_code", "full_name", "birthday", "city", "phone", "email", "profession", "heard_about_us"];
+  payload.full_name = payload.full_name || combineNameParts_(payload.first_name, payload.last_name);
+  const required = ["reference_code", "first_name", "last_name", "full_name", "birthday", "city", "phone", "email", "profession", "heard_about_us"];
   if (required.some((key) => !payload[key])) return { ok: false, code: "missing_fields" };
 
   const sheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
@@ -509,6 +536,8 @@ function saveMembership_(payload) {
   const valuesByHeader = {
     "References": payload.reference_code,
     "Nom complet": payload.full_name,
+    "Prénom": payload.first_name,
+    "Nom": payload.last_name,
     "ville": payload.city,
     "Date de naissance": payload.birthday,
     "Téléphone": payload.phone,
@@ -632,7 +661,8 @@ function createReservation_(payload) {
   lock.waitLock(10000);
 
   try {
-    const required = ["type", "full_name", "phone", "email", "seat"];
+    payload.full_name = payload.full_name || combineNameParts_(payload.first_name, payload.last_name);
+    const required = ["type", "first_name", "last_name", "full_name", "phone", "email", "seat"];
     if (required.some((key) => !payload[key])) return { ok: false, code: "missing_fields" };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail_(payload.email))) return { ok: false, code: "invalid_email" };
 
@@ -665,6 +695,8 @@ function createReservation_(payload) {
     const valuesByHeader = {
       "References": reference,
       "Nom complet": payload.full_name,
+      "Prénom": payload.first_name,
+      "Nom": payload.last_name,
       "Tel WhatsApp": payload.whatsapp || payload.phone,
       "E-mail": payload.email,
       "Âge": payload.type === "member" ? "" : payload.age,
@@ -793,9 +825,15 @@ function reservationPayloadFromRow_(row, map) {
     return index ? row[index - 1] : "";
   }
 
+  const firstName = String(get("Prénom") || "").trim();
+  const lastName = String(get("Nom") || "").trim();
+  const fullName = String(get("Nom complet") || "").trim() || combineNameParts_(firstName, lastName);
+
   return {
     reference: String(get("References") || "").trim(),
-    full_name: String(get("Nom complet") || "").trim(),
+    first_name: firstName,
+    last_name: lastName,
+    full_name: fullName,
     whatsapp: String(get("Tel WhatsApp") || "").trim(),
     phone: String(get("Tel WhatsApp") || "").trim(),
     email: String(get("E-mail") || "").trim(),
@@ -903,7 +941,14 @@ function processMembershipDecision_(reference, decision) {
     const emailStatus = status === "member"
       ? sendMembershipApprovedEmail_(found.member)
       : sendMembershipRejectedEmail_(found.member);
-    if (emailStatusColumn) sheet.getRange(found.rowNumber, emailStatusColumn).setValue(emailStatus);
+    const adminBadgeEmailStatus = status === "member"
+      ? sendMembershipBadgeAdminEmail_(found.member)
+      : "not needed";
+    if (emailStatusColumn) {
+      sheet.getRange(found.rowNumber, emailStatusColumn).setValue(
+        status === "member" ? `${emailStatus}; badge admin: ${adminBadgeEmailStatus}` : emailStatus
+      );
+    }
 
     const result = {
       ok: true,
@@ -911,6 +956,7 @@ function processMembershipDecision_(reference, decision) {
       reference,
       status,
       email_status: emailStatus,
+      admin_badge_email_status: adminBadgeEmailStatus,
       message: status === "member" ? "Membre accepté et e-mail envoyé." : "Demande refusée."
     };
     editStoredTelegramMembershipDecisionMessage_(found.member, result);
@@ -1336,6 +1382,57 @@ function sendMembershipApprovedEmail_(member) {
     MailApp.sendEmail({
       to: member.email,
       subject: "Votre adhésion CINEMANA est validée",
+      htmlBody: html,
+      name: "CINEMANA"
+    });
+    return "sent";
+  } catch (error) {
+    return `error: ${String(error && error.message ? error.message : error)}`;
+  }
+}
+
+function sendMembershipBadgeAdminEmail_(member) {
+  if (!ADMIN_BADGE_EMAIL) return "missing_admin_email";
+  try {
+    const rows = [
+      ["Référence", member.reference],
+      ["Prénom", member.firstName || ""],
+      ["Nom", member.lastName || ""],
+      ["Nom complet", member.fullName || ""],
+      ["Date de naissance", member.birthday || ""],
+      ["Ville", member.city || ""],
+      ["Téléphone", member.phone || ""],
+      ["E-mail", member.email || ""],
+      ["Fonction", member.profession || ""],
+      ["Comment connu CINEMANA", member.heard_about_us || ""]
+    ];
+    const detailsHtml = rows.map(([label, value]) => `
+      <tr>
+        <td style="padding:8px 10px;border-bottom:1px solid #2c3547;color:#d9b24c;font-weight:800">${escapeHtml_(label)}</td>
+        <td style="padding:8px 10px;border-bottom:1px solid #2c3547;color:#f7f0df">${escapeHtml_(value || "-")}</td>
+      </tr>
+    `).join("");
+    const plain = rows.map(([label, value]) => `${label}: ${value || "-"}`).join("\n");
+    const html = `
+      <div style="margin:0;padding:18px;background:#080808;font-family:Arial,sans-serif;color:#f7f0df">
+        <div style="max-width:640px;margin:auto;background:#111827;border:1px solid #d9b24c;border-radius:16px;overflow:hidden">
+          <div style="background:#d9b24c;color:#080808;padding:20px;text-align:center">
+            <div style="font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase">CINEMANA</div>
+            <h1 style="margin:8px 0 0;font-size:28px;line-height:1.15">Membre accepté - badge à préparer</h1>
+          </div>
+          <div style="padding:22px">
+            <p style="margin:0 0 16px;color:#d7d0c3;font-size:16px;line-height:1.55">Une demande d’adhésion vient d’être acceptée. Voici les informations à utiliser pour préparer le badge.</p>
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#0b0f1a;border-radius:12px;overflow:hidden">
+              ${detailsHtml}
+            </table>
+          </div>
+        </div>
+      </div>`;
+
+    MailApp.sendEmail({
+      to: ADMIN_BADGE_EMAIL,
+      subject: `Badge CINEMANA à préparer - ${member.fullName || member.email || member.reference}`,
+      body: plain,
       htmlBody: html,
       name: "CINEMANA"
     });
