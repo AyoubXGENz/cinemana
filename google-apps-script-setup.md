@@ -5,7 +5,7 @@
 
 2. Go to `Extensions > Apps Script`.
 
-3. Replace the current code with the content of `google-apps-script-cinemana.gs`.
+3. Replace the current code with the content of `google-apps-script-cinemana-UPDATED.gs`.
 
 3.1. After pasting the code, run `fixCinemanaSheetColumns` once from the Apps Script editor:
    - Click Save or press `Ctrl + S`.
@@ -32,6 +32,17 @@ This immediately reorders the columns in `membership` and `reservation` to match
    - Add `MEMBERSHIP_TELEGRAM_BOT_TOKEN`.
    - Add `MEMBERSHIP_TELEGRAM_CHAT_ID`.
    - Paste the real membership bot token and chat id there.
+   - Current membership chat id: `1407038332`.
+   - Run `setMembershipTelegramConfigToAyoub` once from Apps Script. This updates both `MEMBERSHIP_TELEGRAM_BOT_TOKEN` and `MEMBERSHIP_TELEGRAM_CHAT_ID`, which is important because Script Properties override the values written in the code.
+   - Run `testMembershipTelegramNotification` once. If it returns `sent`, you should receive a small test message in Telegram.
+   - If something still fails, run `getMembershipTelegramConfigStatus` to check whether the membership bot token and chat id are visible to Apps Script without printing the private token.
+
+   Optional badge-admin e-mail setting:
+
+   - Add `ADMIN_BADGE_EMAIL`.
+   - Use `ayoubabenyaich@gmail.com`.
+   - If this property is missing, the script still uses `ayoubabenyaich@gmail.com` as the fallback.
+   - If an old admin badge e-mail is already saved in Script Properties, run `setAdminBadgeEmailToAyoub` once from Apps Script.
 
 To create/get them:
 - In Telegram, open `@BotFather`, create a bot, and copy the bot token.
@@ -76,6 +87,8 @@ The `membership` sheet now also uses:
 Membership requests are saved as `pending` in `Statu`. Telegram sends you two buttons:
 - `Accepter`: changes `Statu` to `member`, marks it green, and sends the member reference + QR e-mail.
 - `Refuser`: changes `Statu` to `rejected`, marks it red, and removes the Telegram buttons.
+
+When a member is accepted, the script also sends a badge-preparation e-mail to `ADMIN_BADGE_EMAIL` with the same member QR code. For old accepted members that do not have `badge admin: sent` inside `Email status`, run `resendMissingMembershipBadgeEmails` once from the Apps Script editor. If you want to resend the new QR badge e-mail to every accepted member again, run `resendAllAcceptedMembershipBadgeEmails` once.
 
 Public reservations are now saved as `pending` in the `Statu` column. Telegram sends you two buttons:
 - `Confirmer`: changes `Statu` to `confirmed`, marks it green, reserves the seat, and sends the ticket e-mail with QR code.

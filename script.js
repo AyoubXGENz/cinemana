@@ -266,7 +266,15 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "Partenaires",
       title: "Un réseau au service du cinéma marocain et de la médiation culturelle.",
-      logos: ["Institutions culturelles", "Salles partenaires", "Écoles et cinéclubs", "Médias", "Professionnels du cinéma", "Partenaires internationaux"]
+      festivalEyebrow: "Partenaires festival",
+      festivalTitle: "Partenaires festival",
+      festivalCopy: "Les logos et liens des partenaires du festival seront ajoutés prochainement.",
+      festivalPlaceholders: ["Logo partenaire festival à ajouter", "Partenaire institutionnel à ajouter", "Partenaire média à ajouter"],
+      sinEyebrow: "Projections mensuelles SIN",
+      sinTitle: "Partenaires projections mensuelles SIN",
+      sinCopy: "Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication et la Fédération Nationale des Ciné-Clubs au Maroc.",
+      sinMinistry: "Ministère de la Jeunesse, de la Culture et de la Communication",
+      sinFnccm: "Fédération Nationale des Ciné-Clubs au Maroc"
     },
     footer: {
       copy: "Fondation culturelle à but non lucratif dédiée à la promotion du cinéma et de la culture à Tanger et au niveau national.",
@@ -558,7 +566,15 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "Partners",
       title: "A network serving Moroccan cinema and cultural mediation.",
-      logos: ["Cultural institutions", "Partner cinemas", "Schools and film clubs", "Media", "Cinema professionals", "International partners"]
+      festivalEyebrow: "Festival partners",
+      festivalTitle: "Festival partners",
+      festivalCopy: "Festival partner logos and links will be added soon.",
+      festivalPlaceholders: ["Festival partner logo to add", "Institutional partner to add", "Media partner to add"],
+      sinEyebrow: "Monthly SIN screenings",
+      sinTitle: "Monthly SIN screening partners",
+      sinCopy: "A program carried out with the Ministry of Youth, Culture and Communication and the National Federation of Film Clubs in Morocco.",
+      sinMinistry: "Ministry of Youth, Culture and Communication",
+      sinFnccm: "National Federation of Film Clubs in Morocco"
     },
     footer: {
       copy: "A non-profit cultural foundation dedicated to promoting cinema and culture in Tangier and across Morocco.",
@@ -850,7 +866,15 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "الشركاء",
       title: "شبكة في خدمة السينما المغربية والوساطة الثقافية.",
-      logos: ["مؤسسات ثقافية", "قاعات شريكة", "مدارس وأندية سينمائية", "وسائل الإعلام", "مهنيون سينمائيون", "شركاء دوليون"]
+      festivalEyebrow: "شركاء المهرجان",
+      festivalTitle: "شركاء المهرجان",
+      festivalCopy: "سيتم إضافة شعارات وروابط شركاء المهرجان قريباً.",
+      festivalPlaceholders: ["شعار شريك المهرجان سيضاف لاحقاً", "شريك مؤسساتي سيضاف لاحقاً", "شريك إعلامي سيضاف لاحقاً"],
+      sinEyebrow: "العروض الشهرية SIN",
+      sinTitle: "شركاء العروض الشهرية SIN",
+      sinCopy: "برنامج يتم إنجازه بشراكة مع وزارة الشباب والثقافة والتواصل والجامعة الوطنية للأندية السينمائية بالمغرب.",
+      sinMinistry: "وزارة الشباب والثقافة والتواصل",
+      sinFnccm: "الجامعة الوطنية للأندية السينمائية بالمغرب"
     },
     footer: {
       copy: "مؤسسة ثقافية غير ربحية مكرسة للنهوض بالسينما والثقافة في طنجة وعلى المستوى الوطني.",
@@ -2221,7 +2245,17 @@ function setLanguage(language) {
 
   setText("#page-partners .page-hero .eyebrow", copy.partners.eyebrow);
   setText("#page-partners .page-hero h1", copy.partners.title);
-  copy.partners.logos.forEach((logo, index) => setText(`#page-partners .partner-logos article:nth-child(${index + 1}) span`, logo));
+  setText("#partnersFestivalEyebrow", copy.partners.festivalEyebrow);
+  setText("#partnersFestivalTitle", copy.partners.festivalTitle);
+  setText("#partnersFestivalCopy", copy.partners.festivalCopy);
+  copy.partners.festivalPlaceholders.forEach((label, index) => {
+    setText(`#partnersFestivalPlaceholder${index + 1}`, label);
+  });
+  setText("#partnersSinEyebrow", copy.partners.sinEyebrow);
+  setText("#partnersSinTitle", copy.partners.sinTitle);
+  setText("#partnersSinCopy", copy.partners.sinCopy);
+  setText("#partnersSinMinistry", copy.partners.sinMinistry);
+  setText("#partnersSinFnccm", copy.partners.sinFnccm);
 
   setText(".site-footer > div:nth-child(1) p", copy.footer.copy);
   setText(".site-footer > div:nth-child(2) span", copy.footer.sitemap);
@@ -2304,6 +2338,11 @@ function updateGlobalConnectPlacement(target) {
 
   const page = document.getElementById(`page-${target}`);
   if (!page) return;
+
+  if (target === "partners") {
+    page.appendChild(connect);
+    return;
+  }
 
   const anchor = target === "home"
     ? page.querySelector(".hero")

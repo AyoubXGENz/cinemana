@@ -1,11 +1,11 @@
 const SPREADSHEET_ID = "1b3ZW4esFw0SqFwSw0HwMbtiadsNfYVJ0QdtzWDLGEIU";
 const MEMBERSHIP_SHEET_NAME = "membership";
 const RESERVATION_SHEET_NAME = "reservation";
-const TELEGRAM_BOT_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN";
-const TELEGRAM_CHAT_ID = "YOUR_TELEGRAM_CHAT_ID";
-const MEMBERSHIP_TELEGRAM_BOT_TOKEN = "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN";
-const MEMBERSHIP_TELEGRAM_CHAT_ID = "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID";
-const ADMIN_BADGE_EMAIL = "s.a.o.c.tanger@gmail.com";
+const TELEGRAM_BOT_TOKEN = "8687104434:AAHtnrf0QcBUpynhh6-to3LQ1yI5O2gS9bY";
+const TELEGRAM_CHAT_ID = "5799678675";
+const MEMBERSHIP_TELEGRAM_BOT_TOKEN = "8851489372:AAFW3QOk0WmrPmCTvHRk0PUXrFc0NxFaJsc";
+const MEMBERSHIP_TELEGRAM_CHAT_ID = "1407038332";
+const ADMIN_BADGE_EMAIL = "ayoubabenyaich@gmail.com";
 
 const MEMBERSHIP_HEADERS = [
   "References",
@@ -128,6 +128,76 @@ function setReservationTelegramToNewChat() {
     property: "TELEGRAM_CHAT_ID",
     chat_id: "5799678675",
     message: "Reservation Telegram notifications now use the new chat id."
+  };
+}
+
+function setMembershipTelegramToAyoubChat() {
+  return setMembershipTelegramConfigToAyoub();
+}
+
+function setMembershipTelegramConfigToAyoub() {
+  const props = PropertiesService.getScriptProperties();
+  props.setProperty("MEMBERSHIP_TELEGRAM_BOT_TOKEN", MEMBERSHIP_TELEGRAM_BOT_TOKEN);
+  props.setProperty("MEMBERSHIP_TELEGRAM_CHAT_ID", "1407038332");
+  return {
+    ok: true,
+    properties: ["MEMBERSHIP_TELEGRAM_BOT_TOKEN", "MEMBERSHIP_TELEGRAM_CHAT_ID"],
+    chat_id: "1407038332",
+    message: "Membership Telegram bot token and chat id are configured."
+  };
+}
+
+function getMembershipTelegramConfigStatus() {
+  const token = getMembershipTelegramBotToken_();
+  const chatId = getMembershipTelegramChatId_();
+  return {
+    ok: true,
+    configured: Boolean(isMembershipTelegramConfigured_()),
+    token_present: Boolean(token),
+    token_is_placeholder: token === "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN",
+    chat_id: chatId || "",
+    chat_is_placeholder: chatId === "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID"
+  };
+}
+
+function testMembershipTelegramNotification() {
+  if (!isMembershipTelegramConfigured_()) {
+    return {
+      ok: false,
+      code: "membership_telegram_missing_config",
+      config: getMembershipTelegramConfigStatus()
+    };
+  }
+
+  try {
+    const response = telegramApi_("sendMessage", {
+      chat_id: getMembershipTelegramChatId_(),
+      text: "CINEMANA membership notifications test: OK",
+      parse_mode: "HTML"
+    }, getMembershipTelegramBotToken_());
+
+    return {
+      ok: true,
+      status: "sent",
+      chat_id: response && response.result && response.result.chat ? String(response.result.chat.id) : getMembershipTelegramChatId_(),
+      message_id: response && response.result ? String(response.result.message_id || "") : ""
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      code: "telegram_error",
+      message: String(error && error.message ? error.message : error)
+    };
+  }
+}
+
+function setAdminBadgeEmailToAyoub() {
+  PropertiesService.getScriptProperties().setProperty("ADMIN_BADGE_EMAIL", "ayoubabenyaich@gmail.com");
+  return {
+    ok: true,
+    property: "ADMIN_BADGE_EMAIL",
+    email: "ayoubabenyaich@gmail.com",
+    message: "Admin badge e-mails now go to ayoubabenyaich@gmail.com."
   };
 }
 
@@ -325,6 +395,36 @@ function combineNameParts_(firstName, lastName) {
     .join(" ");
 }
 
+function splitFullNameParts_(fullName) {
+  const parts = String(fullName || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (parts.length <= 1) {
+    return { firstName: parts[0] || "", lastName: "" };
+  }
+  return {
+    firstName: parts.slice(0, -1).join(" "),
+    lastName: parts[parts.length - 1]
+  };
+}
+
+function formatDateForEmail_(value) {
+  if (!value) return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+  const text = String(value || "").trim();
+  const isoMatch = text.match(/\d{4}-\d{2}-\d{2}/);
+  if (isoMatch) return isoMatch[0];
+  return text;
+}
+
+function memberDisplayName_(member) {
+  return combineNameParts_(member && member.firstName, member && member.lastName) ||
+    String(member && (member.fullName || member.full_name || member.name) || "").trim();
+}
+
 function getRows_(sheet) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
@@ -337,9 +437,15 @@ function rowObject_(row, map) {
     return index ? row[index - 1] : "";
   }
 
-  const firstName = String(get("Prénom") || "").trim();
-  const lastName = String(get("Nom") || "").trim();
-  const fullName = combineNameParts_(firstName, lastName);
+  let firstName = String(get("Prénom") || "").trim();
+  let lastName = String(get("Nom") || "").trim();
+  const legacyFullName = String(get("Nom complet") || get("Full name") || get("full_name") || "").trim();
+  if ((!firstName || !lastName) && legacyFullName) {
+    const splitName = splitFullNameParts_(legacyFullName);
+    if (!firstName) firstName = splitName.firstName;
+    if (!lastName) lastName = splitName.lastName;
+  }
+  const fullName = combineNameParts_(firstName, lastName) || legacyFullName;
 
   return {
     reference: String(get("References") || "").trim(),
@@ -581,9 +687,10 @@ function saveMembership_(payload) {
   const emailStatus = sendMembershipEmail_(payload);
   const latestMap = headerMap_(sheet);
   const emailStatusColumn = latestMap[normalizeHeader_("Email status")];
-  if (emailStatusColumn) sheet.getRange(savedRow, emailStatusColumn).setValue(emailStatus);
 
   const telegramResult = sendTelegramMembershipNotification_(payload, payload.reference_code);
+  const telegramStatus = typeof telegramResult === "string" ? telegramResult : telegramResult.status;
+  if (emailStatusColumn) sheet.getRange(savedRow, emailStatusColumn).setValue(`${emailStatus}; telegram: ${telegramStatus}`);
   if (telegramResult && typeof telegramResult === "object") {
     const telegramChatColumn = latestMap[normalizeHeader_("Telegram chat")];
     const telegramMessageColumn = latestMap[normalizeHeader_("Telegram message")];
@@ -596,7 +703,7 @@ function saveMembership_(payload) {
     reference: payload.reference_code,
     status: "pending",
     email_status: emailStatus,
-    telegram_status: typeof telegramResult === "string" ? telegramResult : telegramResult.status
+    telegram_status: telegramStatus
   };
 }
 
@@ -937,13 +1044,24 @@ function processMembershipDecision_(reference, decision) {
     if (!found) return { ok: false, kind: "membership", code: "reference_not_found", message: "Demande d’adhésion introuvable." };
 
     const currentStatus = found.member.status;
+    const currentEmailStatus = getMembershipEmailStatus_(found.sheet, found.map, found.rowNumber, found.member.email_status);
     if (currentStatus === "member" || currentStatus === "rejected") {
+      let adminBadgeEmailStatus = "not needed";
+      let message = `Déjà ${currentStatus === "member" ? "accepté" : "refusé"}.`;
+
+      if (currentStatus === "member" && decision === "approve") {
+        adminBadgeEmailStatus = sendMembershipBadgeAdminEmail_(found.member);
+        setMembershipEmailStatus_(found.sheet, found.map, found.rowNumber, mergeMembershipEmailStatus_(currentEmailStatus, adminBadgeEmailStatus));
+        message = "Déjà accepté. E-mail badge admin renvoyé.";
+      }
+
       const result = {
         ok: true,
         kind: "membership",
         reference,
         status: currentStatus,
-        message: `Déjà ${currentStatus === "member" ? "accepté" : "refusé"}.`
+        admin_badge_email_status: adminBadgeEmailStatus,
+        message
       };
       editStoredTelegramMembershipDecisionMessage_(found.member, result);
       return result;
@@ -965,7 +1083,7 @@ function processMembershipDecision_(reference, decision) {
       : "not needed";
     if (emailStatusColumn) {
       sheet.getRange(found.rowNumber, emailStatusColumn).setValue(
-        status === "member" ? `${emailStatus}; badge admin: ${adminBadgeEmailStatus}` : emailStatus
+        status === "member" ? mergeMembershipEmailStatus_(emailStatus, adminBadgeEmailStatus) : emailStatus
       );
     }
 
@@ -983,6 +1101,70 @@ function processMembershipDecision_(reference, decision) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function getMembershipEmailStatus_(sheet, map, rowNumber, fallback) {
+  const emailStatusColumn = map[normalizeHeader_("Email status")];
+  if (!emailStatusColumn) return String(fallback || "").trim();
+  return String(sheet.getRange(rowNumber, emailStatusColumn).getValue() || fallback || "").trim();
+}
+
+function setMembershipEmailStatus_(sheet, map, rowNumber, value) {
+  const emailStatusColumn = map[normalizeHeader_("Email status")];
+  if (!emailStatusColumn) return;
+  sheet.getRange(rowNumber, emailStatusColumn).setValue(value);
+}
+
+function membershipBadgeAdminEmailWasSent_(emailStatus) {
+  return /badge admin:\s*sent/i.test(String(emailStatus || ""));
+}
+
+function mergeMembershipEmailStatus_(emailStatus, adminBadgeEmailStatus) {
+  const base = String(emailStatus || "")
+    .replace(/;\s*badge admin:\s*[^;]+/ig, "")
+    .trim();
+  return `${base || "sent"}; badge admin: ${adminBadgeEmailStatus || "unknown"}`;
+}
+
+function resendMissingMembershipBadgeEmails() {
+  return resendAcceptedMembershipBadgeEmails_(true);
+}
+
+function resendAllAcceptedMembershipBadgeEmails() {
+  return resendAcceptedMembershipBadgeEmails_(false);
+}
+
+function resendAcceptedMembershipBadgeEmails_(missingOnly) {
+  const sheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
+  const map = headerMap_(sheet);
+  const rows = getRows_(sheet);
+  const results = {
+    ok: true,
+    resent: 0,
+    skipped: 0,
+    errors: []
+  };
+
+  rows.forEach((row, index) => {
+    const rowNumber = index + 2;
+    const member = rowObject_(row, map);
+    const emailStatus = getMembershipEmailStatus_(sheet, map, rowNumber, member.email_status);
+
+    if (member.status !== "member" || (missingOnly && membershipBadgeAdminEmailWasSent_(emailStatus))) {
+      results.skipped += 1;
+      return;
+    }
+
+    const status = sendMembershipBadgeAdminEmail_(member);
+    setMembershipEmailStatus_(sheet, map, rowNumber, mergeMembershipEmailStatus_(emailStatus, status));
+    if (status === "sent") {
+      results.resent += 1;
+    } else {
+      results.errors.push({ reference: member.reference, status });
+    }
+  });
+
+  return results;
 }
 
 function isTelegramConfigured_() {
@@ -1021,6 +1203,10 @@ function getMembershipTelegramBotToken_() {
 
 function getMembershipTelegramChatId_() {
   return PropertiesService.getScriptProperties().getProperty("MEMBERSHIP_TELEGRAM_CHAT_ID") || MEMBERSHIP_TELEGRAM_CHAT_ID;
+}
+
+function getAdminBadgeEmail_() {
+  return PropertiesService.getScriptProperties().getProperty("ADMIN_BADGE_EMAIL") || ADMIN_BADGE_EMAIL;
 }
 
 function telegramApi_(method, payload, botToken) {
@@ -1411,13 +1597,21 @@ function sendMembershipApprovedEmail_(member) {
 }
 
 function sendMembershipBadgeAdminEmail_(member) {
-  if (!ADMIN_BADGE_EMAIL) return "missing_admin_email";
+  const adminBadgeEmail = getAdminBadgeEmail_();
+  if (!adminBadgeEmail) return "missing_admin_email";
   try {
+    const fullName = memberDisplayName_(member);
+    const splitName = splitFullNameParts_(fullName);
+    const firstName = member.firstName || splitName.firstName;
+    const lastName = member.lastName || splitName.lastName;
+    const reference = member.reference || "";
+    const qrCodeUrl = qrUrl_(reference);
     const rows = [
-      ["Référence", member.reference],
-      ["Prénom", member.firstName || ""],
-      ["Nom", member.lastName || ""],
-      ["Date de naissance", member.birthday || ""],
+      ["Référence", reference],
+      ["Nom complet", fullName],
+      ["Prénom", firstName],
+      ["Nom", lastName],
+      ["Date de naissance", formatDateForEmail_(member.birthday)],
       ["Ville", member.city || ""],
       ["Téléphone", member.phone || ""],
       ["E-mail", member.email || ""],
@@ -1430,16 +1624,21 @@ function sendMembershipBadgeAdminEmail_(member) {
         <td style="padding:8px 10px;border-bottom:1px solid #2c3547;color:#f7f0df">${escapeHtml_(value || "-")}</td>
       </tr>
     `).join("");
-    const plain = rows.map(([label, value]) => `${label}: ${value || "-"}`).join("\n");
+    const plain = `${rows.map(([label, value]) => `${label}: ${value || "-"}`).join("\n")}\nQR code: ${qrCodeUrl}`;
     const html = `
       <div style="margin:0;padding:18px;background:#080808;font-family:Arial,sans-serif;color:#f7f0df">
-        <div style="max-width:640px;margin:auto;background:#111827;border:1px solid #d9b24c;border-radius:16px;overflow:hidden">
+        <div style="max-width:680px;margin:auto;background:#111827;border:1px solid #d9b24c;border-radius:16px;overflow:hidden">
           <div style="background:#d9b24c;color:#080808;padding:20px;text-align:center">
             <div style="font-size:13px;font-weight:900;letter-spacing:4px;text-transform:uppercase">CINEMANA</div>
             <h1 style="margin:8px 0 0;font-size:28px;line-height:1.15">Membre accepté - badge à préparer</h1>
           </div>
           <div style="padding:22px">
             <p style="margin:0 0 16px;color:#d7d0c3;font-size:16px;line-height:1.55">Une demande d’adhésion vient d’être acceptée. Voici les informations à utiliser pour préparer le badge.</p>
+            <div style="margin:0 0 18px;padding:16px;background:#f7f0df;border-radius:14px;text-align:center;color:#080808">
+              <div style="font-size:12px;font-weight:900;letter-spacing:2px;text-transform:uppercase;color:#2d3442">QR code membre</div>
+              <img src="${qrCodeUrl}" alt="QR code membre" width="180" height="180" style="display:block;width:180px;height:180px;margin:12px auto;border:8px solid #fff;border-radius:12px">
+              <div style="font-size:20px;font-weight:900;letter-spacing:1px;word-break:break-word">${escapeHtml_(reference)}</div>
+            </div>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#0b0f1a;border-radius:12px;overflow:hidden">
               ${detailsHtml}
             </table>
@@ -1448,8 +1647,8 @@ function sendMembershipBadgeAdminEmail_(member) {
       </div>`;
 
     MailApp.sendEmail({
-      to: ADMIN_BADGE_EMAIL,
-      subject: `Badge CINEMANA à préparer - ${member.fullName || member.email || member.reference}`,
+      to: adminBadgeEmail,
+      subject: `Badge CINEMANA à préparer - ${fullName || member.email || reference}`,
       body: plain,
       htmlBody: html,
       name: "CINEMANA"
