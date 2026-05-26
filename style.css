@@ -900,7 +900,7 @@ body[data-page="reservation"] .global-connect {
   line-height: 1;
 }
 
-.activity-card-body span:not(.eyebrow) {
+.activity-card-body > span:not(.eyebrow):not(.activity-partner-strip) {
   display: -webkit-box;
   min-height: 4.8rem;
   overflow: hidden;
@@ -915,6 +915,77 @@ body[data-page="reservation"] .global-connect {
   color: var(--gold-strong);
   font-style: normal;
   font-weight: 900;
+}
+
+.activity-partner-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.activity-partner-strip.compact {
+  margin-top: -0.1rem;
+}
+
+.activity-partner-logo {
+  display: grid;
+  place-items: center;
+  min-width: 58px;
+  min-height: 44px;
+  padding: 0.35rem 0.45rem;
+  color: var(--cream);
+  text-decoration: none;
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(244, 239, 229, 0.12);
+  border-radius: 8px;
+}
+
+.activity-partner-logo img {
+  max-width: 54px;
+  max-height: 30px;
+  object-fit: contain;
+  padding: 0.2rem;
+  background: #fff;
+  border-radius: 5px;
+}
+
+.activity-partner-logo span {
+  display: none;
+}
+
+.activity-partner-strip.detail {
+  gap: 0.75rem;
+}
+
+.activity-partner-strip.detail .activity-partner-logo {
+  width: 150px;
+  min-height: 96px;
+  padding: 0.75rem;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.activity-partner-strip.detail .activity-partner-logo:hover,
+.activity-partner-strip.detail .activity-partner-logo:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(212, 170, 74, 0.62);
+  background: rgba(212, 170, 74, 0.08);
+  outline: none;
+}
+
+.activity-partner-strip.detail .activity-partner-logo img {
+  max-width: 118px;
+  max-height: 56px;
+}
+
+.activity-partner-strip.detail .activity-partner-logo span {
+  display: block;
+  margin-top: 0.5rem;
+  color: var(--cream);
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .activity-detail-view {
@@ -1819,8 +1890,13 @@ select:focus {
   gap: 1rem;
 }
 
-.partner-sin-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.partner-festival-grid {
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.partner-sin-grid,
+.partner-residency-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .partner-logo-card {
@@ -1978,6 +2054,31 @@ select:focus {
 
 .member-form-wide {
   grid-column: 1 / -1;
+}
+
+.member-consent {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.95rem;
+  color: var(--soft);
+  background: rgba(212, 170, 74, 0.08);
+  border: 1px solid rgba(212, 170, 74, 0.28);
+  border-radius: 8px;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.member-consent input {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.25rem;
+  accent-color: var(--gold-strong);
+}
+
+.member-consent span {
+  color: var(--soft);
 }
 
 .member-verification {
@@ -2205,6 +2306,8 @@ html[dir="rtl"] .seat-selection-header {
   .benefits-list,
   .partner-logo-grid,
   .partner-sin-grid,
+  .partner-residency-grid,
+  .partner-festival-grid,
   .activity-card-grid,
   .activity-detail-points,
   .activity-detail-gallery,

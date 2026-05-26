@@ -266,15 +266,18 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "Partenaires",
       title: "Un réseau au service du cinéma marocain et de la médiation culturelle.",
-      festivalEyebrow: "Partenaires festival",
+      festivalEyebrow: "Tangier Film Festival",
       festivalTitle: "Partenaires festival",
-      festivalCopy: "Les logos et liens des partenaires du festival seront ajoutés prochainement.",
-      festivalPlaceholders: ["Logo partenaire festival à ajouter", "Partenaire institutionnel à ajouter", "Partenaire média à ajouter"],
+      festivalCopy: "Institutions, lieux culturels et partenaires professionnels qui accompagnent le rayonnement du festival.",
+      residencyEyebrow: "Résidence Scénario",
+      residencyTitle: "Partenaires résidence scénario",
+      residencyCopy: "Les partenaires méditerranéens de la résidence COURTS ENTRE 2 RIVES.",
       sinEyebrow: "Projections mensuelles SIN",
       sinTitle: "Partenaires projections mensuelles SIN",
-      sinCopy: "Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication et la Fédération Nationale des Ciné-Clubs au Maroc.",
+      sinCopy: "Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication, la Fédération Nationale des Ciné-Clubs au Maroc et ISTA NTIC TANGER.",
       sinMinistry: "Ministère de la Jeunesse, de la Culture et de la Communication",
-      sinFnccm: "Fédération Nationale des Ciné-Clubs au Maroc"
+      sinFnccm: "Fédération Nationale des Ciné-Clubs au Maroc",
+      sinCad: "ISTA NTIC TANGER"
     },
     footer: {
       copy: "Fondation culturelle à but non lucratif dédiée à la promotion du cinéma et de la culture à Tanger et au niveau national.",
@@ -566,15 +569,18 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "Partners",
       title: "A network serving Moroccan cinema and cultural mediation.",
-      festivalEyebrow: "Festival partners",
+      festivalEyebrow: "Tangier Film Festival",
       festivalTitle: "Festival partners",
-      festivalCopy: "Festival partner logos and links will be added soon.",
-      festivalPlaceholders: ["Festival partner logo to add", "Institutional partner to add", "Media partner to add"],
+      festivalCopy: "Institutions, cultural venues and professional partners supporting the festival's reach.",
+      residencyEyebrow: "Screenwriting Residency",
+      residencyTitle: "Screenwriting residency partners",
+      residencyCopy: "The Mediterranean partners of the COURTS ENTRE 2 RIVES residency.",
       sinEyebrow: "Monthly SIN screenings",
       sinTitle: "Monthly SIN screening partners",
-      sinCopy: "A program carried out with the Ministry of Youth, Culture and Communication and the National Federation of Film Clubs in Morocco.",
+      sinCopy: "A program carried out with the Ministry of Youth, Culture and Communication, the National Federation of Film Clubs in Morocco and ISTA NTIC TANGER.",
       sinMinistry: "Ministry of Youth, Culture and Communication",
-      sinFnccm: "National Federation of Film Clubs in Morocco"
+      sinFnccm: "National Federation of Film Clubs in Morocco",
+      sinCad: "ISTA NTIC TANGER"
     },
     footer: {
       copy: "A non-profit cultural foundation dedicated to promoting cinema and culture in Tangier and across Morocco.",
@@ -866,15 +872,18 @@ const TRANSLATIONS = {
     partners: {
       eyebrow: "الشركاء",
       title: "شبكة في خدمة السينما المغربية والوساطة الثقافية.",
-      festivalEyebrow: "شركاء المهرجان",
+      festivalEyebrow: "مهرجان طنجة للفيلم",
       festivalTitle: "شركاء المهرجان",
-      festivalCopy: "سيتم إضافة شعارات وروابط شركاء المهرجان قريباً.",
-      festivalPlaceholders: ["شعار شريك المهرجان سيضاف لاحقاً", "شريك مؤسساتي سيضاف لاحقاً", "شريك إعلامي سيضاف لاحقاً"],
+      festivalCopy: "مؤسسات وفضاءات ثقافية وشركاء مهنيون يواكبون إشعاع المهرجان.",
+      residencyEyebrow: "إقامة السيناريو",
+      residencyTitle: "شركاء إقامة السيناريو",
+      residencyCopy: "الشركاء المتوسطيون لإقامة COURTS ENTRE 2 RIVES.",
       sinEyebrow: "العروض الشهرية SIN",
       sinTitle: "شركاء العروض الشهرية SIN",
-      sinCopy: "برنامج يتم إنجازه بشراكة مع وزارة الشباب والثقافة والتواصل والجامعة الوطنية للأندية السينمائية بالمغرب.",
+      sinCopy: "برنامج يتم إنجازه بشراكة مع وزارة الشباب والثقافة والتواصل والجامعة الوطنية للأندية السينمائية بالمغرب و ISTA NTIC TANGER.",
       sinMinistry: "وزارة الشباب والثقافة والتواصل",
-      sinFnccm: "الجامعة الوطنية للأندية السينمائية بالمغرب"
+      sinFnccm: "الجامعة الوطنية للأندية السينمائية بالمغرب",
+      sinCad: "ISTA NTIC TANGER"
     },
     footer: {
       copy: "مؤسسة ثقافية غير ربحية مكرسة للنهوض بالسينما والثقافة في طنجة وعلى المستوى الوطني.",
@@ -1243,7 +1252,8 @@ function getActivityUiCopy() {
       open: "Découvrir l’activité",
       back: "Retour aux activités",
       keyPoints: "Points clés",
-      gallery: "Galerie"
+      gallery: "Galerie",
+      partners: "Partenaires"
     },
     en: {
       overviewEyebrow: "Our activities",
@@ -1251,7 +1261,8 @@ function getActivityUiCopy() {
       open: "Explore activity",
       back: "Back to activities",
       keyPoints: "Key points",
-      gallery: "Gallery"
+      gallery: "Gallery",
+      partners: "Partners"
     },
     ar: {
       overviewEyebrow: "أنشطتنا",
@@ -1259,7 +1270,8 @@ function getActivityUiCopy() {
       open: "اكتشف النشاط",
       back: "العودة إلى الأنشطة",
       keyPoints: "محاور أساسية",
-      gallery: "معرض الصور"
+      gallery: "معرض الصور",
+      partners: "الشركاء"
     }
   };
 
@@ -1343,9 +1355,64 @@ function activityImage(src, alt, caption) {
   return { src, alt, caption: caption || "" };
 }
 
+const PARTNER_ASSET_VERSION = "20260526-ista-ntic";
+
+function partnerAsset(file) {
+  return `assets/partners/${file}?v=${PARTNER_ASSET_VERSION}`;
+}
+
+function partnerLogo(name, logo, href) {
+  return { name, logo: partnerAsset(logo), href };
+}
+
+function getActivityPartnerSets() {
+  return {
+    festival: [
+      partnerLogo("Centre Cinematographique Marocain", "ccm.jpg", "https://www.ccm.ma/"),
+      partnerLogo("Commune de Tanger", "tanger-ma.jpg", "https://tanger.ma/"),
+      partnerLogo("Every Design", "every-design.png", "https://www.instagram.com/everydesign.ma?igsh=MTM4Mm01MTdmdmUyNw=="),
+      partnerLogo("Port de Tanger Ville", "sgptv.jpg", "https://www.tangerport.com/fr/port/"),
+      partnerLogo("Conseil Regional du Tourisme", "crt.png", "https://www.visittanger.com/fr/"),
+      partnerLogo("Arrondissement Medina", "arrondissement-medina.jpg"),
+      partnerLogo("Centre Culturel Ahmed Boukmakh", "boukmakh.png")
+    ],
+    monthly: [
+      partnerLogo("Ministere de la Jeunesse, de la Culture et de la Communication", "ministere-culture.png", "https://mjcc.gov.ma/ar/"),
+      partnerLogo("Federation Nationale des Cine-Clubs au Maroc", "fnccm.jpg", "https://fnccm.com/"),
+      partnerLogo("ISTA NTIC TANGER", "cad-tanger.png", "https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==")
+    ],
+    training: [
+      partnerLogo("Les Nuits MED", "nuits-med.png", "https://www.lesnuitsmediterraneennes.com/18e-nuits-med-2025/"),
+      partnerLogo("MoliseCinema", "molise-cinema.png", "https://www.molisecinema.it/mc/"),
+      partnerLogo("Vues sur les Arts", "vues-sur-les-arts.png", "https://www.instagram.com/lagoramarsa?igsh=MWZwaXNmY3MxMzhsNg==")
+    ]
+  };
+}
+
+function activityPartnersMarkup(partners, mode = "card") {
+  const list = Array.isArray(partners) ? partners.filter(Boolean) : [];
+  if (!list.length) return "";
+
+  return `
+    <span class="activity-partner-strip ${mode === "detail" ? "detail" : "compact"}" aria-label="Partenaires">
+      ${list.map((partner) => {
+        const content = `
+          <img src="${escapeHtml(partner.logo)}" alt="${escapeHtml(partner.name)}" loading="lazy">
+          <span>${escapeHtml(partner.name)}</span>
+        `;
+        if (mode === "detail" && partner.href) {
+          return `<a class="activity-partner-logo" href="${escapeHtml(partner.href)}" target="_blank" rel="noopener noreferrer" title="${escapeHtml(partner.name)}">${content}</a>`;
+        }
+        return `<span class="activity-partner-logo" title="${escapeHtml(partner.name)}">${content}</span>`;
+      }).join("")}
+    </span>
+  `;
+}
+
 function getActivityItems() {
   const copy = TRANSLATIONS[currentLanguage].activities;
   const mediation = getMediationActivityCopy();
+  const partnerSets = getActivityPartnerSets();
 
   return [
     {
@@ -1355,6 +1422,7 @@ function getActivityItems() {
       short: copy.featureCopy[0],
       paragraphs: copy.featureCopy,
       cards: copy.cards,
+      partners: partnerSets.festival,
       images: [
         activityImage("assets/activities/tff-lobby.jpg?v=20260522", copy.imageAlt, copy.featureEyebrow),
         activityImage("assets/activities/tff-red-carpet.jpg?v=20260522", copy.galleryAlts[0], copy.galleryCaptions[0]),
@@ -1371,6 +1439,7 @@ function getActivityItems() {
       short: copy.monthlyCopy[0],
       paragraphs: copy.monthlyCopy,
       cards: copy.monthlyCards,
+      partners: partnerSets.monthly,
       images: [
         activityImage("assets/activities/monthly-screening.jpg?v=20260522", copy.monthlyImageAlt, copy.monthlyGalleryCaptions[0]),
         activityImage("assets/activities/monthly-lobby.jpg?v=20260522", copy.monthlyGalleryAlts[1], copy.monthlyGalleryCaptions[1]),
@@ -1386,6 +1455,7 @@ function getActivityItems() {
       short: copy.trainingCopy[0],
       paragraphs: copy.trainingCopy,
       cards: copy.trainingCards,
+      partners: partnerSets.training,
       images: [
         activityImage("assets/activities/courts-entre-2-rives.jpg?v=20260523", copy.trainingImageAlt, copy.trainingTitle)
       ]
@@ -1465,6 +1535,7 @@ function renderActivityCards() {
         <span class="eyebrow">${escapeHtml(activity.eyebrow)}</span>
         <strong>${escapeHtml(activity.title)}</strong>
         <span>${escapeHtml(activity.short)}</span>
+        ${activityPartnersMarkup(activity.partners, "card")}
         <em>${escapeHtml(ui.open)}</em>
       </span>
     </button>
@@ -1483,6 +1554,7 @@ function renderActivityDetail(activityId) {
   const ui = getActivityUiCopy();
   const primaryImage = activity.images[0];
   const storyParagraphs = activity.paragraphs.slice(1).map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join("");
+  const partners = activityPartnersMarkup(activity.partners, "detail");
   const cards = activity.cards.map((card) => `
     <article class="activity-detail-point">
       <h3>${escapeHtml(card[0])}</h3>
@@ -1514,6 +1586,12 @@ function renderActivityDetail(activityId) {
       <p class="eyebrow">${escapeHtml(ui.keyPoints)}</p>
       <div class="activity-detail-points">${cards}</div>
       </section>
+      ${partners ? `
+      <section class="activity-detail-section activity-detail-partners">
+      <p class="eyebrow">${escapeHtml(ui.partners)}</p>
+      ${partners}
+      </section>
+      ` : ""}
       <section class="activity-detail-section">
       <p class="eyebrow">${escapeHtml(ui.gallery)}</p>
       <div class="activity-detail-gallery">${gallery}</div>
@@ -2248,14 +2326,18 @@ function setLanguage(language) {
   setText("#partnersFestivalEyebrow", copy.partners.festivalEyebrow);
   setText("#partnersFestivalTitle", copy.partners.festivalTitle);
   setText("#partnersFestivalCopy", copy.partners.festivalCopy);
-  copy.partners.festivalPlaceholders.forEach((label, index) => {
+  (copy.partners.festivalPlaceholders || []).forEach((label, index) => {
     setText(`#partnersFestivalPlaceholder${index + 1}`, label);
   });
+  setText("#partnersResidencyEyebrow", copy.partners.residencyEyebrow);
+  setText("#partnersResidencyTitle", copy.partners.residencyTitle);
+  setText("#partnersResidencyCopy", copy.partners.residencyCopy);
   setText("#partnersSinEyebrow", copy.partners.sinEyebrow);
   setText("#partnersSinTitle", copy.partners.sinTitle);
   setText("#partnersSinCopy", copy.partners.sinCopy);
   setText("#partnersSinMinistry", copy.partners.sinMinistry);
   setText("#partnersSinFnccm", copy.partners.sinFnccm);
+  setText("#partnersSinCad", copy.partners.sinCad);
 
   setText(".site-footer > div:nth-child(1) p", copy.footer.copy);
   setText(".site-footer > div:nth-child(2) span", copy.footer.sitemap);
@@ -2616,3 +2698,4 @@ window.addEventListener("DOMContentLoaded", () => {
   setLanguage(startLanguage);
   initializeMemberAuth();
 });
+

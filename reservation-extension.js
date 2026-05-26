@@ -9,7 +9,8 @@ const CINEMANA_EXTENSION_COPY = {
         professionOther: "Autre fonction",
         referralType: "Comment avez-vous connu CINEMANA ?",
         referralSocial: "Réseau social",
-        referralOther: "Précisez"
+        referralOther: "Précisez",
+        rulesConsent: "Je confirme avoir pris connaissance du règlement intérieur de la Fondation CINEMANA, je m'engage à le respecter et j'assume l'entière responsabilité de toute information inexacte ou violation des règles applicables."
       },
       professionOptions: {
         empty: "Choisir une fonction",
@@ -43,7 +44,8 @@ const CINEMANA_EXTENSION_COPY = {
       validation: {
         professionOther: "Veuillez préciser votre fonction.",
         referralSocial: "Veuillez choisir le réseau social.",
-        referralOther: "Veuillez préciser comment vous nous avez connus."
+        referralOther: "Veuillez préciser comment vous nous avez connus.",
+        rulesConsent: "Veuillez confirmer votre engagement à respecter le règlement intérieur de CINEMANA."
       }
     },
     reservation: {
@@ -122,7 +124,8 @@ const CINEMANA_EXTENSION_COPY = {
         professionOther: "Other role",
         referralType: "How did you hear about CINEMANA?",
         referralSocial: "Social network",
-        referralOther: "Please specify"
+        referralOther: "Please specify",
+        rulesConsent: "I confirm that I have read the CINEMANA Foundation internal rules, agree to respect them, and accept full responsibility for any inaccurate information or violation of the applicable rules."
       },
       professionOptions: {
         empty: "Choose a role",
@@ -156,7 +159,8 @@ const CINEMANA_EXTENSION_COPY = {
       validation: {
         professionOther: "Please specify your role.",
         referralSocial: "Please choose the social network.",
-        referralOther: "Please specify how you heard about us."
+        referralOther: "Please specify how you heard about us.",
+        rulesConsent: "Please confirm your commitment to respect CINEMANA internal rules."
       }
     },
     reservation: {
@@ -235,7 +239,8 @@ const CINEMANA_EXTENSION_COPY = {
         professionOther: "مهنة أخرى",
         referralType: "كيفاش عرفتينا؟",
         referralSocial: "موقع التواصل",
-        referralOther: "وضح أكثر"
+        referralOther: "وضح أكثر",
+        rulesConsent: "أؤكد أنني اطلعت على القانون الداخلي لمؤسسة CINEMANA وألتزم باحترامه، وأتحمل كامل المسؤولية عن أي معلومات غير صحيحة أو مخالفة للقواعد المعمول بها."
       },
       professionOptions: {
         empty: "اختر المهنة",
@@ -269,7 +274,8 @@ const CINEMANA_EXTENSION_COPY = {
       validation: {
         professionOther: "يرجى كتابة المهنة.",
         referralSocial: "يرجى اختيار موقع التواصل.",
-        referralOther: "يرجى توضيح كيفاش عرفتينا."
+        referralOther: "يرجى توضيح كيفاش عرفتينا.",
+        rulesConsent: "يرجى تأكيد الالتزام باحترام القانون الداخلي لمؤسسة CINEMANA."
       }
     },
     reservation: {
@@ -409,6 +415,7 @@ function applyExtensionTexts() {
   setOption('#memberReferralSocial option[value="whatsapp"]', modal.socialOptions.whatsapp);
   setOption('#memberReferralSocial option[value="linkedin"]', modal.socialOptions.linkedin);
   setOption('#memberReferralSocial option[value="x"]', modal.socialOptions.x);
+  setText("#memberRulesConsentText", modal.labels.rulesConsent);
   setText("#memberCompleteTitle", modal.completeTitle);
   setText("#memberCompleteHome", modal.completeHome);
 
@@ -540,7 +547,8 @@ getMemberFormData = function getMemberFormDataWithProfession() {
     referral_other: document.getElementById("memberReferralOther").value.trim(),
     email: document.getElementById("memberEmail").value.trim(),
     password: document.getElementById("memberPassword").value,
-    repeat_password: document.getElementById("memberRepeatPassword").value
+    repeat_password: document.getElementById("memberRepeatPassword").value,
+    rules_consent: Boolean(document.getElementById("memberRulesConsent") && document.getElementById("memberRulesConsent").checked)
   };
 };
 
@@ -563,6 +571,7 @@ validateMemberForm = function validateMemberFormWithProfession(data) {
   if (data.profession_type === "other" && !data.profession_other) return messages.professionOther;
   if (data.referral_type === "social" && !data.referral_social) return messages.referralSocial;
   if (data.referral_type === "other" && !data.referral_other) return messages.referralOther;
+  if (!data.rules_consent) return messages.rulesConsent;
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) return messages.email;
 
   const birthday = new Date(`${data.birthday}T00:00:00`);
@@ -592,7 +601,8 @@ setMemberFieldsDisabled = function setMemberFieldsDisabledWithProfession(disable
     "memberReferralOther",
     "memberEmail",
     "memberPassword",
-    "memberRepeatPassword"
+    "memberRepeatPassword",
+    "memberRulesConsent"
   ].forEach((id) => {
     const input = document.getElementById(id);
     if (input) input.disabled = disabled;
@@ -620,6 +630,8 @@ createFirebaseMemberAccount = async function createFirebaseMemberAccountWithProf
     phone: data.phone,
     profession: data.profession || canonicalMemberProfession(data),
     heard_about_us: data.heard_about_us || canonicalMemberReferral(data),
+    rules_consent: Boolean(data.rules_consent),
+    rules_consent_at: window.firebase.firestore.FieldValue.serverTimestamp(),
     email: data.email,
     email_verified_by_code: true,
     google_sheet_sync_requested: true,
@@ -643,6 +655,7 @@ sendMemberToGoogleSheets = async function sendMemberToGoogleSheetsWithProfession
     phone: data.phone,
     profession: data.profession || canonicalMemberProfession(data),
     heard_about_us: data.heard_about_us || canonicalMemberReferral(data),
+    rules_consent: Boolean(data.rules_consent),
     email: data.email,
     status: "pending",
     source: "cinemana-website",
