@@ -255,7 +255,6 @@ const TRANSLATIONS = {
       socialTitle: "Suivez CINEMANA",
       contactEyebrow: "Contact us",
       contactTitle: "Contact us",
-      contactPhone: "Téléphone et WhatsApp à ajouter",
       cards: [
         ["Communiqués", "Actualités de la Fondation CINEMANA, annonces de programmation, partenariats et temps forts du festival."],
         ["Dossier de presse", "Présentation de la fondation, missions, bureau, visuels officiels et chiffres clés à mettre à jour avec les prochains documents."],
@@ -558,7 +557,6 @@ const TRANSLATIONS = {
       socialTitle: "Follow CINEMANA",
       contactEyebrow: "Contact us",
       contactTitle: "Contact us",
-      contactPhone: "Phone and WhatsApp to add",
       cards: [
         ["Press releases", "CINEMANA Foundation news, program announcements, partnerships and festival highlights."],
         ["Press kit", "Foundation presentation, missions, board, official visuals and key figures to update with upcoming documents."],
@@ -861,7 +859,6 @@ const TRANSLATIONS = {
       socialTitle: "تابعوا CINEMANA",
       contactEyebrow: "تواصل معنا",
       contactTitle: "تواصل معنا",
-      contactPhone: "الهاتف والواتساب سيتم إضافتهما لاحقاً",
       cards: [
         ["بلاغات", "أخبار مؤسسة سينيمانا، إعلانات البرمجة، الشراكات، وأبرز لحظات المهرجان."],
         ["الملف الصحفي", "تقديم المؤسسة، المهام، المكتب، الصور الرسمية، والأرقام الأساسية التي سيتم تحديثها مع الوثائق المقبلة."],
@@ -1355,7 +1352,7 @@ function activityImage(src, alt, caption) {
   return { src, alt, caption: caption || "" };
 }
 
-const PARTNER_ASSET_VERSION = "20260526-ista-ntic";
+const PARTNER_ASSET_VERSION = "20260526-partner-paths";
 
 function partnerAsset(file) {
   return `assets/partners/${file}?v=${PARTNER_ASSET_VERSION}`;
@@ -1368,23 +1365,23 @@ function partnerLogo(name, logo, href) {
 function getActivityPartnerSets() {
   return {
     festival: [
-      partnerLogo("Centre Cinematographique Marocain", "ccm.jpg", "https://www.ccm.ma/"),
-      partnerLogo("Commune de Tanger", "tanger-ma.jpg", "https://tanger.ma/"),
+      partnerLogo("Centre Cinematographique Marocain", "logo ccm.jpeg", "https://www.ccm.ma/"),
+      partnerLogo("Commune de Tanger", "jama3a.jpeg", "https://tanger.ma/"),
       partnerLogo("Every Design", "every-design.png", "https://www.instagram.com/everydesign.ma?igsh=MTM4Mm01MTdmdmUyNw=="),
-      partnerLogo("Port de Tanger Ville", "sgptv.jpg", "https://www.tangerport.com/fr/port/"),
-      partnerLogo("Conseil Regional du Tourisme", "crt.png", "https://www.visittanger.com/fr/"),
-      partnerLogo("Arrondissement Medina", "arrondissement-medina.jpg"),
-      partnerLogo("Centre Culturel Ahmed Boukmakh", "boukmakh.png")
+      partnerLogo("Port de Tanger Ville", "LOGO SGPTV VERSION Originale-02.jpg.jpeg", "https://www.tangerport.com/fr/port/"),
+      partnerLogo("Conseil Regional du Tourisme", "logo-CRT.png", "https://www.visittanger.com/fr/"),
+      partnerLogo("Arrondissement Medina", "arrondissement medina.jpg.jpeg"),
+      partnerLogo("Centre Culturel Ahmed Boukmakh", "Boukmakh logo.png")
     ],
     monthly: [
       partnerLogo("Ministere de la Jeunesse, de la Culture et de la Communication", "ministere-culture.png", "https://mjcc.gov.ma/ar/"),
       partnerLogo("Federation Nationale des Cine-Clubs au Maroc", "fnccm.jpg", "https://fnccm.com/"),
-      partnerLogo("ISTA NTIC TANGER", "cad-tanger.png", "https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==")
+      partnerLogo("ISTA NTIC TANGER", "CAD.png", "https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==")
     ],
     training: [
-      partnerLogo("Les Nuits MED", "nuits-med.png", "https://www.lesnuitsmediterraneennes.com/18e-nuits-med-2025/"),
-      partnerLogo("MoliseCinema", "molise-cinema.png", "https://www.molisecinema.it/mc/"),
-      partnerLogo("Vues sur les Arts", "vues-sur-les-arts.png", "https://www.instagram.com/lagoramarsa?igsh=MWZwaXNmY3MxMzhsNg==")
+      partnerLogo("Les Nuits MED", "nuits-med-white Logo rouge et noir-01.png", "https://www.lesnuitsmediterraneennes.com/18e-nuits-med-2025/"),
+      partnerLogo("MoliseCinema", "logo MOLISECINEMA PNG.png", "https://www.molisecinema.it/mc/"),
+      partnerLogo("Vues sur les Arts", "Logo vues sur les arts_Plan de travail 1 copie.png", "https://www.instagram.com/lagoramarsa?igsh=MWZwaXNmY3MxMzhsNg==")
     ]
   };
 }
@@ -2318,7 +2315,6 @@ function setLanguage(language) {
   setText("#globalSocialEyebrow", copy.press.socialEyebrow);
   setText("#globalSocialTitle", copy.press.socialTitle);
   setText("#globalContactEyebrow", copy.press.contactEyebrow);
-  setText("#globalContactPhone", copy.press.contactPhone);
   setCardTexts("#page-press .cards-grid", copy.press.cards);
 
   setText("#page-partners .page-hero .eyebrow", copy.partners.eyebrow);
