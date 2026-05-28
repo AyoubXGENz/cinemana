@@ -28,6 +28,261 @@ const EMAILJS_SERVICE_ID = "service_axwqg28";
 const EMAILJS_TEMPLATE_ID = "template_r0njw8m";
 const EMAIL_CODE_EXPIRY_MINUTES = 10;
 const GOOGLE_SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzAU5tid1K9dM2gR-XKHCjH7_PwZ2ESPo-IVvk-5UGrFFInSBIMzBcsff6COQ5RSSPI/exec";
+const PRESS_ITEMS = [
+  {
+    type: "article",
+    source: "Tanja News",
+    title: "طنجة تستعد لاحتضان الدورة 14 لمهرجان الفيلم الدولي",
+    desc: "تغطية لعودة مهرجان طنجة الدولي للفيلم وبرنامجه وشراكاته الثقافية.",
+    url: "https://tanjanews.com/175268.html",
+    image: "https://tanjanews.com/wp-content/uploads/2025/09/9f9484bb-7284-45d0-96e3-a215841c1030.jpeg",
+    date: "2025-09-25",
+    featured: true
+  },
+  {
+    type: "article",
+    source: "Tanwer",
+    title: "مهرجان طنجة الدولي للفيلم في أكتوبر القادم",
+    desc: "إعلان تنظيم الدورة الرابعة عشرة من مهرجان طنجة الدولي للفيلم.",
+    url: "https://tanwer.ma/2025/06/19/%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%84%D9%84%D9%81%D9%8A%D9%84%D9%85-%D9%81%D9%8A-%D8%A3%D9%83%D8%AA%D9%88%D8%A8%D8%B1-%D8%A7%D9%84/",
+    image: "https://tanwer.ma/wp-content/uploads/2025/06/Tangier-13.jpg",
+    date: "2025-06-19",
+    featured: true
+  },
+  {
+    type: "video",
+    source: "2M",
+    title: "14th edition - reportage 2M",
+    desc: "Reportage vidéo autour de la 14e édition du Tangier Film Festival.",
+    url: "https://www.youtube.com/watch?v=xLivcTJYrkY",
+    image: "https://img.youtube.com/vi/xLivcTJYrkY/hqdefault.jpg",
+    videoId: "xLivcTJYrkY",
+    featured: true
+  },
+  {
+    type: "video",
+    source: "YouTube",
+    title: "ضفاف: انطلاق الدورة 14 لمهرجان طنجة الدولي للفيلم",
+    desc: "تغطية مصورة لانطلاق الدورة الرابعة عشرة بمشاركة عالمية واسعة.",
+    url: "https://www.youtube.com/watch?v=bljUPsuT6e0",
+    image: "https://img.youtube.com/vi/bljUPsuT6e0/hqdefault.jpg",
+    videoId: "bljUPsuT6e0"
+  },
+  {
+    type: "article",
+    source: "Al Roya",
+    title: "جمعية السينما تشارك في مهرجان طنجة الدولي للفيلم",
+    desc: "إضاءة على حضور السينما العمانية في مهرجان طنجة الدولي للفيلم.",
+    url: "https://alroya.om/post/374033/%D8%AC%D9%85%D8%B9%D9%8A%D8%A9-%D8%A7%D9%84%D8%B3%D9%8A%D9%86%D9%85%D8%A7-%D8%AA%D8%B4%D8%A7%D8%B1%D9%83-%D9%81%D9%8A-%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A-%D9%84%D9%84%D9%81%D9%8A%D9%84%D9%85",
+    image: "https://alroya.om/thumb/830x506/uploads/images/2025/10/hsYdV.jpeg",
+    date: "2025-10-05"
+  },
+  {
+    type: "article",
+    source: "Tanger Littéraire",
+    title: "Tangier Film Festival 2025: six films en compétition internationale",
+    desc: "Présentation de la sélection internationale de longs métrages de la 14e édition.",
+    url: "https://aladabia.net/2025/09/22/tangier-film-festival-2025/",
+    image: "https://aladabia.net/wp-content/uploads/2025/09/poster-14-edition-tanger.png",
+    date: "2025-09-22"
+  },
+  {
+    type: "article",
+    source: "الشروق",
+    title: "محمود ياسين يتسلم درع مهرجان طنجة السينمائي",
+    desc: "أرشيف صحفي حول تكريم محمود ياسين في حفل ختام مهرجان طنجة.",
+    url: "https://www.shorouknews.com/news/view.aspx?cdate=29042013&id=ba3c3fad-fa82-4638-9b18-f72793af56a9",
+    image: "https://www.shorouknews.com/uploadedimages/Sections/ART/Cinema/original/Mahmoud Yassin.jpg"
+  },
+  {
+    type: "article",
+    source: "الأهرام",
+    title: "تغطية أرشيفية لمهرجان طنجة السينمائي",
+    desc: "مقال أرشيفي من الأهرام حول فعاليات مهرجان طنجة السينمائي.",
+    url: "https://gate.ahram.org.eg/daily/NewsPrint/204875.aspx",
+    image: "assets/press/ahram-mahmoud-yassin.jpg?v=20260528-press-event-images"
+  },
+  {
+    type: "article",
+    source: "صدى البلد",
+    title: "محمود ياسين ضيف شرف مهرجان طنجة السينمائي",
+    desc: "متابعة صحفية لاختيار محمود ياسين ضيف شرف مهرجان طنجة.",
+    url: "https://www.elbalad.news/440880",
+    image: "assets/press/sada-elbalad.png?v=20260528-press-event-images",
+    date: "2013-03-28"
+  },
+  {
+    type: "article",
+    source: "SWISS FILMS",
+    title: "12th Tangier International Film Festival",
+    desc: "Festival listing and international reference for the 12th edition.",
+    url: "https://www.swissfilms.ch/en/festival/12th-tangier-international-film-festival/b3b8b99546de48a79c653c93ff32807f",
+    image: "assets/activities/tff-theatre.jpg?v=20260528-press-topic"
+  },
+  {
+    type: "article",
+    source: "SA Modernism",
+    title: "Tangier Film Festival, Morocco",
+    desc: "International note on Tangier Film Festival and documentary creation.",
+    url: "https://www.southafricanmodernism.com/post/tangier-film-festival-morocco",
+    image: "https://static.wixstatic.com/media/3f3423_e105e9638c4a4b32b6c3eeec87dbf324~mv2.jpg/v1/fill/w_639,h_697,al_c,q_85/3f3423_e105e9638c4a4b32b6c3eeec87dbf324~mv2.jpg",
+    date: "2023-11-16"
+  },
+  {
+    type: "article",
+    source: "BSF",
+    title: "Tangier Film Festival",
+    desc: "International festival profile and organization listing.",
+    url: "https://bsf.si/en/organization/tangier-film-festival/",
+    image: "https://bsf.si/static/images/BSF_znak2.png"
+  },
+  {
+    type: "article",
+    source: "Le Journal de Tanger",
+    title: "Tangier Film Festival ouvre ses portes du 20 au 23 novembre",
+    desc: "Retour sur l'ouverture de la 13e édition du Festival international du film de Tanger.",
+    url: "https://www.lejournaldetanger.com/tangier-film-festival-ouvre-ses-portes-du-20-au-23-novembre/",
+    image: "https://www.lejournaldetanger.com/wp-content/uploads/2024/11/azazaz-1-scaled.jpg",
+    date: "2024-11-28"
+  },
+  {
+    type: "video",
+    source: "YouTube",
+    title: "تكريم هاني سلامة وأحمد الفتوح في افتتاح مهرجان طنجة",
+    desc: "فيديو من حفل افتتاح مهرجان طنجة للفيلم وتكريم ضيوفه.",
+    url: "https://www.youtube.com/watch?v=nb9CocDEruM",
+    image: "https://img.youtube.com/vi/nb9CocDEruM/hqdefault.jpg",
+    videoId: "nb9CocDEruM"
+  },
+  {
+    type: "article",
+    source: "Rotana",
+    title: "مهرجان طنجة يكرم هاني سلامة ويختاره ضيف الافتتاح",
+    desc: "تغطية لتكريم الفنان هاني سلامة ضمن فعاليات مهرجان طنجة.",
+    url: "https://rotana.net/ar/news/%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86%20%D8%B7%D9%86%D8%AC%D8%A9%20%D9%8A%D9%83%D8%B1%D9%85%20%D9%87%D8%A7%D9%86%D9%8A%20%D8%B3%D9%84%D8%A7%D9%85%D8%A9%20%D9%88%D9%8A%D8%AE%D8%AA%D8%A7%D8%B1%D9%87%20%D8%B6%D9%8A%D9%81%20%D8%AD%D9%81%D9%84%20%D8%A7%D9%84%D8%A7%D9%81%D8%AA%D8%AA%D8%A7%D8%AD",
+    image: "https://assets.annahar.com/ContentFilesArchive/319804Image1-1180x677_d.jpg"
+  },
+  {
+    type: "article",
+    source: "القدس العربي",
+    title: "هاني سلامة ضيف شرف مهرجان طنجة",
+    desc: "متابعة عربية لاختيار هاني سلامة ضيف شرف الدورة العاشرة.",
+    url: "https://www.alquds.co.uk/%EF%BB%BF%D8%A7%D9%84%D9%85%D9%85%D8%AB%D9%84-%D8%A7%D9%84%D9%85%D8%B5%D8%B1%D9%8A-%D9%87%D8%A7%D9%86%D9%8A-%D8%B3%D9%84%D8%A7%D9%85%D8%A9%D8%B6%D9%8A%D9%81-%D8%B4%D8%B1%D9%81-%D9%85%D9%87%D8%B1%D8%AC/",
+    image: "assets/press/alquds-arabi.gif?v=20260528-press-event-images",
+    date: "2017-11-29"
+  },
+  {
+    type: "article",
+    source: "الفن",
+    title: "هاني سلامة مكرماً في طنجة",
+    desc: "خبر فني حول تكريم هاني سلامة في مهرجان طنجة السينمائي.",
+    url: "https://elfann.com/news/show/1197730/%D9%87%D8%A7%D9%86%D9%8A-%D8%B3%D9%84%D8%A7%D9%85%D8%A9-%D9%85%D9%83%D8%B1%D9%85%D8%A7%D9%8B-%D8%B7%D9%86%D8%AC%D8%A9",
+    image: "assets/press/elfann-hani-salama.jpg?v=20260528-press-event-images"
+  },
+  {
+    type: "article",
+    source: "النهار",
+    title: "هاني سلامة ضيف شرف طنجة السينمائي",
+    desc: "تغطية النهار لتكريم هاني سلامة في طنجة السينمائي.",
+    url: "https://www.annahar.com/arabic/article/706559-%D9%87%D8%A7%D9%86%D9%8A-%D8%B3%D9%84%D8%A7%D9%85%D8%A9-%D8%B6%D9%8A%D9%81-%D8%B4%D8%B1%D9%81-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D8%B3%D9%8A%D9%86%D9%85%D8%A7%D8%A6%D9%8A",
+    image: "https://assets.annahar.com/ContentFilesArchive/319804Image1-1180x677_d.jpg"
+  },
+  {
+    type: "article",
+    source: "اليوم السابع",
+    title: "شباكى أفضل فيلم وثائقي في مهرجان طنجة السينمائي",
+    desc: "متابعة جوائز مهرجان طنجة وفوز فيلم شباكى بجائزة أفضل وثائقي.",
+    url: "https://www.youm7.com/story/2017/12/3/%D8%B4%D8%A8%D8%A7%D9%83%D9%89-%D8%A3%D9%81%D8%B6%D9%84-%D9%81%D9%8A%D9%84%D9%85-%D9%88%D8%AB%D8%A7%D8%A6%D9%82%D9%89-%D9%81%D9%89-%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D8%B3%D9%8A%D9%86%D9%85%D8%A7%D8%A6%D9%89/3537471",
+    image: "https://img.youm7.com/large/201712030150185018.jpg",
+    date: "2017-12-03"
+  },
+  {
+    type: "article",
+    source: "النهار الكويتية",
+    title: "هاني سلامة وفوق السحاب",
+    desc: "متابعة كويتية لمشاركة هاني سلامة وتكريمه في طنجة.",
+    url: "https://www.annaharkw.com/annahar/Article.aspx?id=774916&date=01122017",
+    image: "https://www.annaharkw.com/Resources/ArticlesPictures/2017/12/01/119527f6-dc20-455d-8c41-0a1e886b6f7a_main_New.jpg"
+  },
+  {
+    type: "article",
+    source: "العربية",
+    title: "40 فيلما تتبارى على جائزتين بمهرجان طنجة",
+    desc: "تغطية العربية للدورة التاسعة من مهرجان طنجة الدولي للفيلم.",
+    url: "https://www.alarabiya.net/culture-and-art/2016/09/15/40-%D9%81%D9%8A%D9%84%D9%85%D8%A7-%D8%AA%D8%AA%D8%A8%D8%A7%D8%B1%D9%89-%D8%B9%D9%84%D9%89-%D8%AC%D8%A7%D8%A6%D8%B2%D8%AA%D9%8A%D9%86-%D8%A8%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86-%D8%B7%D9%86%D8%AC%D8%A9",
+    image: "https://www.aljazeera.net/wp-content/uploads/2016/09/dd522f5b-0aa2-4955-ad1f-8e887e3c9f07.jpeg?resize=1200%2C675"
+  },
+  {
+    type: "article",
+    source: "الجزيرة نت",
+    title: "40 فيلما في مهرجان طنجة السينمائي الدولي",
+    desc: "تقرير ثقافي عن الأفلام المتنافسة في مهرجان طنجة السينمائي.",
+    url: "https://www.aljazeera.net/culture/2016/9/22/40-%D9%81%D9%8A%D9%84%D9%85%D8%A7-%D9%81%D9%8A-%D9%85%D9%87%D8%B1%D8%AC%D8%A7%D9%86-%D8%B7%D9%86%D8%AC%D8%A9-%D8%A7%D9%84%D8%B3%D9%8A%D9%86%D9%85%D8%A7%D8%A6%D9%8A-%D8%A7%D9%84%D8%AF%D9%88%D9%84%D9%8A",
+    image: "https://www.aljazeera.net/wp-content/uploads/2016/09/dd522f5b-0aa2-4955-ad1f-8e887e3c9f07.jpeg?resize=1200%2C675"
+  },
+  {
+    type: "article",
+    source: "طنجاوي",
+    title: "المهرجان الدولي للفيلم بطنجة يسدل الستار على نسخته التاسعة",
+    desc: "متابعة ختام الدورة التاسعة وأبرز لحظات المهرجان.",
+    url: "https://tanjaoui.ma/article/4338",
+    image: "https://tanjaoui.ma/upload/images/4338_image_vid.jpg"
+  },
+  {
+    type: "article",
+    source: "Hibapress",
+    title: "Tanger accueille la 14ème édition du Festival international du film documentaire",
+    desc: "Article sur le démarrage de la 14e édition du festival à Tanger.",
+    url: "https://fr.hibapress.com/news-209295.html",
+    image: "https://fr.hibapress.com/wp-content/uploads/hibapress-cache/hibapress-img-31-c3b249a8.jpg",
+    date: "2025-09-29"
+  },
+  {
+    type: "article",
+    source: "Finances News Hebdo",
+    title: "Ouverture du 12ème Festival international du film de Tanger",
+    desc: "Couverture de l'ouverture de la 12e édition au cinéma Roxy.",
+    url: "https://fnh.ma/article/actualites-marocaines/Ouverture-du-12eme-Festival-international-du-film-de-Tanger",
+    image: "https://fnh.ma//uploads/actualites/654cec964fe2f_tangier-film-festival.jpeg"
+  },
+  {
+    type: "article",
+    source: "L'ODJ",
+    title: "Et de 12 pour le Festival international du film de Tanger",
+    desc: "Annonce de la 12e édition du Festival international du film de Tanger.",
+    url: "https://www.lodj.ma/Et-de-12-pour-le-Festival-international-du-film-de-Tanger_a82734.html",
+    image: "https://www.lodj.ma/photo/art/grande/76493093-54775751.jpg?v=1699436397"
+  },
+  {
+    type: "article",
+    source: "Maroc Diplomatique",
+    title: "Le Festival international du film de Tanger souffle sa 9ème bougie",
+    desc: "Présentation de la 9e édition du Festival international du film de Tanger.",
+    url: "https://maroc-diplomatique.net/festival-international-film-de-tanger-souffle-9eme-bougie/",
+    image: "https://maroc-diplomatique.net/wp-content/uploads/2016/09/xFestival-international-du-film-de-Tanger.jpg.pagespeed.ic_.wFIgB39OO7.jpg",
+    date: "2016-09-19"
+  },
+  {
+    type: "article",
+    source: "La Vie éco",
+    title: "Tanger s'apprête à accueillir le 9ème Festival international du film",
+    desc: "Annonce de la 9e édition et de son programme culturel.",
+    url: "https://www.lavieeco.com/influences/culture/tanger-sapprete-a-accueillir-le-9eme-festival-international-du-film/",
+    image: "https://www.lavieeco.com/wp-content/uploads/2016/09/Festival-international-du-film-de-Tanger.jpg",
+    date: "2016-09-19"
+  },
+  {
+    type: "article",
+    source: "Le Matin",
+    title: "Le 12e Festival international du film de Tanger, du 8 au 11 novembre",
+    desc: "Annonce officielle de la 12e édition du festival et de ses dates.",
+    url: "https://lematin.ma/culture/le-12e-festival-international-du-film-de-tanger-du-8-au-11-novembre/199447",
+    image: "https://lematin.ma/lematin/uploads/images/2023/11/07/263694.png",
+    date: "2023-11-07"
+  }
+];
+
+const PRESS_FALLBACK_IMAGES = [];
 
 const TRANSLATIONS = {
   fr: {
@@ -255,6 +510,23 @@ const TRANSLATIONS = {
       socialTitle: "Suivez CINEMANA",
       contactEyebrow: "Contact us",
       contactTitle: "Contact us",
+      archiveEyebrow: "Revue de presse",
+      archiveTitle: "Articles, vidéos et couvertures médias.",
+      archiveIntro: "Un espace vivant pour retrouver les articles, reportages, interviews et archives qui suivent le parcours de CINEMANA et du Tangier Film Festival.",
+      filters: {
+        all: "Tout",
+        article: "Articles",
+        video: "Vidéos"
+      },
+      pressLabels: {
+        article: "Article",
+        video: "Vidéo",
+        open: "Lire l’article",
+        watch: "Voir la vidéo",
+        featured: "À la une",
+        articles: "articles",
+        videos: "vidéos"
+      },
       cards: [
         ["Communiqués", "Actualités de la Fondation CINEMANA, annonces de programmation, partenariats et temps forts du festival."],
         ["Dossier de presse", "Présentation de la fondation, missions, bureau, visuels officiels et chiffres clés à mettre à jour avec les prochains documents."],
@@ -273,10 +545,10 @@ const TRANSLATIONS = {
       residencyCopy: "Les partenaires méditerranéens de la résidence COURTS ENTRE 2 RIVES.",
       sinEyebrow: "Projections mensuelles SIN",
       sinTitle: "Partenaires projections mensuelles SIN",
-      sinCopy: "Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication, la Fédération Nationale des Ciné-Clubs au Maroc et ISTA NTIC TANGER.",
+      sinCopy: "Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication, la Fédération Nationale des Ciné-Clubs au Maroc et le Comité d’autodiscipline ISTA NTIC-Tanger.",
       sinMinistry: "Ministère de la Jeunesse, de la Culture et de la Communication",
       sinFnccm: "Fédération Nationale des Ciné-Clubs au Maroc",
-      sinCad: "ISTA NTIC TANGER"
+      sinCad: "Comité d’autodiscipline ISTA NTIC-Tanger"
     },
     footer: {
       copy: "Fondation culturelle à but non lucratif dédiée à la promotion du cinéma et de la culture à Tanger et au niveau national.",
@@ -557,6 +829,23 @@ const TRANSLATIONS = {
       socialTitle: "Follow CINEMANA",
       contactEyebrow: "Contact us",
       contactTitle: "Contact us",
+      archiveEyebrow: "Press review",
+      archiveTitle: "Articles, videos and media coverage.",
+      archiveIntro: "A living archive of articles, reports, interviews and video coverage following CINEMANA and the Tangier Film Festival.",
+      filters: {
+        all: "All",
+        article: "Articles",
+        video: "Videos"
+      },
+      pressLabels: {
+        article: "Article",
+        video: "Video",
+        open: "Read article",
+        watch: "Watch video",
+        featured: "Featured",
+        articles: "articles",
+        videos: "videos"
+      },
       cards: [
         ["Press releases", "CINEMANA Foundation news, program announcements, partnerships and festival highlights."],
         ["Press kit", "Foundation presentation, missions, board, official visuals and key figures to update with upcoming documents."],
@@ -575,10 +864,10 @@ const TRANSLATIONS = {
       residencyCopy: "The Mediterranean partners of the COURTS ENTRE 2 RIVES residency.",
       sinEyebrow: "Monthly SIN screenings",
       sinTitle: "Monthly SIN screening partners",
-      sinCopy: "A program carried out with the Ministry of Youth, Culture and Communication, the National Federation of Film Clubs in Morocco and ISTA NTIC TANGER.",
+      sinCopy: "A program carried out with the Ministry of Youth, Culture and Communication, the National Federation of Film Clubs in Morocco and Comité d’autodiscipline ISTA NTIC-Tanger.",
       sinMinistry: "Ministry of Youth, Culture and Communication",
       sinFnccm: "National Federation of Film Clubs in Morocco",
-      sinCad: "ISTA NTIC TANGER"
+      sinCad: "Comité d’autodiscipline ISTA NTIC-Tanger"
     },
     footer: {
       copy: "A non-profit cultural foundation dedicated to promoting cinema and culture in Tangier and across Morocco.",
@@ -859,6 +1148,23 @@ const TRANSLATIONS = {
       socialTitle: "تابعوا CINEMANA",
       contactEyebrow: "تواصل معنا",
       contactTitle: "تواصل معنا",
+      archiveEyebrow: "أرشيف الصحافة",
+      archiveTitle: "مقالات وفيديوهات وتغطيات إعلامية.",
+      archiveIntro: "فضاء يجمع المقالات والربورتاجات والمقابلات والتغطيات التي واكبت مسار سينمانا ومهرجان طنجة للفيلم.",
+      filters: {
+        all: "الكل",
+        article: "مقالات",
+        video: "فيديوهات"
+      },
+      pressLabels: {
+        article: "مقال",
+        video: "فيديو",
+        open: "قراءة المقال",
+        watch: "مشاهدة الفيديو",
+        featured: "في الواجهة",
+        articles: "مقال",
+        videos: "فيديو"
+      },
       cards: [
         ["بلاغات", "أخبار مؤسسة سينمانا، إعلانات البرمجة، الشراكات، وأبرز لحظات المهرجان."],
         ["الملف الصحفي", "تقديم المؤسسة، المهام، المكتب، الصور الرسمية، والأرقام الأساسية التي سيتم تحديثها مع الوثائق المقبلة."],
@@ -877,10 +1183,10 @@ const TRANSLATIONS = {
       residencyCopy: "الشركاء المتوسطيون لإقامة COURTS ENTRE 2 RIVES.",
       sinEyebrow: "العروض الشهرية SIN",
       sinTitle: "شركاء العروض الشهرية SIN",
-      sinCopy: "برنامج يتم إنجازه بشراكة مع وزارة الشباب والثقافة والتواصل والجامعة الوطنية للأندية السينمائية بالمغرب و ISTA NTIC TANGER.",
+      sinCopy: "برنامج يتم إنجازه بشراكة مع وزارة الشباب والثقافة والتواصل والجامعة الوطنية للأندية السينمائية بالمغرب و Comité d’autodiscipline ISTA NTIC-Tanger.",
       sinMinistry: "وزارة الشباب والثقافة والتواصل",
       sinFnccm: "الجامعة الوطنية للأندية السينمائية بالمغرب",
-      sinCad: "ISTA NTIC TANGER"
+      sinCad: "Comité d’autodiscipline ISTA NTIC-Tanger"
     },
     footer: {
       copy: "مؤسسة ثقافية غير ربحية مكرسة للنهوض بالسينما والثقافة في طنجة وعلى المستوى الوطني.",
@@ -1165,6 +1471,7 @@ let firebaseServices = null;
 let emailJsInitialized = false;
 let pendingMemberRegistration = null;
 let activeActivityId = "";
+let activePressFilter = "all";
 let currentMemberUser = null;
 let currentMemberProfile = null;
 let currentMemberDashboardData = null;
@@ -1239,6 +1546,127 @@ function escapeHtml(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function getPressCopy() {
+  const copy = TRANSLATIONS[currentLanguage] || TRANSLATIONS.fr;
+  return copy.press || TRANSLATIONS.fr.press;
+}
+
+function formatPressDate(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  const locale = currentLanguage === "ar" ? "ar-MA" : currentLanguage === "en" ? "en-GB" : "fr-FR";
+  return new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric" }).format(date);
+}
+
+function pressSourceInitials(item) {
+  const source = String(item.source || "CINEMANA").trim();
+  return source
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0))
+    .join("")
+    .toUpperCase() || "CM";
+}
+
+function pressFallbackImage(item) {
+  if (!PRESS_FALLBACK_IMAGES.length) return "";
+  const key = `${item.source || ""}|${item.title || ""}|${item.url || ""}`;
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = ((hash << 5) - hash) + key.charCodeAt(index);
+    hash |= 0;
+  }
+  return PRESS_FALLBACK_IMAGES[Math.abs(hash) % PRESS_FALLBACK_IMAGES.length];
+}
+
+function pressMediaMarkup(item) {
+  const labels = getPressCopy().pressLabels || {};
+  const typeLabel = item.type === "video" ? labels.video : labels.article;
+  const fallbackImage = pressFallbackImage(item);
+  const mediaImage = item.image || fallbackImage;
+  const fallbackAttribute = item.image && fallbackImage && item.image !== fallbackImage
+    ? ` data-fallback-src="${escapeHtml(fallbackImage)}"`
+    : "";
+  const imageMarkup = mediaImage
+    ? `<img src="${escapeHtml(mediaImage)}" alt="${escapeHtml(item.title)}" loading="lazy"${fallbackAttribute} onerror="const fallback=this.dataset.fallbackSrc;if(fallback&&this.src!==fallback){this.src=fallback;this.removeAttribute('data-fallback-src');}else{this.closest('.press-card-media').classList.add('image-missing');this.remove();}">`
+    : "";
+
+  return `
+    <span class="press-card-media ${mediaImage ? "" : "image-missing"}">
+      ${imageMarkup}
+      <span class="press-placeholder">${escapeHtml(pressSourceInitials(item))}</span>
+      ${item.type === "video" ? `<span class="press-play" aria-hidden="true"></span>` : ""}
+      <span class="press-type">${escapeHtml(typeLabel || item.type)}</span>
+    </span>
+  `;
+}
+
+function pressCardMarkup(item, featured = false) {
+  const labels = getPressCopy().pressLabels || {};
+  const cta = item.type === "video" ? labels.watch : labels.open;
+  const date = formatPressDate(item.date);
+
+  return `
+    <a class="press-card ${featured ? "featured" : ""}" href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer">
+      ${pressMediaMarkup(item)}
+      <span class="press-card-body">
+        <span class="press-card-kicker">
+          <span>${escapeHtml(item.source)}</span>
+          ${date ? `<span>${escapeHtml(date)}</span>` : ""}
+        </span>
+        <strong>${escapeHtml(item.title)}</strong>
+        <span class="press-card-desc">${escapeHtml(item.desc)}</span>
+        <span class="press-open">${escapeHtml(cta || labels.open || "Open")}</span>
+      </span>
+    </a>
+  `;
+}
+
+function renderPressArchive() {
+  const featuredContainer = document.getElementById("pressFeatured");
+  const grid = document.getElementById("pressGrid");
+  if (!featuredContainer || !grid) return;
+
+  const copy = getPressCopy();
+  const labels = copy.pressLabels || {};
+  const filters = copy.filters || {};
+  const articleCount = PRESS_ITEMS.filter((item) => item.type === "article").length;
+  const videoCount = PRESS_ITEMS.filter((item) => item.type === "video").length;
+
+  setText("#pressArchiveEyebrow", copy.archiveEyebrow);
+  setText("#pressArchiveTitle", copy.archiveTitle);
+  setText("#pressArchiveIntro", copy.archiveIntro);
+  setText("#pressArticleCount", articleCount);
+  setText("#pressVideoCount", videoCount);
+  setText("#pressArticleCountLabel", labels.articles || "articles");
+  setText("#pressVideoCountLabel", labels.videos || "videos");
+
+  document.querySelectorAll("[data-press-filter]").forEach((button) => {
+    const filter = button.dataset.pressFilter;
+    button.textContent = filters[filter] || filter;
+    button.classList.toggle("active", filter === activePressFilter);
+  });
+
+  const filteredItems = activePressFilter === "all"
+    ? PRESS_ITEMS
+    : PRESS_ITEMS.filter((item) => item.type === activePressFilter);
+  const featuredItems = activePressFilter === "all"
+    ? PRESS_ITEMS.filter((item) => item.featured).slice(0, 3)
+    : filteredItems.slice(0, 2);
+  const featuredUrls = new Set(featuredItems.map((item) => item.url));
+  const regularItems = filteredItems.filter((item) => !featuredUrls.has(item.url));
+
+  featuredContainer.innerHTML = featuredItems.map((item) => pressCardMarkup(item, true)).join("");
+  grid.innerHTML = regularItems.map((item) => pressCardMarkup(item)).join("");
+}
+
+function filterPressItems(filter) {
+  activePressFilter = ["all", "article", "video"].includes(filter) ? filter : "all";
+  renderPressArchive();
 }
 
 function getActivityUiCopy() {
@@ -1376,7 +1804,7 @@ function getActivityPartnerSets() {
     monthly: [
       partnerLogo("Ministere de la Jeunesse, de la Culture et de la Communication", "ministere-culture.png", "https://mjcc.gov.ma/ar/"),
       partnerLogo("Federation Nationale des Cine-Clubs au Maroc", "fnccm.jpg", "https://fnccm.com/"),
-      partnerLogo("ISTA NTIC TANGER", "CAD.png", "https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==")
+      partnerLogo("Comité d’autodiscipline ISTA NTIC-Tanger", "CAD.png", "https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==")
     ],
     training: [
       partnerLogo("Les Nuits MED", "nuits-med-white Logo rouge et noir-01.png", "https://www.lesnuitsmediterraneennes.com/18e-nuits-med-2025/"),
@@ -2315,7 +2743,7 @@ function setLanguage(language) {
   setText("#globalSocialEyebrow", copy.press.socialEyebrow);
   setText("#globalSocialTitle", copy.press.socialTitle);
   setText("#globalContactEyebrow", copy.press.contactEyebrow);
-  setCardTexts("#page-press .cards-grid", copy.press.cards);
+  renderPressArchive();
 
   setText("#page-partners .page-hero .eyebrow", copy.partners.eyebrow);
   setText("#page-partners .page-hero h1", copy.partners.title);
@@ -2688,6 +3116,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const start = PAGES.includes(hash) ? hash : "home";
   const savedLanguage = localStorage.getItem("cinemana-language");
   const startLanguage = TRANSLATIONS[savedLanguage] ? savedLanguage : "fr";
+
+  document.querySelectorAll("[data-press-filter]").forEach((button) => {
+    button.addEventListener("click", () => filterPressItems(button.dataset.pressFilter));
+  });
 
   history.replaceState({ page: start }, "", `#${start}`);
   showPage(start, false);

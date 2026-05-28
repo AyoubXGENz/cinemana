@@ -95,6 +95,7 @@ Public reservations are now saved as `pending` in the `Statu` column. Telegram s
 - `Annuler`: changes `Statu` to `annulé`, marks it red, and releases the seat on the website.
 
 The script also adds internal columns to `reservation`:
+- `Event` and `Event id`: keep seat availability separated by projection/event.
 - `Code membre`: blocks a member from reserving more than one active seat with the same member code.
 - `Telegram chat` and `Telegram message`: let Apps Script edit the original Telegram notification after confirmation/cancellation and remove the buttons.
 

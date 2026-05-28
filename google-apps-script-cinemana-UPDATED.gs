@@ -26,6 +26,8 @@ const MEMBERSHIP_HEADERS = [
 
 const RESERVATION_HEADERS = [
   "References",
+  "Event",
+  "Event id",
   "Prénom",
   "Nom",
   "Tel WhatsApp",
@@ -69,7 +71,7 @@ function handleRequest_(params) {
     if (action === "saveMembership") return saveMembership_(payload);
     if (action === "verifyMember") return verifyMember_(payload);
     if (action === "getMemberDashboard") return getMemberDashboard_(payload);
-    if (action === "getReservedSeats") return getReservedSeats_();
+    if (action === "getReservedSeats") return getReservedSeats_(payload);
     if (action === "createReservation") return createReservation_(payload);
     if (action === "decision") return processReservationDecision_(payload.reference, payload.decision, null);
     if (action === "membershipDecision") return processMembershipDecision_(payload.reference, payload.decision);
@@ -223,6 +225,8 @@ function fixCinemanaSheetColumns() {
   ];
   const reservationHeaders = [
     "References",
+    "Event",
+    "Event id",
     "Prénom",
     "Nom",
     "Tel WhatsApp",
@@ -568,6 +572,8 @@ function getMemberDashboard_(payload) {
 
     reservations.push({
       reference: reservation.reference,
+      event_title: reservation.event_title,
+      event_id: reservation.event_id,
       full_name: reservation.full_name,
       email: reservation.email,
       phone: reservation.phone,
@@ -707,7 +713,28 @@ function saveMembership_(payload) {
   };
 }
 
-function getReservedSeats_() {
+function getReservationEventKey_(payload) {
+  const eventId = normalizeText_(payload && (payload.event_id || payload.eventId));
+  if (eventId) return eventId;
+  return normalizeText_(payload && (payload.event_title || payload.eventTitle || payload.event));
+}
+
+function reservationRowEventKey_(row, map) {
+  const eventIdColumn = map[normalizeHeader_("Event id")];
+  const eventColumn = map[normalizeHeader_("Event")];
+  const eventId = eventIdColumn ? normalizeText_(row[eventIdColumn - 1]) : "";
+  if (eventId) return eventId;
+  return eventColumn ? normalizeText_(row[eventColumn - 1]) : "";
+}
+
+function reservationRowMatchesEvent_(row, map, payload) {
+  const target = getReservationEventKey_(payload);
+  if (!target) return true;
+  const rowEvent = reservationRowEventKey_(row, map);
+  return !rowEvent || rowEvent === target;
+}
+
+function getReservedSeats_(payload) {
   const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
   const map = headerMap_(sheet);
   const seatColumn = map[normalizeHeader_("Seat")];
@@ -716,6 +743,7 @@ function getReservedSeats_() {
   const seatStatuses = [];
 
   rows.forEach((row) => {
+    if (!reservationRowMatchesEvent_(row, map, payload)) return;
     const seat = String(row[seatColumn - 1] || "").trim().toUpperCase();
     if (!seat) return;
     const status = normalizeReservationStatus_(statusColumn ? row[statusColumn - 1] : "");
@@ -789,12 +817,14 @@ function createReservation_(payload) {
 
   try {
     payload.full_name = payload.full_name || combineNameParts_(payload.first_name, payload.last_name);
+    payload.event_title = payload.event_title || payload.event || "";
+    payload.event_id = payload.event_id || payload.eventId || getReservationEventKey_(payload);
     const required = ["type", "first_name", "last_name", "full_name", "phone", "email", "seat"];
     if (required.some((key) => !payload[key])) return { ok: false, code: "missing_fields" };
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail_(payload.email))) return { ok: false, code: "invalid_email" };
 
     const seat = String(payload.seat || "").trim().toUpperCase();
-    const activeSeats = getReservedSeats_();
+    const activeSeats = getReservedSeats_(payload);
     if (activeSeats.seats.includes(seat)) {
       return { ok: false, code: "seat_taken", seats: activeSeats.seats, seat_statuses: activeSeats.seat_statuses };
     }
@@ -821,13 +851,15 @@ function createReservation_(payload) {
     const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
     const valuesByHeader = {
       "References": reference,
+      "Event": payload.event_title,
+      "Event id": payload.event_id,
       "Prénom": payload.first_name,
       "Nom": payload.last_name,
       "Tel WhatsApp": payload.whatsapp || payload.phone,
       "E-mail": payload.email,
       "Âge": payload.type === "member" ? "" : payload.age,
       "Fonction": payload.type === "member" ? (member && member.profession ? member.profession : payload.profession) : payload.profession,
-      "Comment as-tu su pour la projection?": payload.type === "member" ? "Réservation membre" : payload.source,
+      "Comment as-tu su pour la projection?": payload.type === "member" ? `Réservation membre${payload.event_title ? " - " + payload.event_title : ""}` : payload.source,
       "Seat": seat,
       "member ou non": isMember ? "✓" : "✗",
       "Created at": new Date(),
@@ -864,6 +896,8 @@ function createReservation_(payload) {
     return {
       ok: true,
       reference: status === "confirmed" ? reference : "",
+      event_title: payload.event_title,
+      event_id: payload.event_id,
       seat,
       status,
       member: isMember,
@@ -957,6 +991,8 @@ function reservationPayloadFromRow_(row, map) {
 
   return {
     reference: String(get("References") || "").trim(),
+    event_title: String(get("Event") || "").trim(),
+    event_id: String(get("Event id") || "").trim(),
     first_name: firstName,
     last_name: lastName,
     full_name: fullName,
@@ -1269,6 +1305,7 @@ function buildTelegramReservationText_(payload, reference, seat, isMember, statu
     "",
     `<b>Statut :</b> ${statusLabel}`,
     `<b>Référence :</b> ${escapeHtml_(reference)}`,
+    `<b>Événement :</b> ${escapeHtml_(payload.event_title || "-")}`,
     `<b>Siège :</b> ${escapeHtml_(seat)}`,
     `<b>Nom :</b> ${escapeHtml_(payload.full_name)}`,
     `<b>Téléphone :</b> ${escapeHtml_(payload.whatsapp || payload.phone)}`,
@@ -1695,6 +1732,7 @@ function sendReservationEmail_(payload, reference, seat, isMember) {
   try {
     const memberLabel = isMember ? "Membre CINEMANA" : "Invitation confirmée";
     const phone = payload.whatsapp || payload.phone || "";
+    const eventTitle = payload.event_title || "Projection CINEMANA";
     const html = `
       <div style="margin:0;padding:0;background:#080808">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;border-collapse:collapse;background:#080808">
@@ -1718,6 +1756,10 @@ function sendReservationEmail_(payload, reference, seat, isMember) {
                           <div style="font-size:12px;color:#d9b24c;font-weight:800;letter-spacing:2px;text-transform:uppercase">Référence ticket</div>
                           <div style="font-size:28px;line-height:1.18;font-weight:900;color:#fff;margin:8px 0 18px;word-break:break-word;overflow-wrap:anywhere">${escapeHtml_(reference)}</div>
 
+                          <div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Événement</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(eventTitle)}</div>
+                          </div>
                           <div style="border-top:1px solid #293244;padding:12px 0">
                             <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Nom</div>
                             <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(payload.full_name)}</div>

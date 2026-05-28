@@ -1,5 +1,19 @@
 const CINEMANA_SEAT_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"];
 const CINEMANA_SEAT_COUNT = 20;
+const CINEMANA_RESERVATION_EVENTS = [
+  {
+    id: "la-derniere-repetition",
+    title: "LA DERNIERE REPETITION",
+    posterTitle: "LA DERNIERE\nREPETITION",
+    poster: "assets/events/la-derniere-repetition.jpg?v=20260528-press-event-images",
+    posterFallback: "Affiche officielle à ajouter",
+    date: "Samedi 30 mai 2026",
+    time: "19:00",
+    venue: "Palais des Arts de Tanger",
+    category: "Projection et discussion",
+    summary: "Projection suivie d'une discussion autour du film de Yassine Fennane."
+  }
+];
 
 const CINEMANA_EXTENSION_COPY = {
   fr: {
@@ -49,6 +63,19 @@ const CINEMANA_EXTENSION_COPY = {
       }
     },
     reservation: {
+      event: {
+        eyebrow: "Événement",
+        title: "Choisissez l’événement",
+        intro: "Sélectionnez la projection avant de remplir le formulaire de réservation.",
+        selectedLabel: "Événement sélectionné",
+        change: "Changer",
+        choose: "Réserver cet événement",
+        required: "Veuillez choisir un événement avant de continuer.",
+        category: "Projection et discussion",
+        dateLabel: "Date",
+        timeLabel: "Heure",
+        venueLabel: "Lieu"
+      },
       member: {
         steps: ["Saisir les informations membre.", "Vérification dans la base CINEMANA.", "Choix d’un seul siège.", "Confirmation avec référence et QR code."],
         labels: {
@@ -164,6 +191,19 @@ const CINEMANA_EXTENSION_COPY = {
       }
     },
     reservation: {
+      event: {
+        eyebrow: "Event",
+        title: "Choose the event",
+        intro: "Select the screening before filling in the reservation form.",
+        selectedLabel: "Selected event",
+        change: "Change",
+        choose: "Reserve this event",
+        required: "Please choose an event before continuing.",
+        category: "Screening and discussion",
+        dateLabel: "Date",
+        timeLabel: "Time",
+        venueLabel: "Venue"
+      },
       member: {
         steps: ["Enter member information.", "Verify it in the CINEMANA database.", "Choose one seat only.", "Confirm with a reference and QR code."],
         labels: {
@@ -279,6 +319,19 @@ const CINEMANA_EXTENSION_COPY = {
       }
     },
     reservation: {
+      event: {
+        eyebrow: "الحدث",
+        title: "اختار الحدث",
+        intro: "اختار العرض أولا، ومن بعد عمر استمارة الحجز.",
+        selectedLabel: "الحدث المختار",
+        change: "تغيير",
+        choose: "الحجز في هذا الحدث",
+        required: "يرجى اختيار حدث قبل المتابعة.",
+        category: "عرض ومناقشة فيلم",
+        dateLabel: "التاريخ",
+        timeLabel: "الوقت",
+        venueLabel: "المكان"
+      },
       member: {
         steps: ["أدخل معلومات العضوية.", "التحقق من قاعدة بيانات سينمانا.", "اختر كرسيا واحدا فقط.", "تأكيد الحجز مع المرجع و QR code."],
         labels: {
@@ -352,6 +405,7 @@ const CINEMANA_EXTENSION_COPY = {
 let pendingReservation = null;
 let activeSeatStatuses = new Map();
 let selectedSeat = "";
+let selectedReservationEvent = null;
 
 function extendCinemanaTranslations() {
   Object.keys(CINEMANA_EXTENSION_COPY).forEach((language) => {
@@ -370,6 +424,7 @@ function extendCinemanaTranslations() {
     target.modal.completeHome = source.modal.completeHome;
     target.modal.validation = { ...target.modal.validation, ...source.modal.validation };
 
+    target.reservation.event = source.reservation.event;
     target.reservation.member.steps = source.reservation.member.steps;
     target.reservation.member.labels = { ...target.reservation.member.labels, ...source.reservation.member.labels };
     target.reservation.member.button = source.reservation.member.button;
@@ -419,6 +474,14 @@ function applyExtensionTexts() {
   setText("#memberCompleteTitle", modal.completeTitle);
   setText("#memberCompleteHome", modal.completeHome);
 
+  setText("#reservationEventEyebrow", reservation.event.eyebrow);
+  setText("#reservationEventTitle", reservation.event.title);
+  setText("#reservationEventIntro", reservation.event.intro);
+  setText("#reservationSelectedEventLabel", reservation.event.selectedLabel);
+  setText("#reservationEventChange", reservation.event.change);
+  renderReservationEvents();
+  updateSelectedReservationEventPanel();
+
   setLabel("memberReservationFirstName", reservation.member.labels.firstName);
   setLabel("memberReservationLastName", reservation.member.labels.lastName);
   setLabel("memberCode", reservation.member.labels.code);
@@ -451,6 +514,127 @@ function applyExtensionTexts() {
   const summary = document.getElementById("selectedSeatSummary");
   if (summary) summary.textContent = selectedSeat ? reservation.seat.selected(selectedSeat) : reservation.seat.none;
   setText("#confirmSeatButton", reservation.seat.confirm);
+}
+
+function getReservationEventById(eventId) {
+  return CINEMANA_RESERVATION_EVENTS.find((event) => event.id === eventId) || null;
+}
+
+function renderReservationEvents() {
+  const grid = document.getElementById("reservationEventGrid");
+  if (!grid) return;
+
+  const copy = getExtensionCopy().reservation.event;
+  grid.innerHTML = "";
+  CINEMANA_RESERVATION_EVENTS.forEach((event) => {
+    const card = document.createElement("button");
+    card.type = "button";
+    card.className = "reservation-event-card";
+    card.dataset.eventId = event.id;
+    card.setAttribute("aria-label", `${copy.choose}: ${event.title}`);
+    card.addEventListener("click", () => selectReservationEvent(event.id));
+
+    const poster = document.createElement("span");
+    poster.className = "reservation-event-poster";
+    poster.setAttribute("aria-hidden", "true");
+    if (event.poster) {
+      const posterImage = document.createElement("img");
+      posterImage.src = event.poster;
+      posterImage.alt = "";
+      posterImage.loading = "lazy";
+      posterImage.addEventListener("load", () => poster.classList.add("has-image"));
+      posterImage.addEventListener("error", () => poster.classList.add("image-missing"));
+      poster.appendChild(posterImage);
+    }
+    const posterTitle = document.createElement("span");
+    posterTitle.className = "reservation-event-poster-fallback";
+    posterTitle.innerHTML = (event.posterFallback || event.posterTitle).split("\n").map(escapeHtml).join("<br>");
+    poster.appendChild(posterTitle);
+
+    const body = document.createElement("span");
+    body.className = "reservation-event-body";
+    body.innerHTML = `
+      <span class="eyebrow">${escapeHtml(copy.category || event.category)}</span>
+      <strong>${escapeHtml(event.title)}</strong>
+      <span class="reservation-event-meta">
+        <span>${escapeHtml(event.date)}</span>
+        <span>${escapeHtml(event.time)}</span>
+        <span>${escapeHtml(event.venue)}</span>
+      </span>
+      ${event.summary ? `<span class="reservation-event-summary">${escapeHtml(event.summary)}</span>` : ""}
+      <span class="reservation-event-action">${escapeHtml(copy.choose)}</span>
+    `;
+
+    card.appendChild(poster);
+    card.appendChild(body);
+    grid.appendChild(card);
+  });
+}
+
+function selectReservationEvent(eventId) {
+  const event = getReservationEventById(eventId);
+  if (!event) return;
+
+  selectedReservationEvent = event;
+  const selector = document.getElementById("reservationEventSelector");
+  const selectedPanel = document.getElementById("reservationSelectedEvent");
+  const cards = document.querySelector(".reservation-choice-grid");
+  const seatSection = document.getElementById("seatSelection");
+  const complete = document.getElementById("reservationComplete");
+
+  if (selector) selector.hidden = true;
+  if (selectedPanel) selectedPanel.hidden = false;
+  if (cards) cards.hidden = false;
+  if (seatSection) seatSection.hidden = true;
+  if (complete) complete.hidden = true;
+  clearMessage("memberReservationMessage");
+  clearMessage("publicReservationMessage");
+  clearMessage("seatSelectionMessage");
+  updateSelectedReservationEventPanel();
+  if (cards) cards.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function resetReservationEvent() {
+  selectedReservationEvent = null;
+  pendingReservation = null;
+  selectedSeat = "";
+  activeSeatStatuses = new Map();
+
+  const selector = document.getElementById("reservationEventSelector");
+  const selectedPanel = document.getElementById("reservationSelectedEvent");
+  const cards = document.querySelector(".reservation-choice-grid");
+  const seatSection = document.getElementById("seatSelection");
+  const complete = document.getElementById("reservationComplete");
+  const button = document.getElementById("confirmSeatButton");
+
+  if (selector) selector.hidden = false;
+  if (selectedPanel) selectedPanel.hidden = true;
+  if (cards) cards.hidden = true;
+  if (seatSection) seatSection.hidden = true;
+  if (complete) complete.hidden = true;
+  if (button) button.disabled = true;
+  clearMessage("memberReservationMessage");
+  clearMessage("publicReservationMessage");
+  clearMessage("seatSelectionMessage");
+  updateSelectedSeatSummary();
+  if (selector) selector.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function updateSelectedReservationEventPanel() {
+  const title = document.getElementById("reservationSelectedEventTitle");
+  if (title) title.textContent = selectedReservationEvent ? selectedReservationEvent.title : "";
+}
+
+function addSelectedReservationEvent(data) {
+  if (!selectedReservationEvent) return data;
+  return {
+    ...data,
+    event_id: selectedReservationEvent.id,
+    event_title: selectedReservationEvent.title,
+    event_date: selectedReservationEvent.date,
+    event_time: selectedReservationEvent.time,
+    event_venue: selectedReservationEvent.venue
+  };
 }
 
 function canonicalMemberProfession(data) {
@@ -779,7 +963,7 @@ function isValidEmail(value) {
 function getMemberReservationData() {
   const firstName = document.getElementById("memberReservationFirstName").value.trim();
   const lastName = document.getElementById("memberReservationLastName").value.trim();
-  return {
+  return addSelectedReservationEvent({
     type: "member",
     first_name: firstName,
     last_name: lastName,
@@ -791,13 +975,13 @@ function getMemberReservationData() {
     age: "",
     profession: "",
     source: "Réservation membre"
-  };
+  });
 }
 
 function getPublicReservationData() {
   const firstName = document.getElementById("publicFirstName").value.trim();
   const lastName = document.getElementById("publicLastName").value.trim();
-  return {
+  return addSelectedReservationEvent({
     type: "public",
     first_name: firstName,
     last_name: lastName,
@@ -809,7 +993,7 @@ function getPublicReservationData() {
     profession: document.getElementById("publicRole").value.trim(),
     source: document.getElementById("publicSource").value.trim(),
     member_reference: ""
-  };
+  });
 }
 
 function validateReservationData(data, requireMemberReference) {
@@ -840,6 +1024,11 @@ submitMemberReservation = async function submitMemberReservationWithSheets(event
   const copy = getExtensionCopy().reservation;
   const data = getMemberReservationData();
   const validationError = validateReservationData(data, true);
+
+  if (!selectedReservationEvent) {
+    setFormMessage(message, copy.event.required, "error");
+    return;
+  }
 
   if (validationError) {
     setFormMessage(message, validationError, "error");
@@ -874,8 +1063,14 @@ submitMemberReservation = async function submitMemberReservationWithSheets(event
 submitPublicReservation = async function submitPublicReservationWithSeats(event) {
   event.preventDefault();
   const message = document.getElementById("publicReservationMessage");
+  const copy = getExtensionCopy().reservation;
   const data = getPublicReservationData();
   const validationError = validateReservationData(data, false);
+
+  if (!selectedReservationEvent) {
+    setFormMessage(message, copy.event.required, "error");
+    return;
+  }
 
   if (validationError) {
     setFormMessage(message, validationError, "error");
@@ -883,7 +1078,7 @@ submitPublicReservation = async function submitPublicReservationWithSeats(event)
   }
 
   if (!isGoogleSheetsConfigured()) {
-    setFormMessage(message, getExtensionCopy().reservation.validation.sheetsMissing, "error");
+    setFormMessage(message, copy.validation.sheetsMissing, "error");
     return;
   }
 
@@ -897,6 +1092,8 @@ async function beginSeatSelection(data) {
   activeSeatStatuses = new Map();
 
   const cards = document.querySelector(".reservation-choice-grid");
+  const selector = document.getElementById("reservationEventSelector");
+  const selectedPanel = document.getElementById("reservationSelectedEvent");
   const section = document.getElementById("seatSelection");
   const button = document.getElementById("confirmSeatButton");
   const message = document.getElementById("seatSelectionMessage");
@@ -910,13 +1107,18 @@ async function beginSeatSelection(data) {
   updateSelectedSeatSummary();
 
   try {
-    const result = await callGoogleSheetsAction("getReservedSeats", {});
+    const result = await callGoogleSheetsAction("getReservedSeats", {
+      event_id: data.event_id || "",
+      event_title: data.event_title || ""
+    });
     if (!result || !result.ok) {
       pendingReservation = null;
       setFormMessage(sourceMessage, getReservationErrorMessage(result && result.code), "error");
       return;
     }
     activeSeatStatuses = normalizeSeatStatuses(result);
+    if (selector) selector.hidden = true;
+    if (selectedPanel) selectedPanel.hidden = true;
     if (cards) cards.hidden = true;
     if (section) section.hidden = false;
     renderSeatMap();
@@ -934,17 +1136,22 @@ function cancelSeatSelection() {
   selectedSeat = "";
 
   const cards = document.querySelector(".reservation-choice-grid");
+  const selector = document.getElementById("reservationEventSelector");
+  const selectedPanel = document.getElementById("reservationSelectedEvent");
   const section = document.getElementById("seatSelection");
   const button = document.getElementById("confirmSeatButton");
   const complete = document.getElementById("reservationComplete");
 
-  if (cards) cards.hidden = false;
+  if (selector) selector.hidden = Boolean(selectedReservationEvent);
+  if (selectedPanel) selectedPanel.hidden = !selectedReservationEvent;
+  if (cards) cards.hidden = !selectedReservationEvent;
   if (section) section.hidden = true;
   if (complete) complete.hidden = true;
   if (button) button.disabled = true;
   clearMessage("seatSelectionMessage");
   updateSelectedSeatSummary();
-  window.scrollTo({ top: document.getElementById("page-reservation").offsetTop, behavior: "smooth" });
+  const scrollTarget = selectedReservationEvent ? selectedPanel || cards : selector || document.getElementById("page-reservation");
+  if (scrollTarget) scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function showReservationComplete(result, data) {
@@ -969,11 +1176,16 @@ function goReservationHome() {
   activeSeatStatuses = new Map();
 
   const cards = document.querySelector(".reservation-choice-grid");
+  const selector = document.getElementById("reservationEventSelector");
+  const selectedPanel = document.getElementById("reservationSelectedEvent");
   const section = document.getElementById("seatSelection");
   const complete = document.getElementById("reservationComplete");
   const button = document.getElementById("confirmSeatButton");
 
-  if (cards) cards.hidden = false;
+  selectedReservationEvent = null;
+  if (selector) selector.hidden = false;
+  if (selectedPanel) selectedPanel.hidden = true;
+  if (cards) cards.hidden = true;
   if (section) section.hidden = true;
   if (complete) complete.hidden = true;
   if (button) button.disabled = true;

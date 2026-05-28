@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260526-partner-paths">
+  <link rel="stylesheet" href="style.css?v=20260528-press-event-images">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -442,7 +442,20 @@
           <p>Un parcours clair pour confirmer les places et garder une expérience fluide le jour de la projection.</p>
         </aside>
       </section>
-      <section class="section reservation-choice-grid">
+      <section class="section reservation-event-selector" id="reservationEventSelector">
+        <div class="reservation-event-heading">
+          <p class="eyebrow" id="reservationEventEyebrow">Événement</p>
+          <h2 id="reservationEventTitle">Choisissez l’événement</h2>
+          <p id="reservationEventIntro">Sélectionnez une projection avant de remplir le formulaire.</p>
+        </div>
+        <div class="reservation-event-grid" id="reservationEventGrid"></div>
+      </section>
+      <div class="reservation-selected-event" id="reservationSelectedEvent" hidden>
+        <span id="reservationSelectedEventLabel">Événement sélectionné</span>
+        <strong id="reservationSelectedEventTitle">LA DERNIERE REPETITION</strong>
+        <button class="btn ghost compact" type="button" id="reservationEventChange" onclick="resetReservationEvent()">Changer</button>
+      </div>
+      <section class="section reservation-choice-grid" hidden>
         <article class="reservation-card">
           <p class="eyebrow">Réserver comme membre</p>
           <h2>Réservation membre</h2>
@@ -664,11 +677,25 @@
         <p class="eyebrow">Presse</p>
         <h1>Informations presse et demandes médias.</h1>
       </header>
-      <section class="section cards-grid">
-        <article class="info-card"><h3>Communiqués</h3><p>Actualités de la Fondation CINEMANA, annonces de programmation, partenariats et temps forts du festival.</p></article>
-        <article class="info-card"><h3>Dossier de presse</h3><p>Présentation de la fondation, missions, bureau, visuels officiels et chiffres clés à mettre à jour avec les prochains documents.</p></article>
-        <article class="info-card"><h3>Accréditations</h3><p>Demandes d’accès presse pour les cérémonies, projections, conférences, interviews et espaces professionnels.</p></article>
-        <article class="info-card"><h3>Contact média</h3><p>Coordination communication : Khaoula El Maaroufi.</p></article>
+      <section class="section press-archive" aria-labelledby="pressArchiveTitle">
+        <div class="press-archive-heading">
+          <p class="eyebrow" id="pressArchiveEyebrow">Revue de presse</p>
+          <h2 id="pressArchiveTitle">Articles, vidéos et couvertures médias.</h2>
+          <p id="pressArchiveIntro">Retrouvez les apparitions presse, reportages vidéo et archives consacrées à CINEMANA et au Tangier Film Festival.</p>
+        </div>
+        <div class="press-toolbar">
+          <div class="press-stats" aria-label="Statistiques presse">
+            <span><strong id="pressArticleCount">0</strong><small id="pressArticleCountLabel">articles</small></span>
+            <span><strong id="pressVideoCount">0</strong><small id="pressVideoCountLabel">vidéos</small></span>
+          </div>
+          <div class="press-filters" aria-label="Filtrer la revue de presse">
+            <button class="press-filter active" type="button" data-press-filter="all">Tout</button>
+            <button class="press-filter" type="button" data-press-filter="article">Articles</button>
+            <button class="press-filter" type="button" data-press-filter="video">Vidéos</button>
+          </div>
+        </div>
+        <div class="press-featured-grid" id="pressFeatured"></div>
+        <div class="press-grid" id="pressGrid"></div>
       </section>
     </section>
 
@@ -742,7 +769,7 @@
           <div class="partners-group-heading">
             <p class="eyebrow" id="partnersSinEyebrow">Projections mensuelles SIN</p>
             <h2 id="partnersSinTitle">Partenaires projections mensuelles SIN</h2>
-            <p id="partnersSinCopy">Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication, la Fédération Nationale des Ciné-Clubs au Maroc et ISTA NTIC TANGER.</p>
+            <p id="partnersSinCopy">Un programme réalisé avec le Ministère de la Jeunesse, de la Culture et de la Communication, la Fédération Nationale des Ciné-Clubs au Maroc et le Comité d’autodiscipline ISTA NTIC-Tanger.</p>
           </div>
           <div class="partner-logo-grid partner-sin-grid">
             <a class="partner-logo-card linked" href="https://mjcc.gov.ma/ar/" target="_blank" rel="noopener noreferrer" aria-label="Ministère de la Jeunesse, de la Culture et de la Communication">
@@ -753,9 +780,9 @@
               <img src="assets/partners/fnccm.jpg?v=20260526-partner-paths" alt="Fédération Nationale des Ciné-Clubs au Maroc">
               <span id="partnersSinFnccm">Fédération Nationale des Ciné-Clubs au Maroc</span>
             </a>
-            <a class="partner-logo-card linked" href="https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==" target="_blank" rel="noopener noreferrer" aria-label="ISTA NTIC TANGER">
-              <img src="assets/partners/CAD.png?v=20260526-partner-paths" alt="ISTA NTIC TANGER">
-              <span id="partnersSinCad">ISTA NTIC TANGER</span>
+            <a class="partner-logo-card linked" href="https://www.instagram.com/istantic_tanger?igsh=MTdyb2l6eHpmN2lueQ==" target="_blank" rel="noopener noreferrer" aria-label="Comité d’autodiscipline ISTA NTIC-Tanger">
+              <img src="assets/partners/CAD.png?v=20260528-events" alt="Comité d’autodiscipline ISTA NTIC-Tanger">
+              <span id="partnersSinCad">Comité d’autodiscipline ISTA NTIC-Tanger</span>
             </a>
           </div>
         </section>
@@ -926,8 +953,8 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260526-partner-paths"></script>
-  <script defer src="reservation-extension.js?v=20260526-partner-paths"></script>
+  <script defer src="script.js?v=20260528-press-event-images"></script>
+  <script defer src="reservation-extension.js?v=20260528-press-event-images"></script>
 </body>
 </html>
 
