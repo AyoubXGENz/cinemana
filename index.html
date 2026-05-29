@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260528-press-event-images">
+  <link rel="stylesheet" href="style.css?v=20260529-mobile-reservation-order">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -456,7 +456,7 @@
         <button class="btn ghost compact" type="button" id="reservationEventChange" onclick="resetReservationEvent()">Changer</button>
       </div>
       <section class="section reservation-choice-grid" hidden>
-        <article class="reservation-card">
+        <article class="reservation-card reservation-card-member">
           <p class="eyebrow">Réserver comme membre</p>
           <h2>Réservation membre</h2>
           <ol class="flow-steps">
@@ -490,7 +490,7 @@
             <p class="form-message" id="memberReservationMessage" role="status" aria-live="polite"></p>
           </form>
         </article>
-        <article class="reservation-card">
+        <article class="reservation-card reservation-card-public">
           <p class="eyebrow">Réserver comme particulier</p>
           <h2>Demande de réservation</h2>
           <ol class="flow-steps">

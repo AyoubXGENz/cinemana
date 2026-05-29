@@ -35,7 +35,7 @@ const PRESS_ITEMS = [
     title: "طنجة تستعد لاحتضان الدورة 14 لمهرجان الفيلم الدولي",
     desc: "تغطية لعودة مهرجان طنجة الدولي للفيلم وبرنامجه وشراكاته الثقافية.",
     url: "https://tanjanews.com/175268.html",
-    image: "https://tanjanews.com/wp-content/uploads/2025/09/9f9484bb-7284-45d0-96e3-a215841c1030.jpeg",
+    image: "assets/press/tff-14-tanwer.jpg",
     date: "2025-09-25",
     featured: true
   },

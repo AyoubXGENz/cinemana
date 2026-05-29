@@ -2797,6 +2797,14 @@ html[dir="rtl"] .seat-selection-header {
     grid-template-columns: 1fr;
   }
 
+  .reservation-card-public {
+    order: 1;
+  }
+
+  .reservation-card-member {
+    order: 2;
+  }
+
   .reservation-event-poster {
     min-height: 220px;
     border-right: 0;
