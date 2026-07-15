@@ -7,11 +7,14 @@ const PAGES = [
   "partner",
   "reservation",
   "dashboard",
+  "scanner",
+  "admin",
+  "ticket-status",
   "press",
   "partners"
 ];
 
-const CONNECT_HIDDEN_PAGES = new Set(["membership", "reservation"]);
+const CONNECT_HIDDEN_PAGES = new Set(["membership", "reservation", "scanner", "admin"]);
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyCl7S3KtNdRP4t-o8wsEABdezShD1TRd3o",
@@ -2338,6 +2341,20 @@ function combineNameParts(firstName, lastName) {
     .join(" ");
 }
 
+function fileToBase64(file) {
+  return new Promise(function(resolve, reject) {
+    if (!file) { resolve(null); return; }
+    var reader = new FileReader();
+    reader.onload = function() {
+      var result = reader.result; // "data:image/jpeg;base64,..."
+      var parts = result.split(",");
+      resolve({ base64: parts[1] || "", mime_type: file.type || "image/jpeg", file_name: file.name || "upload" });
+    };
+    reader.onerror = function() { reject(reader.error); };
+    reader.readAsDataURL(file);
+  });
+}
+
 function getMemberFormData() {
   const firstName = document.getElementById("memberFirstName").value.trim();
   const lastName = document.getElementById("memberLastName").value.trim();
@@ -2351,6 +2368,7 @@ function getMemberFormData() {
     email: document.getElementById("memberEmail").value.trim(),
     password: document.getElementById("memberPassword").value,
     repeat_password: document.getElementById("memberRepeatPassword").value
+    // profile_picture and payment_receipt are added asynchronously in submitMember
   };
 }
 
@@ -2418,7 +2436,9 @@ function setMemberFieldsDisabled(disabled) {
     "memberPhone",
     "memberEmail",
     "memberPassword",
-    "memberRepeatPassword"
+    "memberRepeatPassword",
+    "memberProfilePhoto",
+    "memberPaymentReceipt"
   ].forEach((id) => {
     const input = document.getElementById(id);
     if (input) input.disabled = disabled;
@@ -2866,6 +2886,7 @@ function showPage(name, pushState = true) {
   const target = PAGES.includes(name) ? name : "home";
 
   if (target === "activities" && pushState) closeActivityDetail(false);
+  if (target !== "scanner" && typeof stopTicketScanner === "function") stopTicketScanner();
 
   document.querySelectorAll(".page").forEach((page) => {
     page.classList.toggle("active", page.id === `page-${target}`);
@@ -2893,6 +2914,11 @@ function showPage(name, pushState = true) {
       renderMemberLoggedOut();
     }
   }
+
+  // New protected/admin pages initialize only when their routes are shown.
+  if (target === "admin" && typeof initAdminDashboard === "function") initAdminDashboard();
+  if (target === "scanner" && typeof initScannerAccess === "function") initScannerAccess();
+  if (target === "ticket-status" && typeof initTicketStatusPage === "function") initTicketStatusPage();
 }
 
 function toggleMenu() {
@@ -3044,6 +3070,30 @@ async function submitMember(event) {
     return;
   }
 
+  // Validate and read file inputs before the verification step (files must still be selected)
+  const profilePhotoInput = document.getElementById("memberProfilePhoto");
+  const receiptInput = document.getElementById("memberPaymentReceipt");
+  const profileFile = profilePhotoInput && profilePhotoInput.files && profilePhotoInput.files[0];
+  const receiptFile = receiptInput && receiptInput.files && receiptInput.files[0];
+
+  if (!profileFile) {
+    setFormMessage(message, "Veuillez sélectionner une photo de profil.", "error");
+    return;
+  }
+  if (!receiptFile) {
+    setFormMessage(message, "Veuillez sélectionner le reçu de paiement.", "error");
+    return;
+  }
+  const maxBytes = 5 * 1024 * 1024;
+  if (profileFile.size > maxBytes) {
+    setFormMessage(message, "La photo de profil dépasse 5 Mo.", "error");
+    return;
+  }
+  if (receiptFile.size > maxBytes) {
+    setFormMessage(message, "Le reçu de paiement dépasse 5 Mo.", "error");
+    return;
+  }
+
   const services = getFirebaseServices();
   if (!services) {
     setFormMessage(message, isFirebaseConfigured() ? copy.validation.firebaseSdkMissing : copy.validation.firebaseMissing, "error");
@@ -3065,6 +3115,14 @@ async function submitMember(event) {
   if (submitButton) submitButton.disabled = true;
 
   try {
+    // Convert images to base64 now, while the files are still selected in the inputs
+    const [profileBase64, receiptBase64] = await Promise.all([
+      fileToBase64(profileFile),
+      fileToBase64(receiptFile)
+    ]);
+    data.profile_picture = profileBase64;
+    data.payment_receipt = receiptBase64;
+
     const emailError = await sendMemberVerificationCode(data, code);
     if (emailError) {
       setFormMessage(message, emailError || copy.validation.emailSendFailed, "error");

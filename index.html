@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://images.unsplash.com">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20260529-mobile-reservation-order">
+  <link rel="stylesheet" href="style.css?v=20260602-admin-security">
 </head>
 <body>
   <nav class="site-nav" aria-label="Navigation principale">
@@ -437,6 +437,10 @@
             Les membres CINEMANA réservent avec leur code et choisissent leur place après vérification téléphonique. Les particuliers remplissent une demande qui passe par validation avant l’envoi du ticket.
           </p>
           <p class="note">La réception du ticket indique le numéro de place confirmé.</p>
+          <!-- New public ticket-status shortcut; it keeps the reservation page layout intact. -->
+          <div class="inline-actions reservation-status-link">
+            <button class="btn ghost" type="button" onclick="showPage('ticket-status')">Vérifier le statut d’un ticket</button>
+          </div>
         </div>
         <aside class="quote-panel">
           <p>Un parcours clair pour confirmer les places et garder une expérience fluide le jour de la projection.</p>
@@ -480,7 +484,12 @@
             </label>
             <label>
               Téléphone
-              <input type="tel" id="memberTel" name="memberTel" autocomplete="tel" required>
+              <input type="tel" id="memberTel" name="memberTel" autocomplete="tel" required
+                pattern="(\+?212[67]\d{8}|0[67]\d{8})"
+                placeholder="06XXXXXXXX"
+                title="Numéro marocain : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX"
+                oninvalid="this.setCustomValidity('Entrez un numéro marocain valide : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX')"
+                oninput="this.setCustomValidity('')">
             </label>
             <label>
               E-mail
@@ -510,7 +519,12 @@
           </label>
           <label>
             Tel WhatsApp
-            <input type="tel" id="publicWhatsapp" name="whatsapp" autocomplete="tel" required>
+            <input type="tel" id="publicWhatsapp" name="whatsapp" autocomplete="tel" required
+              pattern="(\+?212[67]\d{8}|0[67]\d{8})"
+              placeholder="06XXXXXXXX"
+              title="Numéro marocain : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX"
+              oninvalid="this.setCustomValidity('Entrez un numéro marocain valide : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX')"
+              oninput="this.setCustomValidity('')">
           </label>
           <label>
             E-mail
@@ -568,6 +582,35 @@
           <p id="reservationCompleteText">Votre demande de réservation est enregistrée.</p>
           <button class="btn primary" type="button" id="reservationCompleteHome" onclick="goReservationHome()">Accueil</button>
         </div>
+      </section>
+    </section>
+
+    <!-- New public ticket status page: safe status lookup without private guest details. -->
+    <section class="page ticket-status-page" id="page-ticket-status">
+      <header class="page-hero compact">
+        <p class="eyebrow">Statut ticket</p>
+        <h1>Vérifiez votre réservation CINEMANA.</h1>
+      </header>
+
+      <section class="section ticket-status-shell" aria-labelledby="ticketStatusTitle">
+        <article class="ticket-status-card">
+          <p class="eyebrow">Recherche publique</p>
+          <h2 id="ticketStatusTitle">Entrez votre référence ticket.</h2>
+          <form class="ticket-status-form" id="ticketStatusForm" onsubmit="submitTicketStatusCheck(event)" novalidate>
+            <label>
+              Référence
+              <input type="text" id="ticketStatusReference" placeholder="RES-2026-XXXXXX" autocomplete="off" inputmode="text" required>
+            </label>
+            <button class="btn primary full" type="submit" id="ticketStatusButton">Check status</button>
+            <p class="form-message" id="ticketStatusMessage" role="status" aria-live="polite"></p>
+          </form>
+        </article>
+
+        <article class="ticket-status-result empty" id="ticketStatusResult" aria-live="polite">
+          <span class="ticket-status-badge">En attente</span>
+          <h3>Aucune recherche.</h3>
+          <p>Le statut du ticket apparaitra ici avec le siège et l’événement.</p>
+        </article>
       </section>
     </section>
 
@@ -669,6 +712,156 @@
           </div>
           <div class="dashboard-benefit-grid" id="memberBenefitGrid"></div>
         </section>
+      </section>
+    </section>
+
+    <section class="page scanner-page" id="page-scanner">
+      <header class="page-hero compact scanner-hero">
+        <p class="eyebrow">Controle d'entree</p>
+        <h1>Scanner ticket CINEMANA.</h1>
+      </header>
+
+      <!-- New scanner PIN login: validates against Apps Script SCANNER_PIN before showing the scanner. -->
+      <section class="section scanner-login-panel" id="scannerLoginPanel">
+        <article class="member-login-card scanner-login-card">
+          <p class="eyebrow">Accès équipe</p>
+          <h2>Connexion scanner</h2>
+          <p>Entrez le PIN scanner pour ouvrir le contrôle d’entrée.</p>
+          <form class="dashboard-login-form" id="scannerLoginForm" onsubmit="submitScannerLogin(event)" novalidate>
+            <label>
+              <span>PIN scanner</span>
+              <input type="password" id="scannerPinInput" autocomplete="current-password" inputmode="numeric" required>
+            </label>
+            <button class="btn primary full" type="submit" id="scannerLoginButton">Ouvrir le scanner</button>
+            <p class="form-message" id="scannerLoginMessage" role="status" aria-live="polite"></p>
+          </form>
+        </article>
+      </section>
+
+      <section class="section scanner-shell" id="scannerTool" aria-labelledby="scannerTitle" hidden>
+        <div class="scanner-heading">
+          <div>
+            <p class="eyebrow">Scanner officiel</p>
+            <h2 id="scannerTitle">Verifiez les billets a l'entree.</h2>
+            <p>Scannez le QR code du ticket ou entrez la reference manuellement pour afficher le statut de la reservation.</p>
+          </div>
+          <div class="scanner-heading-actions">
+            <span class="scanner-live-chip" id="ticketScannerMode">Pret</span>
+            <button class="btn ghost compact" type="button" onclick="logoutScanner()">Logout</button>
+          </div>
+        </div>
+
+        <div class="scanner-grid">
+          <article class="scanner-panel scanner-camera-panel">
+            <div class="scanner-video-frame">
+              <video id="ticketScannerVideo" playsinline muted></video>
+              <div class="scanner-reticle" aria-hidden="true"></div>
+              <div class="scanner-video-placeholder" id="ticketScannerPlaceholder">
+                <span>QR</span>
+                <strong>Camera prete</strong>
+                <small>Autorisez la camera puis placez le QR code dans le cadre.</small>
+              </div>
+            </div>
+            <div class="scanner-controls">
+              <button class="btn primary" type="button" id="ticketScannerStart" onclick="startTicketScanner()">Demarrer le scanner</button>
+              <button class="btn ghost" type="button" id="ticketScannerStop" onclick="stopTicketScanner()" disabled>Arreter</button>
+            </div>
+            <p class="scanner-help" id="ticketScannerHelp">Si la camera n'est pas disponible, utilisez la verification manuelle.</p>
+          </article>
+
+          <article class="scanner-panel scanner-check-panel">
+            <form class="scanner-manual-form" onsubmit="submitTicketManualCheck(event)" novalidate>
+              <label>
+                Reference ticket
+                <input type="text" id="ticketReferenceInput" placeholder="RES-2026-XXXXXX" autocomplete="off" inputmode="text">
+              </label>
+              <button class="btn primary full" type="submit" id="ticketManualButton">Verifier le ticket</button>
+            </form>
+            <p class="form-message" id="ticketScannerMessage" role="status" aria-live="polite"></p>
+
+            <div class="scanner-result-card empty" id="ticketScannerResult">
+              <span class="scanner-result-status">En attente</span>
+              <h3>Aucun ticket verifie.</h3>
+              <p>Le resultat du scan apparaitra ici avec le statut, le siege et les informations principales.</p>
+            </div>
+          </article>
+        </div>
+
+        <section class="scanner-history-panel" aria-labelledby="scannerHistoryTitle">
+          <div class="scanner-panel-heading">
+            <p class="eyebrow">Derniers controles</p>
+            <h3 id="scannerHistoryTitle">Historique rapide</h3>
+          </div>
+          <div class="scanner-history-list" id="ticketScannerHistory">
+            <p class="scanner-history-empty">Aucun scan pour le moment.</p>
+          </div>
+        </section>
+      </section>
+    </section>
+
+    <!-- New hidden admin dashboard route: available at #admin, protected by ADMIN_SECRET. -->
+    <section class="page admin-page" id="page-admin">
+      <header class="page-hero compact">
+        <p class="eyebrow">Administration</p>
+        <h1>Gestion des réservations CINEMANA.</h1>
+      </header>
+
+      <section class="section dashboard-auth-grid" id="adminLoginPanel">
+        <article class="member-login-card">
+          <p class="eyebrow">Accès réservé</p>
+          <h2>Connexion admin</h2>
+          <p>Saisissez le secret administrateur pour charger et gérer les réservations.</p>
+          <form class="dashboard-login-form" id="adminLoginForm" onsubmit="submitAdminLogin(event)" novalidate>
+            <label>
+              <span>ADMIN_SECRET</span>
+              <input type="password" id="adminSecretInput" autocomplete="current-password" required>
+            </label>
+            <button class="btn primary full" type="submit" id="adminLoginButton">Ouvrir le dashboard</button>
+            <p class="form-message" id="adminLoginMessage" role="status" aria-live="polite"></p>
+          </form>
+        </article>
+        <aside class="dashboard-access-card">
+          <p class="eyebrow">Réservations</p>
+          <h2>Validez, annulez et recherchez les demandes.</h2>
+          <div class="dashboard-access-list">
+            <span>Filtrer par statut.</span>
+            <span>Rechercher par référence, nom ou siège.</span>
+            <span>Protéger chaque action sensible.</span>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section admin-dashboard" id="adminDashboard" hidden>
+        <div class="dashboard-topbar">
+          <div>
+            <p class="eyebrow">Tableau de bord admin</p>
+            <h2>Réservations</h2>
+            <p id="adminDashboardSummary">Chargement des réservations...</p>
+          </div>
+          <div class="dashboard-actions">
+            <button class="btn secondary" type="button" id="adminRefreshButton" onclick="refreshAdminReservations()">Actualiser</button>
+            <button class="btn ghost" type="button" onclick="logoutAdmin()">Se déconnecter</button>
+          </div>
+        </div>
+
+        <div class="admin-toolbar">
+          <label class="admin-search-label">
+            <span>Recherche</span>
+            <input type="search" id="adminReservationSearch" placeholder="Référence, nom ou siège" autocomplete="off" oninput="renderAdminReservations()">
+          </label>
+          <div class="admin-filter-tabs" aria-label="Filtrer les réservations">
+            <button class="admin-filter active" type="button" data-admin-filter="all" onclick="setAdminFilter('all')">All</button>
+            <button class="admin-filter" type="button" data-admin-filter="pending" onclick="setAdminFilter('pending')">Pending</button>
+            <button class="admin-filter" type="button" data-admin-filter="confirmed" onclick="setAdminFilter('confirmed')">Confirmed</button>
+            <button class="admin-filter" type="button" data-admin-filter="canceled" onclick="setAdminFilter('canceled')">Canceled</button>
+            <button class="admin-filter" type="button" data-admin-filter="attended" onclick="setAdminFilter('attended')">Attended</button>
+          </div>
+        </div>
+
+        <p class="form-message" id="adminDashboardMessage" role="status" aria-live="polite"></p>
+        <div class="admin-reservation-list" id="adminReservationList">
+          <div class="dashboard-empty">Chargement...</div>
+        </div>
       </section>
     </section>
 
@@ -870,7 +1063,12 @@
         </label>
         <label>
           Téléphone
-          <input type="tel" id="memberPhone" name="phone" autocomplete="tel" required>
+          <input type="tel" id="memberPhone" name="phone" autocomplete="tel" required
+                pattern="(\+?212[67]\d{8}|0[67]\d{8})"
+                placeholder="06XXXXXXXX"
+                title="Numéro marocain : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX"
+                oninvalid="this.setCustomValidity('Entrez un numéro marocain valide : 06XXXXXXXX, 07XXXXXXXX ou +2126XXXXXXXX')"
+                oninput="this.setCustomValidity('')">
         </label>
         <label>
           Fonction
@@ -925,6 +1123,16 @@
           Répéter le mot de passe
           <input type="password" id="memberRepeatPassword" name="repeat_password" autocomplete="new-password" minlength="8" required>
         </label>
+        <label class="member-form-wide">
+          <span id="memberProfilePhotoLabel">Photo de profil <span style="color:#c62828">*</span></span>
+          <input type="file" id="memberProfilePhoto" name="profile_picture" accept="image/*" required>
+          <small id="memberProfilePhotoHint" style="color:#888;margin-top:4px;display:block">JPEG ou PNG, max 5 Mo</small>
+        </label>
+        <label class="member-form-wide">
+          <span id="memberPaymentReceiptLabel">Reçu de paiement <span style="color:#c62828">*</span></span>
+          <input type="file" id="memberPaymentReceipt" name="payment_receipt" accept="image/*" required>
+          <small id="memberPaymentReceiptHint" style="color:#888;margin-top:4px;display:block">Photo ou scan du reçu de paiement de cotisation (JPEG ou PNG, max 5 Mo)</small>
+        </label>
         <label class="member-form-wide member-consent">
           <input type="checkbox" id="memberRulesConsent" name="rules_consent" required>
           <span id="memberRulesConsentText">Je confirme avoir pris connaissance du règlement intérieur de la Fondation CINEMANA, je m'engage à le respecter et j'assume l'entière responsabilité de toute information inexacte ou violation des règles applicables.</span>
@@ -953,8 +1161,8 @@
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-auth-compat.js"></script>
   <script defer src="https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore-compat.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
-  <script defer src="script.js?v=20260528-press-event-images"></script>
-  <script defer src="reservation-extension.js?v=20260528-press-event-images"></script>
+  <script defer src="script.js?v=20260602-admin-security"></script>
+  <script defer src="reservation-extension.js?v=20260602-admin-security"></script>
 </body>
 </html>
 

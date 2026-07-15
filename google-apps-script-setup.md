@@ -7,42 +7,41 @@
 
 3. Replace the current code with the content of `google-apps-script-cinemana-UPDATED.gs`.
 
-3.1. After pasting the code, run `fixCinemanaSheetColumns` once from the Apps Script editor:
+3.1. After pasting the code, run `setupCinemanaSheetsExactOrder` once from the Apps Script editor:
    - Click Save or press `Ctrl + S`.
    - Refresh the Apps Script page if the function does not appear in the dropdown.
-   - In the function dropdown, choose `fixCinemanaSheetColumns`.
+   - In the function dropdown, choose `setupCinemanaSheetsExactOrder`.
    - Click `Run`.
    - Accept the Google permissions.
 
 This immediately reorders the columns in `membership` and `reservation` to match the current layout. If an old `Nom complet` column still exists, the helper tries to split it into `Prénom` and `Nom`, then removes the old header from the active layout.
 
-4. Add your Telegram bot settings as private Apps Script properties, not inside the public website files.
+4. Add your private settings as Apps Script properties, not inside the public website files or Apps Script source.
+
+   In Apps Script, open `Project Settings` -> `Script Properties`, then add the values you use:
+
+   - `ADMIN_SECRET`: required for admin dashboard actions and signed Telegram decision links.
+   - `SCANNER_PIN`: required for the scanner login screen.
+   - `ADMIN_EMAIL`: receives membership badge preparation e-mails.
+   - `TELEGRAM_BOT_TOKEN`: reservation Telegram bot token.
+   - `TELEGRAM_CHAT_ID`: reservation Telegram chat id.
+   - `MEMBERSHIP_TELEGRAM_BOT_TOKEN`: membership Telegram bot token.
+   - `MEMBERSHIP_TELEGRAM_CHAT_ID`: membership Telegram chat id.
 
    Reservation notifications use the reservation bot:
 
-   - In Apps Script, open `Project Settings`.
-   - Under `Script Properties`, add `TELEGRAM_BOT_TOKEN`.
-   - Add `TELEGRAM_CHAT_ID`.
    - Paste the real reservation bot token and chat id there.
-   - Current requested reservation chat id from your latest Telegram screenshot: `5799678675`.
-   - If the reservation bot token is already saved, you can also run `setReservationTelegramToNewChat` once from Apps Script to update only `TELEGRAM_CHAT_ID`.
 
    Membership-card requests use the separate membership bot:
 
-   - Add `MEMBERSHIP_TELEGRAM_BOT_TOKEN`.
-   - Add `MEMBERSHIP_TELEGRAM_CHAT_ID`.
    - Paste the real membership bot token and chat id there.
-   - Current membership chat id: `1407038332`.
-   - Run `setMembershipTelegramConfigToAyoub` once from Apps Script. This updates both `MEMBERSHIP_TELEGRAM_BOT_TOKEN` and `MEMBERSHIP_TELEGRAM_CHAT_ID`, which is important because Script Properties override the values written in the code.
    - Run `testMembershipTelegramNotification` once. If it returns `sent`, you should receive a small test message in Telegram.
    - If something still fails, run `getMembershipTelegramConfigStatus` to check whether the membership bot token and chat id are visible to Apps Script without printing the private token.
 
-   Optional badge-admin e-mail setting:
+   Badge-admin e-mail setting:
 
-   - Add `ADMIN_BADGE_EMAIL`.
-   - Use `ayoubabenyaich@gmail.com`.
-   - If this property is missing, the script still uses `ayoubabenyaich@gmail.com` as the fallback.
-   - If an old admin badge e-mail is already saved in Script Properties, run `setAdminBadgeEmailToAyoub` once from Apps Script.
+   - Add `ADMIN_EMAIL`.
+   - To send only a test badge e-mail without changing the real admin setting, run `testMembershipBadgeEmail`. It sends a sample badge to the `ADMIN_EMAIL` property.
 
 To create/get them:
 - In Telegram, open `@BotFather`, create a bot, and copy the bot token.
@@ -88,11 +87,17 @@ Membership requests are saved as `pending` in `Statu`. Telegram sends you two bu
 - `Accepter`: changes `Statu` to `member`, marks it green, and sends the member reference + QR e-mail.
 - `Refuser`: changes `Statu` to `rejected`, marks it red, and removes the Telegram buttons.
 
-When a member is accepted, the script also sends a badge-preparation e-mail to `ADMIN_BADGE_EMAIL` with the same member QR code. For old accepted members that do not have `badge admin: sent` inside `Email status`, run `resendMissingMembershipBadgeEmails` once from the Apps Script editor. If you want to resend the new QR badge e-mail to every accepted member again, run `resendAllAcceptedMembershipBadgeEmails` once.
+When a member is accepted, the script also sends a badge-preparation e-mail to `ADMIN_EMAIL` with the same member QR code. For old accepted members that do not have `badge admin: sent` inside `Email status`, run `resendMissingMembershipBadgeEmails` once from the Apps Script editor. If you want to resend the new QR badge e-mail to every accepted member again, run `resendAllAcceptedMembershipBadgeEmails` once.
 
-Public reservations are now saved as `pending` in the `Statu` column. Telegram sends you two buttons:
+Public reservations are now saved as `pending` in the `Statu` column. Telegram sends you two signed buttons that require `ADMIN_SECRET` to be set:
 - `Confirmer`: changes `Statu` to `confirmed`, marks it green, reserves the seat, and sends the ticket e-mail with QR code.
 - `Annuler`: changes `Statu` to `annulé`, marks it red, and releases the seat on the website.
+
+The entrance scanner page is available at `#scanner`. It first validates `SCANNER_PIN` with the Apps Script action `scannerLogin`, then uses the protected `verifyTicket` action with a temporary scanner token. After copying the latest `google-apps-script-cinemana-UPDATED.gs`, deploy a new Web App version before testing the scanner.
+
+The hidden admin dashboard is available at `#admin`. It uses `ADMIN_SECRET` for `getReservations` and `updateReservationStatus`.
+
+The public ticket status page is available at `#ticket-status`. It uses `getTicketStatus` and returns only safe fields: reference, status, seat, and event.
 
 The script also adds internal columns to `reservation`:
 - `Event` and `Event id`: keep seat availability separated by projection/event.

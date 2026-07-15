@@ -1,11 +1,18 @@
 const SPREADSHEET_ID = "1b3ZW4esFw0SqFwSw0HwMbtiadsNfYVJ0QdtzWDLGEIU";
 const MEMBERSHIP_SHEET_NAME = "membership";
 const RESERVATION_SHEET_NAME = "reservation";
-const TELEGRAM_BOT_TOKEN = "8687104434:AAHtnrf0QcBUpynhh6-to3LQ1yI5O2gS9bY";
-const TELEGRAM_CHAT_ID = "5799678675";
-const MEMBERSHIP_TELEGRAM_BOT_TOKEN = "8851489372:AAFW3QOk0WmrPmCTvHRk0PUXrFc0NxFaJsc";
-const MEMBERSHIP_TELEGRAM_CHAT_ID = "1407038332";
-const ADMIN_BADGE_EMAIL = "ayoubabenyaich@gmail.com";
+
+// The 10 center seats of row A (closest to the screen) are permanently held
+// back from booking for every event, regardless of what the sheet says.
+const CINEMANA_BLOCKED_SEATS = ["A6", "A7", "A8", "A9", "A10", "A11", "A12", "A13", "A14", "A15"];
+
+// Private values must be set in Apps Script:
+// Project Settings -> Script Properties.
+// Expected keys: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID,
+// MEMBERSHIP_TELEGRAM_BOT_TOKEN, MEMBERSHIP_TELEGRAM_CHAT_ID,
+// ADMIN_EMAIL, ADMIN_SECRET, SCANNER_PIN.
+const SCANNER_TOKEN_CACHE_PREFIX = "cinemana_scanner_token_";
+const SCANNER_TOKEN_TTL_SECONDS = 6 * 60 * 60;
 
 const MEMBERSHIP_HEADERS = [
   "References",
@@ -17,11 +24,16 @@ const MEMBERSHIP_HEADERS = [
   "E-mail",
   "Fonction",
   "Comment as-tu connu CINEMANA?",
+  "Photo de profil",
+  "Photo de profil file id",
+  "Recu paiement",
+  "Recu paiement file id",
   "Statu",
   "Created at",
   "Email status",
   "Telegram chat",
-  "Telegram message"
+  "Telegram message",
+  "Photo upload error"
 ];
 
 const RESERVATION_HEADERS = [
@@ -54,6 +66,19 @@ function doGet(e) {
 
 function doPost(e) {
   if (e && e.postData && e.postData.contents) {
+    // Try to parse the body as JSON first.
+    // If it contains an "action" field, it's a direct API call (e.g. saveMembership with images)
+    // posted with Content-Type: text/plain to avoid CORS preflight.
+    // Otherwise treat it as a Telegram webhook.
+    let parsed;
+    try { parsed = JSON.parse(e.postData.contents); } catch (_) { parsed = null; }
+
+    if (parsed && typeof parsed.action === "string") {
+      const params = { action: parsed.action };
+      const payloadStr = JSON.stringify(parsed.payload || {});
+      return respond_(handleRequest_(Object.assign({}, params, { payload: payloadStr })), null);
+    }
+
     const telegramResponse = handleTelegramWebhook_(e.postData.contents);
     if (telegramResponse) return respond_(telegramResponse, null);
   }
@@ -67,19 +92,120 @@ function handleRequest_(params) {
     const action = params.action || "";
     const payload = parsePayload_(params.payload);
 
+    if (action === "scannerLogin") return scannerLogin_(payload);
+    if (action === "getTicketStatus") return getTicketStatus_(payload);
+    if (action === "verifyTicket") {
+      if (!isScannerAuthorized_(payload) && !isAdminAuthorized_(params, payload)) return unauthorizedResponse_();
+      return verifyTicket_(payload);
+    }
+    if (action === "decision") {
+      if (!isAdminAuthorized_(params, payload) && !isSignedDecisionRequest_("decision", payload)) return unauthorizedResponse_();
+      return processReservationDecision_(payload.reference, payload.decision, null);
+    }
+    if (action === "membershipDecision") {
+      if (!isAdminAuthorized_(params, payload) && !isSignedDecisionRequest_("membershipDecision", payload)) return unauthorizedResponse_();
+      return processMembershipDecision_(payload.reference, payload.decision);
+    }
+    if (isSensitiveAction_(action) && !isAdminAuthorized_(params, payload)) return unauthorizedResponse_();
+
     if (action === "setupSheets") return setupCinemanaSheets();
     if (action === "saveMembership") return saveMembership_(payload);
+    if (action === "testMembershipBadgeEmail") return testMembershipBadgeEmail();
+    if (action === "setupCinemanaSheetsExactOrder") return setupCinemanaSheetsExactOrder();
     if (action === "verifyMember") return verifyMember_(payload);
     if (action === "getMemberDashboard") return getMemberDashboard_(payload);
     if (action === "getReservedSeats") return getReservedSeats_(payload);
     if (action === "createReservation") return createReservation_(payload);
-    if (action === "decision") return processReservationDecision_(payload.reference, payload.decision, null);
-    if (action === "membershipDecision") return processMembershipDecision_(payload.reference, payload.decision);
+    if (action === "getReservations") return getReservations_();
+    if (action === "updateReservationStatus") return updateReservationStatus_(payload);
 
     return { ok: false, code: "unknown_action", message: "Unknown action." };
   } catch (error) {
     return { ok: false, code: "server_error", message: String(error && error.message ? error.message : error) };
   }
+}
+
+function getConfigValue(key) {
+  // Set private values in Apps Script: Project Settings -> Script Properties.
+  return String(PropertiesService.getScriptProperties().getProperty(key) || "").trim();
+}
+
+function getAdminSecret_() {
+  return getConfigValue("ADMIN_SECRET");
+}
+
+function unauthorizedResponse_() {
+  return {
+    success: false,
+    ok: false,
+    code: "unauthorized",
+    error: "Unauthorized request",
+    message: "Unauthorized request"
+  };
+}
+
+function requestSecret_(params, payload) {
+  return String(
+    (payload && (payload.admin_secret || payload.adminSecret || payload.secret)) ||
+    (params && (params.admin_secret || params.adminSecret || params.secret)) ||
+    ""
+  ).trim();
+}
+
+function isAdminAuthorized_(params, payload) {
+  const expected = getAdminSecret_();
+  if (!expected) return false;
+  return requestSecret_(params, payload) === expected;
+}
+
+function isSensitiveAction_(action) {
+  // New web-entry admin guard: direct Apps Script editor runs are still available.
+  return [
+    "setupSheets",
+    "testMembershipBadgeEmail",
+    "setupCinemanaSheetsExactOrder",
+    "fixCinemanaSheetColumns",
+    "setReservationTelegramToNewChat",
+    "setMembershipTelegramToAyoubChat",
+    "setMembershipTelegramConfigToAyoub",
+    "getMembershipTelegramConfigStatus",
+    "testMembershipTelegramNotification",
+    "setAdminBadgeEmailToAyoub",
+    "resendMissingMembershipBadgeEmails",
+    "resendAllAcceptedMembershipBadgeEmails",
+    "getReservations",
+    "updateReservationStatus"
+  ].includes(action);
+}
+
+function signedDecisionToken_(action, decision, reference) {
+  // New Telegram safety token: signs decision links without exposing ADMIN_SECRET.
+  const secret = getAdminSecret_();
+  if (!secret) return "";
+  const source = [action, String(decision || "").trim(), normalizeText_(reference)].join("|");
+  const signature = Utilities.computeHmacSha256Signature(source, secret);
+  return Utilities.base64EncodeWebSafe(signature).replace(/=+$/g, "").slice(0, 48);
+}
+
+function isSignedDecisionRequest_(action, payload) {
+  const reference = payload && payload.reference;
+  const decision = payload && payload.decision;
+  const provided = String(payload && (payload.auth || payload.token || payload.signature) || "").trim();
+  if (!reference || !decision || !provided) return false;
+  return provided === signedDecisionToken_(action, decision, reference);
+}
+
+function createScannerToken_() {
+  // New scanner session token: short-lived server-side access after PIN login.
+  const token = Utilities.getUuid().replace(/-/g, "") + Utilities.getUuid().replace(/-/g, "");
+  CacheService.getScriptCache().put(SCANNER_TOKEN_CACHE_PREFIX + token, "1", SCANNER_TOKEN_TTL_SECONDS);
+  return token;
+}
+
+function isScannerAuthorized_(payload) {
+  const token = String(payload && (payload.scanner_token || payload.scannerToken) || "").trim();
+  if (!token) return false;
+  return CacheService.getScriptCache().get(SCANNER_TOKEN_CACHE_PREFIX + token) === "1";
 }
 
 function parsePayload_(raw) {
@@ -124,12 +250,11 @@ function setupCinemanaSheets() {
 }
 
 function setReservationTelegramToNewChat() {
-  PropertiesService.getScriptProperties().setProperty("TELEGRAM_CHAT_ID", "5799678675");
   return {
-    ok: true,
+    ok: false,
+    code: "manual_config_required",
     property: "TELEGRAM_CHAT_ID",
-    chat_id: "5799678675",
-    message: "Reservation Telegram notifications now use the new chat id."
+    message: "Set TELEGRAM_CHAT_ID in Apps Script Project Settings -> Script Properties."
   };
 }
 
@@ -138,14 +263,11 @@ function setMembershipTelegramToAyoubChat() {
 }
 
 function setMembershipTelegramConfigToAyoub() {
-  const props = PropertiesService.getScriptProperties();
-  props.setProperty("MEMBERSHIP_TELEGRAM_BOT_TOKEN", MEMBERSHIP_TELEGRAM_BOT_TOKEN);
-  props.setProperty("MEMBERSHIP_TELEGRAM_CHAT_ID", "1407038332");
   return {
-    ok: true,
+    ok: false,
+    code: "manual_config_required",
     properties: ["MEMBERSHIP_TELEGRAM_BOT_TOKEN", "MEMBERSHIP_TELEGRAM_CHAT_ID"],
-    chat_id: "1407038332",
-    message: "Membership Telegram bot token and chat id are configured."
+    message: "Set membership Telegram values in Apps Script Project Settings -> Script Properties."
   };
 }
 
@@ -157,7 +279,7 @@ function getMembershipTelegramConfigStatus() {
     configured: Boolean(isMembershipTelegramConfigured_()),
     token_present: Boolean(token),
     token_is_placeholder: token === "YOUR_MEMBERSHIP_TELEGRAM_BOT_TOKEN",
-    chat_id: chatId || "",
+    chat_id_present: Boolean(chatId),
     chat_is_placeholder: chatId === "YOUR_MEMBERSHIP_TELEGRAM_CHAT_ID"
   };
 }
@@ -181,7 +303,6 @@ function testMembershipTelegramNotification() {
     return {
       ok: true,
       status: "sent",
-      chat_id: response && response.result && response.result.chat ? String(response.result.chat.id) : getMembershipTelegramChatId_(),
       message_id: response && response.result ? String(response.result.message_id || "") : ""
     };
   } catch (error) {
@@ -194,13 +315,51 @@ function testMembershipTelegramNotification() {
 }
 
 function setAdminBadgeEmailToAyoub() {
-  PropertiesService.getScriptProperties().setProperty("ADMIN_BADGE_EMAIL", "ayoubabenyaich@gmail.com");
+  return {
+    ok: false,
+    code: "manual_config_required",
+    property: "ADMIN_EMAIL",
+    message: "Set ADMIN_EMAIL in Apps Script Project Settings -> Script Properties."
+  };
+}
+
+function testMembershipBadgeEmail() {
+  const adminEmail = getAdminBadgeEmail_();
+  if (!adminEmail) {
+    return {
+      ok: false,
+      code: "missing_admin_email",
+      message: "Set ADMIN_EMAIL in Apps Script Project Settings -> Script Properties."
+    };
+  }
+
+  const testMember = {
+    reference: `CIN-TEST-${new Date().getFullYear()}`,
+    firstName: "Admin",
+    lastName: "Test CINEMANA",
+    fullName: "Admin Test CINEMANA",
+    birthday: "2000-01-01",
+    city: "Tanger",
+    phone: "0600000000",
+    email: adminEmail,
+    profession: "Test badge",
+    heard_about_us: "Test manuel Apps Script"
+  };
+
   return {
     ok: true,
-    property: "ADMIN_BADGE_EMAIL",
-    email: "ayoubabenyaich@gmail.com",
-    message: "Admin badge e-mails now go to ayoubabenyaich@gmail.com."
+    status: sendMembershipBadgeAdminEmail_(testMember, adminEmail),
+    message: "Test badge e-mail sent without changing the real admin badge e-mail setting."
   };
+}
+
+function setupCinemanaSheetsExactOrder() {
+  const result = fixCinemanaSheetColumns();
+  formatExistingCinemanaSheetRows_();
+  return Object.assign({}, result, {
+    rows_formatted: true,
+    message: "Sheets columns and existing status rows are aligned with the CINEMANA layout."
+  });
 }
 
 function fixCinemanaSheetColumns() {
@@ -311,6 +470,27 @@ function fixCinemanaSheetColumns() {
     membership_headers: membershipResult,
     reservation_headers: reservationResult
   };
+}
+
+function formatExistingCinemanaSheetRows_() {
+  const membershipSheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
+  const membershipMap = headerMap_(membershipSheet);
+  getRows_(membershipSheet).forEach((row, index) => {
+    const member = rowObject_(row, membershipMap);
+    if (!member.reference && !member.email) return;
+    formatMembershipStatus_(membershipSheet, index + 2, member.status);
+  });
+
+  const reservationSheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const reservationMap = headerMap_(reservationSheet);
+  getRows_(reservationSheet).forEach((row, index) => {
+    const reservation = reservationPayloadFromRow_(row, reservationMap);
+    if (!reservation.reference && !reservation.email) return;
+    formatReservationStatus_(reservationSheet, index + 2, reservation.status);
+    formatMemberMark_(reservationSheet, index + 2, reservation.member_mark === "✓");
+  });
+
+  SpreadsheetApp.flush();
 }
 
 function ensureHeaders_(sheet, headers) {
@@ -465,7 +645,12 @@ function rowObject_(row, map) {
     status: normalizeMembershipStatus_(get("Statu")),
     email_status: String(get("Email status") || "").trim(),
     telegram_chat_id: String(get("Telegram chat") || "").trim(),
-    telegram_message_id: String(get("Telegram message") || "").trim()
+    telegram_message_id: String(get("Telegram message") || "").trim(),
+    // Image links stored after Drive upload (used in approve/reject Telegram notifications)
+    profile_picture_url: String(get("Photo de profil") || "").trim(),
+    profile_picture_file_id: String(get("Photo de profil file id") || "").trim(),
+    receipt_url: String(get("Recu paiement") || "").trim(),
+    receipt_file_id: String(get("Recu paiement file id") || "").trim()
   };
 }
 
@@ -654,10 +839,142 @@ function findMembershipByReference_(reference) {
   return null;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Membership photo uploads (profile picture + payment receipt)
+// Files are stored in a dedicated Drive folder, shared as "anyone with the
+// link can view", and the resulting links are written into the sheet.
+// Added 2026-06-30.
+// ─────────────────────────────────────────────────────────────────────────────
+function getOrCreateMembershipUploadsFolder_() {
+  const props = PropertiesService.getScriptProperties();
+  const cachedId = props.getProperty("MEMBERSHIP_UPLOADS_FOLDER_ID");
+  if (cachedId) {
+    try {
+      return DriveApp.getFolderById(cachedId);
+    } catch (error) {
+      // The stored folder id is no longer valid (deleted/moved) — fall through and recreate it.
+    }
+  }
+  const folderName = "CINEMANA - Membership Uploads";
+  const existing = DriveApp.getFoldersByName(folderName);
+  const folder = existing.hasNext() ? existing.next() : DriveApp.createFolder(folderName);
+  props.setProperty("MEMBERSHIP_UPLOADS_FOLDER_ID", folder.getId());
+  return folder;
+}
+
+function saveMemberImageToDrive_(imageData, fullName, referenceCode, label) {
+  if (!imageData || !imageData.base64) return null;
+  try {
+    const folder = label === "profil" ? getOrCreateMemberProfilesFolder_() : getOrCreatePaymentReceiptsFolder_();
+    const bytes = Utilities.base64Decode(imageData.base64);
+    const mimeType = imageData.mime_type || "image/jpeg";
+    const extension = fileExtensionFromImageData_(imageData);
+    const safeName = sanitizeFileNamePart_(fullName) || sanitizeFileNamePart_(referenceCode) || "Sans nom";
+    const suffix = label === "profil" ? "" : "-receipt";
+    const fileName = `${safeName} (${referenceCode})${suffix}.${extension}`;
+    const blob = Utilities.newBlob(bytes,mimeType,fileName);
+    const file=folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK,DriveApp.Permission.VIEW);
+    return {file_id:file.getId(),url:`https://drive.google.com/uc?export=view&id=${file.getId()}`,blob:blob};
+  } catch(error){
+    return {error:String(error&&error.message||error)};
+  }
+}
+
+function telegramSendMultipart_(method, fields, botToken) {
+  const token = botToken || getTelegramBotToken_();
+  const url = `https://api.telegram.org/bot${token}/${method}`;
+  const response = UrlFetchApp.fetch(url, {
+    method: "post",
+    payload: fields,
+    muteHttpExceptions: true
+  });
+  const code = response.getResponseCode();
+  if (code < 200 || code >= 300) {
+    throw new Error(`telegram_${method}_${code}: ${response.getContentText()}`);
+  }
+  try {
+    return JSON.parse(response.getContentText());
+  } catch (error) {
+    return { ok: true };
+  }
+}
+
+function sendTelegramMembershipPhotos_(profileUpload, receiptUpload, payload, reference) {
+  if (!isMembershipTelegramConfigured_()) return;
+
+  const captionName = escapeHtml_(payload.full_name || payload.fullName || "");
+  const hasProfile = Boolean(profileUpload && profileUpload.blob);
+  const hasReceipt = Boolean(receiptUpload && receiptUpload.blob);
+  if (!hasProfile && !hasReceipt) return;
+
+  try {
+    if (hasProfile && hasReceipt) {
+      const media = [
+        { type: "photo", media: "attach://profile_photo", caption: `📷 Photo de profil — ${captionName} (${escapeHtml_(reference)})`, parse_mode: "HTML" },
+        { type: "photo", media: "attach://receipt_photo", caption: `🧾 Reçu de paiement — ${escapeHtml_(reference)}`, parse_mode: "HTML" }
+      ];
+      telegramSendMultipart_("sendMediaGroup", {
+        chat_id: getMembershipTelegramChatId_(),
+        media: JSON.stringify(media),
+        profile_photo: profileUpload.blob,
+        receipt_photo: receiptUpload.blob
+      }, getMembershipTelegramBotToken_());
+    } else if (hasProfile) {
+      telegramSendMultipart_("sendPhoto", {
+        chat_id: getMembershipTelegramChatId_(),
+        caption: `📷 Photo de profil — ${captionName} (${escapeHtml_(reference)})`,
+        parse_mode: "HTML",
+        photo: profileUpload.blob
+      }, getMembershipTelegramBotToken_());
+    } else if (hasReceipt) {
+      telegramSendMultipart_("sendPhoto", {
+        chat_id: getMembershipTelegramChatId_(),
+        caption: `🧾 Reçu de paiement — ${captionName} (${escapeHtml_(reference)})`,
+        parse_mode: "HTML",
+        photo: receiptUpload.blob
+      }, getMembershipTelegramBotToken_());
+    }
+  } catch (error) {
+    // Photo delivery is best-effort; the text notification, email and sheet row are already saved.
+  }
+}
+
+// New 2026-07-01: previously a Drive upload failure (e.g. missing/expired Drive
+// permission scope after a code update) was completely silent — no error in the
+// sheet, no Telegram photo, nothing. This sends an explicit admin alert so a
+// failure is never invisible again.
+function sendMembershipPhotoUploadAlert_(payload, reference, profileUpload, receiptUpload) {
+  if (!isMembershipTelegramConfigured_()) return;
+  try {
+    const lines = [
+      `⚠️ <b>Échec de l'envoi d'une photo — adhésion ${escapeHtml_(reference)}</b>`,
+      `<b>Nom :</b> ${escapeHtml_(payload.full_name || payload.fullName || "-")}`
+    ];
+    if (profileUpload && profileUpload.error) {
+      lines.push(`Photo de profil : ${escapeHtml_(profileUpload.error)}`);
+    }
+    if (receiptUpload && receiptUpload.error) {
+      lines.push(`Reçu de paiement : ${escapeHtml_(receiptUpload.error)}`);
+    }
+    lines.push("", "Vérifiez que le script Apps Script a bien l'autorisation Google Drive (réautorisez et redéployez si besoin).");
+    telegramApi_("sendMessage", {
+      chat_id: getMembershipTelegramChatId_(),
+      text: lines.join("\n"),
+      parse_mode: "HTML"
+    }, getMembershipTelegramBotToken_());
+  } catch (error) {
+    // Best-effort alert; nothing else to do if even this fails.
+  }
+}
+
 function saveMembership_(payload) {
   payload.full_name = payload.full_name || combineNameParts_(payload.first_name, payload.last_name);
   const required = ["reference_code", "first_name", "last_name", "full_name", "birthday", "city", "phone", "email", "profession", "heard_about_us"];
   if (required.some((key) => !payload[key])) return { ok: false, code: "missing_fields" };
+
+  const profileUpload = saveMemberImageToDrive_(payload.profile_picture, payload.full_name, payload.reference_code, "profil");
+  const receiptUpload = saveMemberImageToDrive_(payload.payment_receipt, payload.full_name, payload.reference_code, "recu");
 
   const sheet = getSheet_(MEMBERSHIP_SHEET_NAME, MEMBERSHIP_HEADERS);
   const map = headerMap_(sheet);
@@ -676,9 +993,17 @@ function saveMembership_(payload) {
     "E-mail": payload.email,
     "Fonction": payload.profession,
     "Comment as-tu connu CINEMANA?": payload.heard_about_us,
+    "Photo de profil": profileUpload && profileUpload.url ? profileUpload.url : "",
+    "Photo de profil file id": profileUpload && profileUpload.file_id ? profileUpload.file_id : "",
+    "Recu paiement": receiptUpload && receiptUpload.url ? receiptUpload.url : "",
+    "Recu paiement file id": receiptUpload && receiptUpload.file_id ? receiptUpload.file_id : "",
     "Statu": "pending",
     "Created at": new Date(),
-    "Email status": "pending"
+    "Email status": "pending",
+    "Photo upload error": [
+      profileUpload && profileUpload.error ? `profil: ${profileUpload.error}` : "",
+      receiptUpload && receiptUpload.error ? `recu: ${receiptUpload.error}` : ""
+    ].filter(Boolean).join(" | ")
   };
   const rowValues = buildRow_(sheet, valuesByHeader);
 
@@ -704,12 +1029,20 @@ function saveMembership_(payload) {
     if (telegramMessageColumn) sheet.getRange(savedRow, telegramMessageColumn).setValue(telegramResult.message_id);
   }
 
+  sendTelegramMembershipPhotos_(profileUpload, receiptUpload, payload, payload.reference_code);
+
+  if ((profileUpload && profileUpload.error) || (receiptUpload && receiptUpload.error)) {
+    sendMembershipPhotoUploadAlert_(payload, payload.reference_code, profileUpload, receiptUpload);
+  }
+
   return {
     ok: true,
     reference: payload.reference_code,
     status: "pending",
     email_status: emailStatus,
-    telegram_status: telegramStatus
+    telegram_status: telegramStatus,
+    profile_picture_url: profileUpload && profileUpload.url ? profileUpload.url : "",
+    payment_receipt_url: receiptUpload && receiptUpload.url ? receiptUpload.url : ""
   };
 }
 
@@ -729,23 +1062,50 @@ function reservationRowEventKey_(row, map) {
 
 function reservationRowMatchesEvent_(row, map, payload) {
   const target = getReservationEventKey_(payload);
-  if (!target) return true;
+  if (!target) return true;                  // No event filter requested → match all
   const rowEvent = reservationRowEventKey_(row, map);
-  return !rowEvent || rowEvent === target;
+  if (!rowEvent) return false;               // Row has no event_id → never bleeds into another event
+  return rowEvent === target;
 }
 
 function getReservedSeats_(payload) {
+  const isJbelMoussa = normalizeText_(payload && (payload.event_id || payload.eventId)) === JBEL_MOUSSA_EVENT_ID;
+
+  if (isJbelMoussa) {
+    // Read directly from the dedicated Jbel Moussa sheet.
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const jSheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME);
+    const seatStatuses = CINEMANA_BLOCKED_SEATS.map(function(seat) { return { seat: seat, status: "confirmed" }; });
+    if (!jSheet || jSheet.getLastRow() < 2) {
+      return { ok: true, seats: seatStatuses.map(function(e) { return e.seat; }), seat_statuses: seatStatuses };
+    }
+    const jMap = headerMap_(jSheet);
+    const seatCol   = jMap[normalizeHeader_("Siège")];
+    const statusCol = jMap[normalizeHeader_("Statut")];
+    const rows = getRows_(jSheet);
+    rows.forEach(function(row) {
+      const seat   = String(row[seatCol - 1] || "").trim().toUpperCase();
+      if (!seat || CINEMANA_BLOCKED_SEATS.indexOf(seat) !== -1) return;
+      const status = normalizeReservationStatus_(statusCol ? row[statusCol - 1] : "");
+      if (status === "confirmed" || status === "pending") {
+        seatStatuses.push({ seat, status });
+      }
+    });
+    return { ok: true, seats: seatStatuses.map(function(e) { return e.seat; }), seat_statuses: seatStatuses };
+  }
+
+  // Default: main reservation sheet (other events).
   const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
   const map = headerMap_(sheet);
   const seatColumn = map[normalizeHeader_("Seat")];
   const statusColumn = map[normalizeHeader_("Statu")];
   const rows = getRows_(sheet);
-  const seatStatuses = [];
+  const seatStatuses = CINEMANA_BLOCKED_SEATS.map(function(seat) { return { seat: seat, status: "confirmed" }; });
 
   rows.forEach((row) => {
     if (!reservationRowMatchesEvent_(row, map, payload)) return;
     const seat = String(row[seatColumn - 1] || "").trim().toUpperCase();
-    if (!seat) return;
+    if (!seat || CINEMANA_BLOCKED_SEATS.indexOf(seat) !== -1) return;
     const status = normalizeReservationStatus_(statusColumn ? row[statusColumn - 1] : "");
     if (status === "confirmed" || status === "pending") {
       seatStatuses.push({ seat, status });
@@ -764,18 +1124,25 @@ function isActiveReservationStatus_(status) {
   return normalized === "confirmed" || normalized === "pending";
 }
 
-function findActiveReservationByMemberReference_(memberReference) {
-  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+function findActiveReservationByMemberReference_(memberReference, eventId) {
+  // Search the appropriate sheet based on event.
+  const isJbelMoussa = normalizeText_(eventId) === JBEL_MOUSSA_EVENT_ID;
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = isJbelMoussa
+    ? ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME)
+    : getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  if (!sheet) return null;
+
   const map = headerMap_(sheet);
-  const codeColumn = map[normalizeHeader_("Code membre")];
-  const statusColumn = map[normalizeHeader_("Statu")];
+  const codeColumn   = map[normalizeHeader_(isJbelMoussa ? "Code membre" : "Code membre")];
+  const statusColumn = map[normalizeHeader_(isJbelMoussa ? "Statut" : "Statu")];
   if (!codeColumn) return null;
 
   const target = normalizeText_(memberReference);
   const rows = getRows_(sheet);
   for (let i = 0; i < rows.length; i += 1) {
     const row = rows[i];
-    const code = normalizeText_(row[codeColumn - 1]);
+    const code   = normalizeText_(row[codeColumn - 1]);
     const status = statusColumn ? row[statusColumn - 1] : "";
     if (code && code === target && isActiveReservationStatus_(status)) {
       return { rowNumber: i + 2, row };
@@ -785,29 +1152,33 @@ function findActiveReservationByMemberReference_(memberReference) {
 }
 
 function findActiveReservationDuplicate_(payload) {
-  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const isJbelMoussa = normalizeText_(payload.event_id) === JBEL_MOUSSA_EVENT_ID;
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = isJbelMoussa
+    ? ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME)
+    : getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  if (!sheet) return null;
+
   const map = headerMap_(sheet);
-  const emailColumn = map[normalizeHeader_("E-mail")];
-  const phoneColumn = map[normalizeHeader_("Tel WhatsApp")];
-  const statusColumn = map[normalizeHeader_("Statu")];
-  const targetEmail = normalizeEmail_(payload.email);
-  const targetPhone = payload.whatsapp || payload.phone;
+  const emailColumn  = map[normalizeHeader_(isJbelMoussa ? "E-mail"        : "E-mail")];
+  const phoneColumn  = map[normalizeHeader_(isJbelMoussa ? "Tel / WhatsApp" : "Tel WhatsApp")];
+  const statusColumn = map[normalizeHeader_(isJbelMoussa ? "Statut"         : "Statu")];
+  const targetEmail  = normalizeEmail_(payload.email);
+  const targetPhone  = payload.whatsapp || payload.phone;
   const rows = getRows_(sheet);
 
   for (let i = 0; i < rows.length; i += 1) {
-    const row = rows[i];
+    const row    = rows[i];
     const status = statusColumn ? row[statusColumn - 1] : "";
     if (!isActiveReservationStatus_(status)) continue;
 
     if (emailColumn && targetEmail && normalizeEmail_(row[emailColumn - 1]) === targetEmail) {
       return { code: "duplicate_email", rowNumber: i + 2 };
     }
-
     if (phoneColumn && targetPhone && phoneMatches_(row[phoneColumn - 1], targetPhone)) {
       return { code: "duplicate_phone", rowNumber: i + 2 };
     }
   }
-
   return null;
 }
 
@@ -824,6 +1195,9 @@ function createReservation_(payload) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizeEmail_(payload.email))) return { ok: false, code: "invalid_email" };
 
     const seat = String(payload.seat || "").trim().toUpperCase();
+    if (CINEMANA_BLOCKED_SEATS.indexOf(seat) !== -1) {
+      return { ok: false, code: "seat_blocked" };
+    }
     const activeSeats = getReservedSeats_(payload);
     if (activeSeats.seats.includes(seat)) {
       return { ok: false, code: "seat_taken", seats: activeSeats.seats, seat_statuses: activeSeats.seat_statuses };
@@ -834,7 +1208,7 @@ function createReservation_(payload) {
     if (payload.type === "member") {
       const verification = verifyMemberPayload_(payload);
       if (!verification.ok) return verification;
-      if (findActiveReservationByMemberReference_(payload.member_reference)) {
+      if (findActiveReservationByMemberReference_(payload.member_reference, payload.event_id)) {
         return { ok: false, code: "member_already_reserved" };
       }
       member = verification.member;
@@ -848,8 +1222,40 @@ function createReservation_(payload) {
 
     const reference = generateReservationReference_();
     const status = payload.type === "member" ? "confirmed" : "pending";
-    const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
-    const valuesByHeader = {
+
+    // Route to the dedicated Jbel Moussa sheet when the event matches,
+    // otherwise fall back to the main reservation sheet.
+    const isJbelMoussa = normalizeText_(payload.event_id) === JBEL_MOUSSA_EVENT_ID;
+    const sheet = isJbelMoussa
+      ? (SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(JBEL_MOUSSA_SHEET_NAME)
+         || (setupJbelMoussaSheet(), SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(JBEL_MOUSSA_SHEET_NAME)))
+      : getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+
+    const valuesByHeader = isJbelMoussa ? {
+      // Columns matching JBEL_MOUSSA_HEADERS
+      "Références":                           reference,
+      "Événement":                            payload.event_title || "Le Mont Moussa",
+      "Event ID":                             payload.event_id,
+      "Date":                                 payload.event_date  || "Dimanche 28 juin 2026",
+      "Heure":                                payload.event_time  || "19:00",
+      "Lieu":                                 payload.event_venue || "Palais de la Culture Malabata - Tanger",
+      "Prénom":                               payload.first_name,
+      "Nom":                                  payload.last_name,
+      "Tel / WhatsApp":                       payload.whatsapp || payload.phone,
+      "E-mail":                               payload.email,
+      "Âge":                                  payload.type === "member" ? "" : payload.age,
+      "Fonction":                             payload.type === "member" ? (member && member.profession ? member.profession : payload.profession) : payload.profession,
+      "Comment as-tu su pour la projection ?": payload.type === "member" ? `Réservation membre${payload.event_title ? " - " + payload.event_title : ""}` : payload.source,
+      "Siège":                                seat,
+      "Membre (oui/non)":                     isMember ? "Oui" : "Non",
+      "Code membre":                          payload.type === "member" ? payload.member_reference : "",
+      "Statut":                               status,
+      "Présence":                             "",
+      "Créé le":                              new Date().toISOString(),
+      "Statut e-mail":                        status === "confirmed" ? "pending" : "waiting confirmation",
+      "Chat Telegram":                        "",
+      "Message Telegram":                     ""
+    } : {
       "References": reference,
       "Event": payload.event_title,
       "Event id": payload.event_id,
@@ -884,12 +1290,15 @@ function createReservation_(payload) {
       telegramResult = sendTelegramReservationNotification_(payload, reference, seat, isMember);
       telegramStatus = typeof telegramResult === "string" ? telegramResult : telegramResult.status;
     }
-    const emailStatusColumn = map[normalizeHeader_("Email status")];
+    const emailStatusColName    = isJbelMoussa ? "Statut e-mail"     : "Email status";
+    const telegramChatColName   = isJbelMoussa ? "Chat Telegram"     : "Telegram chat";
+    const telegramMsgColName    = isJbelMoussa ? "Message Telegram"  : "Telegram message";
+    const emailStatusColumn = map[normalizeHeader_(emailStatusColName)];
     if (emailStatusColumn) sheet.getRange(appendedRow, emailStatusColumn).setValue(emailStatus);
     if (telegramResult && typeof telegramResult === "object") {
-      const telegramChatColumn = map[normalizeHeader_("Telegram chat")];
-      const telegramMessageColumn = map[normalizeHeader_("Telegram message")];
-      if (telegramChatColumn) sheet.getRange(appendedRow, telegramChatColumn).setValue(telegramResult.chat_id);
+      const telegramChatColumn    = map[normalizeHeader_(telegramChatColName)];
+      const telegramMessageColumn = map[normalizeHeader_(telegramMsgColName)];
+      if (telegramChatColumn)    sheet.getRange(appendedRow, telegramChatColumn).setValue(telegramResult.chat_id);
       if (telegramMessageColumn) sheet.getRange(appendedRow, telegramMessageColumn).setValue(telegramResult.message_id);
     }
 
@@ -958,11 +1367,31 @@ function formatReservationStatus_(sheet, row, status) {
 }
 
 function findReservationByReference_(reference) {
+  const target = normalizeText_(reference);
+
+  // 1 — Search dedicated event sheets first (most recent events).
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const jSheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME);
+  if (jSheet && jSheet.getLastRow() >= 2) {
+    const jMap  = headerMap_(jSheet);
+    const jRefCol = jMap[normalizeHeader_("Références")];
+    if (jRefCol) {
+      const jRows = getRows_(jSheet);
+      for (let i = 0; i < jRows.length; i++) {
+        if (normalizeText_(jRows[i][jRefCol - 1]) === target) {
+          // Normalize to a standard reservation payload so callers work unchanged.
+          const res = reservationPayloadFromJbelMoussaRow_(jRows[i], jMap);
+          return { sheet: jSheet, map: jMap, rowNumber: i + 2, row: jRows[i], reservation: res, isJbelMoussa: true };
+        }
+      }
+    }
+  }
+
+  // 2 — Fall back to main reservation sheet.
   const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
   const map = headerMap_(sheet);
   const referenceColumn = map[normalizeHeader_("References")];
   const rows = getRows_(sheet);
-  const target = normalizeText_(reference);
 
   for (let i = 0; i < rows.length; i += 1) {
     if (normalizeText_(rows[i][referenceColumn - 1]) === target) {
@@ -977,6 +1406,171 @@ function findReservationByReference_(reference) {
   }
 
   return null;
+}
+
+// Maps a Jbel Moussa sheet row to the standard reservation payload shape.
+function reservationPayloadFromJbelMoussaRow_(row, map) {
+  function col(header) {
+    const c = map[normalizeHeader_(header)];
+    return c ? String(row[c - 1] || "").trim() : "";
+  }
+  const firstName = col("Prénom");
+  const lastName  = col("Nom");
+  return {
+    reference:      col("Références"),
+    event_title:    col("Événement"),
+    event_id:       col("Event ID"),
+    event_date:     col("Date"),
+    event_time:     col("Heure"),
+    event_venue:    col("Lieu"),
+    first_name:     firstName,
+    last_name:      lastName,
+    full_name:      (firstName + " " + lastName).trim(),
+    phone:          col("Tel / WhatsApp"),
+    whatsapp:       col("Tel / WhatsApp"),
+    email:          col("E-mail"),
+    age:            col("Âge"),
+    profession:     col("Fonction"),
+    source:         col("Comment as-tu su pour la projection ?"),
+    seat:           col("Siège"),
+    member_mark:    col("Membre (oui/non)") === "Oui" ? "✓" : "✗",
+    member_reference: col("Code membre"),
+    status:         normalizeReservationStatus_(col("Statut")),
+    created_at:     col("Créé le"),
+    email_status:   col("Statut e-mail"),
+    telegram_chat:      col("Chat Telegram"),
+    telegram_chat_id:   col("Chat Telegram"),
+    telegram_message:   col("Message Telegram"),
+    telegram_message_id: col("Message Telegram")
+  };
+}
+
+function ticketReferenceFromPayload_(payload) {
+  const rawReference = String(payload.reference || payload.ticket || payload.code || "").trim();
+  const match = rawReference.toUpperCase().match(/RES-\d{4}-[A-Z0-9]+/);
+  return match ? match[0] : rawReference;
+}
+
+function publicTicketStatus_(ticket) {
+  return {
+    reference: ticket.reference,
+    status: ticket.status,
+    seat: ticket.seat,
+    event_title: ticket.event_title,
+    event_id: ticket.event_id
+  };
+}
+
+function getTicketStatus_(payload) {
+  // New public ticket status endpoint: returns only safe, non-private fields.
+  const reference = ticketReferenceFromPayload_(payload);
+  if (!reference) {
+    return {
+      success: false,
+      ok: false,
+      code: "missing_reference",
+      error: "Ticket not found",
+      message: "Ticket not found"
+    };
+  }
+
+  const found = findReservationByReference_(reference);
+  if (!found) {
+    return {
+      success: false,
+      ok: false,
+      code: "reference_not_found",
+      reference,
+      status: "not_found",
+      error: "Ticket not found",
+      message: "Ticket not found"
+    };
+  }
+
+  return {
+    success: true,
+    ok: true,
+    data: publicTicketStatus_(found.reservation),
+    ticket: publicTicketStatus_(found.reservation)
+  };
+}
+
+function scannerLogin_(payload) {
+  // New scanner login endpoint: validates SCANNER_PIN from Script Properties.
+  const expectedPin = getConfigValue("SCANNER_PIN");
+  const providedPin = String(payload && (payload.pin || payload.password || payload.scanner_pin) || "").trim();
+  if (!expectedPin || providedPin !== expectedPin) return unauthorizedResponse_();
+
+  const token = createScannerToken_();
+  return {
+    success: true,
+    ok: true,
+    scanner_token: token,
+    expires_in: SCANNER_TOKEN_TTL_SECONDS
+  };
+}
+
+function verifyTicket_(payload) {
+  const reference = ticketReferenceFromPayload_(payload);
+  if (!reference) {
+    return {
+      ok: false,
+      code: "missing_reference",
+      status: "not_found",
+      message: "Reference ticket obligatoire."
+    };
+  }
+
+  const found = findReservationByReference_(reference);
+  if (!found) {
+    return {
+      ok: false,
+      code: "reference_not_found",
+      reference,
+      status: "not_found",
+      message: "Ticket introuvable."
+    };
+  }
+
+  // Mark presence (✓ + timestamp) on whichever sheet holds this ticket.
+  markPresenceOnSheet_(found, reference);
+
+  const ticket = found.reservation;
+  return {
+    ok: true,
+    reference: ticket.reference,
+    status: ticket.status,
+    ticket: {
+      reference: ticket.reference,
+      event_title: ticket.event_title,
+      event_id: ticket.event_id,
+      first_name: ticket.first_name,
+      last_name: ticket.last_name,
+      full_name: ticket.full_name,
+      phone: ticket.phone || ticket.whatsapp,
+      whatsapp: ticket.whatsapp,
+      email: ticket.email,
+      age: ticket.age,
+      profession: ticket.profession,
+      source: ticket.source,
+      seat: ticket.seat,
+      member: ticket.member_mark === "✓",
+      member_mark: ticket.member_mark,
+      member_reference: ticket.member_reference,
+      status: ticket.status,
+      created_at: formatDateTimeForApi_(ticket.created_at),
+      email_status: ticket.email_status,
+      row_number: found.rowNumber
+    }
+  };
+}
+
+function formatDateTimeForApi_(value) {
+  if (!value) return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, Session.getScriptTimeZone(), "yyyy-MM-dd HH:mm");
+  }
+  return String(value || "").trim();
 }
 
 function reservationPayloadFromRow_(row, map) {
@@ -1013,21 +1607,97 @@ function reservationPayloadFromRow_(row, map) {
   };
 }
 
+function adminReservationPayload_(reservation) {
+  // New admin dashboard shape: includes operational fields but omits Telegram metadata.
+  return {
+    reference: reservation.reference,
+    event_title: reservation.event_title,
+    event_id: reservation.event_id,
+    name: reservation.full_name,
+    first_name: reservation.first_name,
+    last_name: reservation.last_name,
+    age: reservation.age,
+    profession: reservation.profession,
+    phone: reservation.phone || reservation.whatsapp,
+    email: reservation.email,
+    seat: reservation.seat,
+    status: reservation.status,
+    created_at: formatDateTimeForApi_(reservation.created_at),
+    member_reference: reservation.member_reference,
+    member: reservation.member_mark === "âœ“"
+  };
+}
+
+function getReservations_() {
+  // New protected admin endpoint: lists all reservations for dashboard management.
+  const sheet = getSheet_(RESERVATION_SHEET_NAME, RESERVATION_HEADERS);
+  const map = headerMap_(sheet);
+  const data = getRows_(sheet)
+    .map((row) => adminReservationPayload_(reservationPayloadFromRow_(row, map)))
+    .filter((reservation) => reservation.reference || reservation.email)
+    .reverse();
+
+  return {
+    success: true,
+    ok: true,
+    data
+  };
+}
+
+function updateReservationStatus_(payload) {
+  // New protected admin endpoint: approves/cancels or marks operational statuses.
+  const reference = String(payload.reference || "").trim();
+  const requested = String(payload.status || payload.decision || "").trim().toLowerCase();
+  if (!reference) return { success: false, ok: false, code: "missing_reference", error: "Reference required" };
+
+  if (["approve", "approved", "confirm", "confirmed"].includes(requested)) {
+    const result = processReservationDecision_(reference, "confirm", null);
+    return Object.assign({ success: Boolean(result && result.ok) }, result);
+  }
+  if (["cancel", "canceled", "cancelled"].includes(requested)) {
+    const result = processReservationDecision_(reference, "cancel", null);
+    return Object.assign({ success: Boolean(result && result.ok) }, result);
+  }
+
+  const status = normalizeReservationStatus_(requested);
+  if (!["pending", "attended"].includes(status)) {
+    return { success: false, ok: false, code: "invalid_status", error: "Invalid reservation status" };
+  }
+
+  const found = findReservationByReference_(reference);
+  if (!found) return { success: false, ok: false, code: "reference_not_found", error: "Reservation not found" };
+
+  const statusColumn = found.map[normalizeHeader_("Statu")];
+  if (statusColumn) found.sheet.getRange(found.rowNumber, statusColumn).setValue(status === "attended" ? "presence" : "pending");
+  formatReservationStatus_(found.sheet, found.rowNumber, status);
+
+  const updated = findReservationByReference_(reference);
+  return {
+    success: true,
+    ok: true,
+    reference,
+    status,
+    data: updated ? adminReservationPayload_(updated.reservation) : null,
+    message: "Reservation status updated."
+  };
+}
+
 function processReservationDecision_(reference, decision, callbackQueryId) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
   try {
     if (decision !== "confirm" && decision !== "cancel") {
-      return { ok: false, code: "invalid_decision", message: "Décision invalide." };
+      return { success: false, ok: false, code: "invalid_decision", message: "Décision invalide." };
     }
 
     const found = findReservationByReference_(reference);
-    if (!found) return { ok: false, code: "reference_not_found", message: "Réservation introuvable." };
+    if (!found) return { success: false, ok: false, code: "reference_not_found", message: "Réservation introuvable." };
 
     const currentStatus = found.reservation.status;
     if (currentStatus === "confirmed" || currentStatus === "canceled") {
       const result = {
+        success: true,
         ok: true,
         reference,
         seat: found.reservation.seat,
@@ -1041,8 +1711,9 @@ function processReservationDecision_(reference, decision, callbackQueryId) {
     const status = decision === "confirm" ? "confirmed" : "canceled";
     const sheet = found.sheet;
     const map = found.map;
-    const statusColumn = map[normalizeHeader_("Statu")];
-    const emailStatusColumn = map[normalizeHeader_("Email status")];
+    // Support both main sheet ("Statu") and Jbel Moussa sheet ("Statut") column names.
+    const statusColumn      = map[normalizeHeader_("Statut")] || map[normalizeHeader_("Statu")];
+    const emailStatusColumn = map[normalizeHeader_("Statutemail")] || map[normalizeHeader_("Emailstatus")];
     if (statusColumn) sheet.getRange(found.rowNumber, statusColumn).setValue(status === "confirmed" ? "confirmed" : "annulé");
     formatReservationStatus_(sheet, found.rowNumber, status);
 
@@ -1053,6 +1724,7 @@ function processReservationDecision_(reference, decision, callbackQueryId) {
     if (emailStatusColumn) sheet.getRange(found.rowNumber, emailStatusColumn).setValue(emailStatus);
 
     const result = {
+      success: true,
       ok: true,
       reference,
       seat: found.reservation.seat,
@@ -1073,11 +1745,11 @@ function processMembershipDecision_(reference, decision) {
 
   try {
     if (decision !== "approve" && decision !== "reject") {
-      return { ok: false, kind: "membership", code: "invalid_decision", message: "Décision invalide." };
+      return { success: false, ok: false, kind: "membership", code: "invalid_decision", message: "Décision invalide." };
     }
 
     const found = findMembershipByReference_(reference);
-    if (!found) return { ok: false, kind: "membership", code: "reference_not_found", message: "Demande d’adhésion introuvable." };
+    if (!found) return { success: false, ok: false, kind: "membership", code: "reference_not_found", message: "Demande d’adhésion introuvable." };
 
     const currentStatus = found.member.status;
     const currentEmailStatus = getMembershipEmailStatus_(found.sheet, found.map, found.rowNumber, found.member.email_status);
@@ -1092,6 +1764,7 @@ function processMembershipDecision_(reference, decision) {
       }
 
       const result = {
+        success: true,
         ok: true,
         kind: "membership",
         reference,
@@ -1124,6 +1797,7 @@ function processMembershipDecision_(reference, decision) {
     }
 
     const result = {
+      success: true,
       ok: true,
       kind: "membership",
       reference,
@@ -1133,6 +1807,7 @@ function processMembershipDecision_(reference, decision) {
       message: status === "member" ? "Membre accepté et e-mail envoyé." : "Demande refusée."
     };
     editStoredTelegramMembershipDecisionMessage_(found.member, result);
+    sendTelegramMembershipDecisionPhotos_(found.member, status);
     return result;
   } finally {
     lock.releaseLock();
@@ -1217,11 +1892,11 @@ function isReservationTelegramConfigured_() {
 }
 
 function getTelegramBotToken_() {
-  return PropertiesService.getScriptProperties().getProperty("TELEGRAM_BOT_TOKEN") || TELEGRAM_BOT_TOKEN;
+  return getConfigValue("TELEGRAM_BOT_TOKEN");
 }
 
 function getTelegramChatId_() {
-  return PropertiesService.getScriptProperties().getProperty("TELEGRAM_CHAT_ID") || TELEGRAM_CHAT_ID;
+  return getConfigValue("TELEGRAM_CHAT_ID");
 }
 
 function isMembershipTelegramConfigured_() {
@@ -1234,15 +1909,15 @@ function isMembershipTelegramConfigured_() {
 }
 
 function getMembershipTelegramBotToken_() {
-  return PropertiesService.getScriptProperties().getProperty("MEMBERSHIP_TELEGRAM_BOT_TOKEN") || MEMBERSHIP_TELEGRAM_BOT_TOKEN;
+  return getConfigValue("MEMBERSHIP_TELEGRAM_BOT_TOKEN");
 }
 
 function getMembershipTelegramChatId_() {
-  return PropertiesService.getScriptProperties().getProperty("MEMBERSHIP_TELEGRAM_CHAT_ID") || MEMBERSHIP_TELEGRAM_CHAT_ID;
+  return getConfigValue("MEMBERSHIP_TELEGRAM_CHAT_ID");
 }
 
 function getAdminBadgeEmail_() {
-  return PropertiesService.getScriptProperties().getProperty("ADMIN_BADGE_EMAIL") || ADMIN_BADGE_EMAIL;
+  return getConfigValue("ADMIN_EMAIL");
 }
 
 function telegramApi_(method, payload, botToken) {
@@ -1383,6 +2058,62 @@ function editStoredTelegramMembershipDecisionMessage_(member, result) {
   }
 }
 
+/**
+ * Sends a new Telegram message with the applicant's profile photo and payment
+ * receipt when the admin approves or rejects a membership request.
+ * Uses Drive file IDs (stored in the sheet) to fetch the blobs directly —
+ * more reliable than passing Google Drive redirect URLs to Telegram.
+ */
+function sendTelegramMembershipDecisionPhotos_(member, status) {
+  if (!isMembershipTelegramConfigured_()) return;
+  if (!member) return;
+
+  const profileFileId = String(member.profile_picture_file_id || "").trim();
+  const receiptFileId = String(member.receipt_file_id || "").trim();
+  if (!profileFileId && !receiptFileId) return;
+
+  const statusEmoji = status === "member" ? "✅" : "❌";
+  const statusLabel = status === "member" ? "Accepté(e)" : "Refusé(e)";
+  const name = escapeHtml_(member.fullName || "");
+  const ref = escapeHtml_(member.reference || "");
+  const captionBase = `${statusEmoji} <b>${statusLabel}</b> — ${name} (<code>${ref}</code>)`;
+
+  try {
+    const profileBlob = profileFileId ? (function() { try { return DriveApp.getFileById(profileFileId).getBlob(); } catch (_) { return null; } })() : null;
+    const receiptBlob = receiptFileId ? (function() { try { return DriveApp.getFileById(receiptFileId).getBlob(); } catch (_) { return null; } })() : null;
+
+    if (profileBlob && receiptBlob) {
+      // Send both images as a media group
+      telegramSendMultipart_("sendMediaGroup", {
+        chat_id: getMembershipTelegramChatId_(),
+        media: JSON.stringify([
+          { type: "photo", media: "attach://profile_photo", caption: captionBase + "\n📷 Photo de profil", parse_mode: "HTML" },
+          { type: "photo", media: "attach://receipt_photo", caption: "🧾 Reçu de paiement", parse_mode: "HTML" }
+        ]),
+        profile_photo: profileBlob,
+        receipt_photo: receiptBlob
+      }, getMembershipTelegramBotToken_());
+    } else if (profileBlob) {
+      telegramSendMultipart_("sendPhoto", {
+        chat_id: getMembershipTelegramChatId_(),
+        caption: captionBase + "\n📷 Photo de profil",
+        parse_mode: "HTML",
+        photo: profileBlob
+      }, getMembershipTelegramBotToken_());
+    } else if (receiptBlob) {
+      telegramSendMultipart_("sendPhoto", {
+        chat_id: getMembershipTelegramChatId_(),
+        caption: captionBase + "\n🧾 Reçu de paiement",
+        parse_mode: "HTML",
+        photo: receiptBlob
+      }, getMembershipTelegramBotToken_());
+    }
+  } catch (error) {
+    // Decision photo delivery is best-effort; the status update already succeeded.
+    console.error("sendTelegramMembershipDecisionPhotos_ error:", error);
+  }
+}
+
 function editStoredTelegramDecisionMessage_(reservation, result) {
   if (!reservation || !reservation.telegram_chat_id || !reservation.telegram_message_id || !isTelegramConfigured_()) return;
   try {
@@ -1405,12 +2136,20 @@ function editStoredTelegramDecisionMessage_(reservation, result) {
 }
 
 function buildDecisionUrl_(decision, reference) {
-  const payload = encodeURIComponent(JSON.stringify({ decision, reference }));
+  const payload = encodeURIComponent(JSON.stringify({
+    decision,
+    reference,
+    auth: signedDecisionToken_("decision", decision, reference)
+  }));
   return `${ScriptApp.getService().getUrl()}?action=decision&ui=telegram&payload=${payload}`;
 }
 
 function buildMembershipDecisionUrl_(decision, reference) {
-  const payload = encodeURIComponent(JSON.stringify({ decision, reference }));
+  const payload = encodeURIComponent(JSON.stringify({
+    decision,
+    reference,
+    auth: signedDecisionToken_("membershipDecision", decision, reference)
+  }));
   return `${ScriptApp.getService().getUrl()}?action=membershipDecision&ui=telegram&payload=${payload}`;
 }
 
@@ -1483,11 +2222,16 @@ function handleTelegramCallback_(callbackQuery) {
   const data = String(callbackQuery.data || "");
   const parts = data.split("|");
   const decision = parts[0];
-  const reference = parts.slice(1).join("|");
+  const reference = parts[1] || "";
+  const auth = parts[2] || "";
 
   if (!reference || (decision !== "confirm" && decision !== "cancel")) {
     answerTelegramCallback_(callbackQuery.id, "Action invalide.");
     return { ok: false, code: "invalid_callback" };
+  }
+  if (!isSignedDecisionRequest_("decision", { decision, reference, auth })) {
+    answerTelegramCallback_(callbackQuery.id, "Action non autorisee.");
+    return unauthorizedResponse_();
   }
 
   const result = processReservationDecision_(reference, decision, callbackQuery.id);
@@ -1633,8 +2377,8 @@ function sendMembershipApprovedEmail_(member) {
   }
 }
 
-function sendMembershipBadgeAdminEmail_(member) {
-  const adminBadgeEmail = getAdminBadgeEmail_();
+function sendMembershipBadgeAdminEmail_(member, overrideEmail) {
+  const adminBadgeEmail = overrideEmail || getAdminBadgeEmail_();
   if (!adminBadgeEmail) return "missing_admin_email";
   try {
     const fullName = memberDisplayName_(member);
@@ -1760,6 +2504,18 @@ function sendReservationEmail_(payload, reference, seat, isMember) {
                             <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Événement</div>
                             <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(eventTitle)}</div>
                           </div>
+                          ${payload.event_date ? `<div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Date</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35">${escapeHtml_(payload.event_date)}</div>
+                          </div>` : ""}
+                          ${payload.event_time ? `<div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Heure</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35">${escapeHtml_(payload.event_time)} GMT+1</div>
+                          </div>` : ""}
+                          ${payload.event_venue ? `<div style="border-top:1px solid #293244;padding:12px 0">
+                            <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Lieu</div>
+                            <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35">${escapeHtml_(payload.event_venue)}</div>
+                          </div>` : ""}
                           <div style="border-top:1px solid #293244;padding:12px 0">
                             <div style="font-size:13px;color:#b8c0d0;margin-bottom:4px">Nom</div>
                             <div style="font-size:17px;color:#fff;font-weight:800;line-height:1.35;word-break:break-word">${escapeHtml_(payload.full_name)}</div>
@@ -1816,4 +2572,245 @@ function escapeHtml_(value) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CINEMANA — Feuille dédiée à l'événement "Jbel Moussa / Le Mont Moussa"
+// Ajoutée le 2026-06-18
+// ─────────────────────────────────────────────────────────────────────────────
+
+const JBEL_MOUSSA_SHEET_NAME = "reservation - Jbel Moussa";
+const JBEL_MOUSSA_EVENT_ID   = "le-monte-moussa";
+
+const JBEL_MOUSSA_HEADERS = [
+  "Références",
+  "Événement",
+  "Event ID",
+  "Date",
+  "Heure",
+  "Lieu",
+  "Prénom",
+  "Nom",
+  "Tel / WhatsApp",
+  "E-mail",
+  "Âge",
+  "Fonction",
+  "Comment as-tu su pour la projection ?",
+  "Siège",
+  "Membre (oui/non)",
+  "Code membre",
+  "Statut",
+  "Présence",
+  "Créé le",
+  "Statut e-mail",
+  "Chat Telegram",
+  "Message Telegram"
+];
+
+/**
+ * Crée (ou retrouve) la feuille dédiée à Jbel Moussa et s'assure
+ * que les en-têtes sont en place.  Appelable depuis l'éditeur Apps Script.
+ */
+function setupJbelMoussaSheet() {
+  const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+  let   sheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(JBEL_MOUSSA_SHEET_NAME);
+  }
+
+  // En-têtes
+  const existing = sheet.getRange(1, 1, 1, JBEL_MOUSSA_HEADERS.length).getValues()[0];
+  const isEmpty  = existing.every(function(v) { return v === "" || v === null; });
+  if (isEmpty) {
+    sheet.getRange(1, 1, 1, JBEL_MOUSSA_HEADERS.length).setValues([JBEL_MOUSSA_HEADERS]);
+    sheet.setFrozenRows(1);
+
+    // Largeurs de colonnes confortables
+    sheet.setColumnWidth(1,  140); // Références
+    sheet.setColumnWidth(2,  200); // Événement
+    sheet.setColumnWidth(7,  120); // Prénom
+    sheet.setColumnWidth(8,  120); // Nom
+    sheet.setColumnWidth(9,  140); // Téléphone
+    sheet.setColumnWidth(10, 200); // E-mail
+    sheet.setColumnWidth(13, 260); // Source
+    sheet.setColumnWidth(18, 160); // Créé le
+
+    // Couleur d'en-tête dorée (charte CINEMANA)
+    sheet.getRange(1, 1, 1, JBEL_MOUSSA_HEADERS.length)
+         .setBackground("#C9933A")
+         .setFontColor("#FFFFFF")
+         .setFontWeight("bold");
+  }
+
+  SpreadsheetApp.flush();
+  return {
+    ok: true,
+    message: "Feuille « " + JBEL_MOUSSA_SHEET_NAME + " » prête.",
+    sheet: JBEL_MOUSSA_SHEET_NAME
+  };
+}
+
+/**
+ * Synchronise une réservation de la feuille principale « reservation »
+ * vers la feuille Jbel Moussa lorsque l'event_id correspond.
+ * Appelée automatiquement à chaque createReservation_ si l'event_id correspond.
+ */
+function mirrorReservationToJbelMoussaSheet_(payload, reference, seat) {
+  try {
+    if (normalizeText_(payload.event_id) !== JBEL_MOUSSA_EVENT_ID) return;
+    const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+    let   sheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME);
+    if (!sheet) { setupJbelMoussaSheet(); sheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME); }
+
+    const now = new Date().toISOString();
+    const row = [
+      reference,
+      payload.event_title  || "Le Mont Moussa",
+      payload.event_id     || JBEL_MOUSSA_EVENT_ID,
+      payload.event_date   || "Dimanche 28 juin 2026",
+      payload.event_time   || "19:00",
+      payload.event_venue  || "Palais de la Culture Malabata - Tanger",
+      payload.first_name   || "",
+      payload.last_name    || "",
+      payload.phone || payload.whatsapp || "",
+      payload.email        || "",
+      payload.age          || "",
+      payload.profession   || "",
+      payload.source       || (payload.type === "member" ? "Réservation membre" : ""),
+      seat                 || "",
+      payload.type === "member" ? "Oui" : "Non",
+      payload.member_reference || "",
+      "pending",
+      "",   // Présence (mis à jour par le scanner lors du contrôle)
+      now,
+      "",   // Statut e-mail (mis à jour par les triggers email)
+      "",   // Chat Telegram
+      ""    // Message Telegram
+    ];
+
+    sheet.appendRow(row);
+    SpreadsheetApp.flush();
+  } catch (err) {
+    // Mirror is best-effort — ne bloque pas la réservation principale.
+    console.error("mirrorReservationToJbelMoussaSheet_ error:", err);
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+// FIN — Jbel Moussa sheet helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Marque la présence (✓ + horodatage) dans la feuille "reservation - Jbel Moussa"
+ * dès qu'un ticket est scanné via verifyTicket_.
+ * Best-effort : n'interrompt jamais le flux de scan principal si elle échoue.
+ */
+function markPresenceOnJbelMoussaSheet_(reference) {
+  try {
+    const ss    = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const sheet = ss.getSheetByName(JBEL_MOUSSA_SHEET_NAME);
+    if (!sheet) return; // Feuille pas encore créée — on ignore silencieusement.
+
+    const map = headerMap_(sheet);
+    const refCol      = map[normalizeHeader_("Références")];
+    const presenceCol = map[normalizeHeader_("Présence")];
+    if (!refCol || !presenceCol) return;
+
+    const target = normalizeText_(reference);
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return;
+
+    const refs = sheet.getRange(2, refCol, lastRow - 1, 1).getValues();
+    for (let i = 0; i < refs.length; i++) {
+      if (normalizeText_(refs[i][0]) === target) {
+        const rowNumber = i + 2;
+        const cell = sheet.getRange(rowNumber, presenceCol);
+
+        // N'écrase pas si déjà marqué.
+        if (String(cell.getValue() || "").trim() !== "") return;
+
+        const timestamp = Utilities.formatDate(
+          new Date(),
+          Session.getScriptTimeZone(),
+          "dd/MM/yyyy HH:mm:ss"
+        );
+        cell.setValue("✓  " + timestamp);
+        cell.setBackground("#22c55e");   // vert
+        cell.setFontColor("#ffffff");
+        cell.setFontWeight("bold");
+        SpreadsheetApp.flush();
+        return;
+      }
+    }
+  } catch (err) {
+    console.error("markPresenceOnJbelMoussaSheet_ error:", err);
+  }
+}
+
+/**
+ * Marque la présence (✓ + horodatage) sur la feuille qui contient le ticket,
+ * qu'il s'agisse de "reservation - Jbel Moussa" ou de la feuille principale.
+ * Appelée depuis verifyTicket_ juste après findReservationByReference_.
+ */
+function markPresenceOnSheet_(found, reference) {
+  try {
+    if (!found) return;
+
+    const sheet = found.sheet;
+    const map   = found.map;
+
+    // Cherche la colonne Présence (avec ou sans accent, avec ou sans espace).
+    const presenceCol = map[normalizeHeader_("Présence")]
+                     || map[normalizeHeader_("presence")]
+                     || map[normalizeHeader_("Presence")];
+    if (!presenceCol) return; // Pas de colonne Présence sur cette feuille → rien à faire.
+
+    const cell = sheet.getRange(found.rowNumber, presenceCol);
+
+    // N'écrase pas si déjà marqué.
+    if (String(cell.getValue() || "").trim() !== "") return;
+
+    const timestamp = Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "dd/MM/yyyy HH:mm:ss"
+    );
+    cell.setValue("✓  " + timestamp);
+    cell.setBackground("#22c55e");  // vert
+    cell.setFontColor("#ffffff");
+    cell.setFontWeight("bold");
+    SpreadsheetApp.flush();
+  } catch (err) {
+    console.error("markPresenceOnSheet_ error:", err);
+  }
+}
+
+
+function getOrCreateNamedFolder_(propertyKey, folderName) {
+  const props = PropertiesService.getScriptProperties();
+  const cachedId = props.getProperty(propertyKey);
+  if (cachedId) {
+    try { return DriveApp.getFolderById(cachedId); } catch(e) {}
+  }
+  const existing = DriveApp.getFoldersByName(folderName);
+  const folder = existing.hasNext() ? existing.next() : DriveApp.createFolder(folderName);
+  props.setProperty(propertyKey, folder.getId());
+  return folder;
+}
+function getOrCreateMemberProfilesFolder_() {
+  return getOrCreateNamedFolder_("MEMBER_PROFILES_FOLDER_ID","Member Profiles");
+}
+function getOrCreatePaymentReceiptsFolder_() {
+  return getOrCreateNamedFolder_("PAYMENT_RECEIPTS_FOLDER_ID","Payment Receipts");
+}
+function fileExtensionFromImageData_(imageData){
+  const mt=String(imageData&&imageData.mime_type||"").toLowerCase();
+  const m={"image/jpeg":"jpg","image/jpg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","application/pdf":"pdf"};
+  if(m[mt]) return m[mt];
+  const n=String(imageData&&imageData.file_name||"");
+  const mm=n.match(/\.([a-zA-Z0-9]+)$/);
+  return mm?mm[1].toLowerCase():"jpg";
+}
+function sanitizeFileNamePart_(v){
+  return String(v||"").trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9\s_-]+/g,"").replace(/\s+/g," ").trim();
 }
